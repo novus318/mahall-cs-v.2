@@ -55,15 +55,15 @@ const data = {
       items: [
         {
           title: "Families",
-          url: "#",
+          url: "/dashboard/families",
         },
         {
           title: "Houses",
-          url: "#",
+          url: "/dashboard/houses",
         },
         {
           title: "Members",
-          url: "#",
+          url: "/dashboard/members",
         },
       ],
     }
