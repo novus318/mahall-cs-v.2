@@ -100,7 +100,48 @@ export default function MembersPage() {
                     <p className="text-muted-foreground text-sm">Directory of all community members.</p>
                 </div>
                 <div className="flex gap-2">
-                    {/* Placeholder for Export if needed later */}
+                    <Button variant="outline" size="sm" onClick={async () => {
+                        try {
+                            toast.info("Preparing export...")
+                            const data = await getMembers({ page: 1, limit: 10000, search: "" })
+                            const membersToExport = Array.isArray(data) ? data : (data.members || [])
+
+                            if (membersToExport.length === 0) {
+                                toast.warning("No members to export")
+                                return
+                            }
+
+                            const headers = ["ID", "Name", "Gender", "House", "Family", "Mobile", "DOB"]
+                            const rows = membersToExport.map((m: any) => [
+                                m.customId || "",
+                                `"${m.name}"`,
+                                m.gender || "",
+                                `"${m.house?.name || ""}"`,
+                                `"${m.family?.name || "Independent"}"`,
+                                `"${m.mobile || ""}"`,
+                                m.dateOfBirth ? new Date(m.dateOfBirth).toISOString().split('T')[0] : ""
+                            ])
+
+                            const csvContent = [
+                                headers.join(","),
+                                ...rows.map((row: any[]) => row.join(","))
+                            ].join("\n")
+
+                            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+                            const link = document.createElement("a")
+                            const url = URL.createObjectURL(blob)
+                            link.setAttribute("href", url)
+                            link.setAttribute("download", `members_export_${new Date().toISOString().split('T')[0]}.csv`)
+                            document.body.appendChild(link)
+                            link.click()
+                            document.body.removeChild(link)
+                            toast.success("Export started")
+                        } catch (error) {
+                            toast.error("Failed to export members")
+                        }
+                    }}>
+                        <Download className="mr-2 h-4 w-4" /> Export
+                    </Button>
                     <Button onClick={() => {
                         setEditingMember(null)
                         setIsAddMemberOpen(true)

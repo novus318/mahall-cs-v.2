@@ -11,7 +11,7 @@ const api = axios.create({
 api.interceptors.request.use(
     (config) => {
         const accessToken = localStorage.getItem('accessToken');
-        if (accessToken) {
+        if (accessToken && accessToken !== 'undefined' && accessToken !== 'null') {
             config.headers['Authorization'] = `Bearer ${accessToken}`;
         }
         return config;
@@ -42,6 +42,10 @@ api.interceptors.response.use(
                 const { data } = await axios.post('http://localhost:5000/api/auth/refresh', {
                     refreshToken,
                 });
+
+                if (!data.accessToken) {
+                    throw new Error('Refresh failed - no access token returned');
+                }
 
                 localStorage.setItem('accessToken', data.accessToken);
 

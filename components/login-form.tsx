@@ -44,12 +44,12 @@ export function LoginForm({
     try {
       const { data } = await api.post('/auth/login', formData);
 
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
+      localStorage.setItem('accessToken', data.data?.accessToken);
+      localStorage.setItem('refreshToken', data.data?.refreshToken);
       localStorage.setItem('user', JSON.stringify({
-        username: data.username,
-        role: data.role,
-        _id: data._id
+        username: data.data?.username,
+        role: data.data?.role,
+        _id: data.data?._id
       }));
 
       toast.success("Logged in successfully");
@@ -65,7 +65,7 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+      <Card className="py-3 gap-2">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>
