@@ -11,7 +11,10 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
-  LayoutDashboard
+  LayoutDashboard,
+  Package,
+  Building2,
+  FileText
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -66,6 +69,28 @@ const data = {
           url: "/dashboard/members",
         },
       ],
+    },
+    {
+      title: "Property Management",
+      url: "#",
+      icon: Building2,
+      items: [
+        {
+          title: "Inventory (Assets)",
+          url: "/dashboard/inventory",
+          icon: Package
+        },
+        {
+          title: "Buildings & Rooms",
+          url: "/dashboard/buildings",
+          icon: Building2
+        },
+        {
+          title: "Rental Contracts",
+          url: "/dashboard/contracts",
+          icon: FileText
+        }
+      ]
     },
     {
       title: "Settings",
