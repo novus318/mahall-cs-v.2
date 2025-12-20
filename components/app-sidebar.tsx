@@ -66,6 +66,11 @@ const data = {
           url: "/dashboard/members",
         },
       ],
+    },
+    {
+      title: "Settings",
+      url: "/dashboard/settings",
+      icon: Settings2,
     }
   ]
 }
