@@ -107,5 +107,12 @@ export const getMembers = async (params?: any) => (await api.get('/members', { p
 export const createMember = async (data: any) => (await api.post('/members', data)).data;
 export const updateMember = async (id: string, data: any) => (await api.put(`/members/${id}`, data)).data;
 export const deleteMember = async (id: string) => (await api.delete(`/members/${id}`)).data;
+export const importMembers = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return (await api.post('/members/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    })).data;
+};
 
 export default api;
