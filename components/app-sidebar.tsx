@@ -14,7 +14,8 @@ import {
   LayoutDashboard,
   Package,
   Building2,
-  FileText
+  FileText,
+  User
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -89,6 +90,18 @@ const data = {
           title: "Rental Contracts",
           url: "/dashboard/contracts",
           icon: FileText
+        },
+      ]
+    },
+    {
+      title: "Staff Management",
+      url: "#",
+      icon: User,
+      items: [
+        {
+          title: "Staff Directory",
+          url: "/dashboard/staff",
+          icon: User,
         }
       ]
     },
