@@ -113,10 +113,10 @@ export default function InventoryPage() {
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
     // Forms
-    const addItemForm = useForm<z.infer<typeof itemSchema>>({ resolver: zodResolver(itemSchema), defaultValues: { name: '', totalQuantity: 1, averageValue: 0, rentalRate: 0 } });
-    const restockForm = useForm<z.infer<typeof restockSchema>>({ resolver: zodResolver(restockSchema), defaultValues: { quantity: 1, unitCost: 0 } });
-    const rentForm = useForm<z.infer<typeof rentSchema>>({ resolver: zodResolver(rentSchema), defaultValues: { quantity: 1, rentPerUnit: 0, typ: 'RENT_OUT', customerName: '', customerPhone: '', notes: '' } });
-    const damageForm = useForm<z.infer<typeof damageSchema>>({ resolver: zodResolver(damageSchema), defaultValues: { quantity: 1, notes: '' } });
+    const addItemForm = useForm<z.infer<typeof itemSchema>>({ resolver: zodResolver(itemSchema) as any, defaultValues: { name: '', totalQuantity: 1, averageValue: 0, rentalRate: 0 } });
+    const restockForm = useForm<z.infer<typeof restockSchema>>({ resolver: zodResolver(restockSchema) as any, defaultValues: { quantity: 1, unitCost: 0 } });
+    const rentForm = useForm<z.infer<typeof rentSchema>>({ resolver: zodResolver(rentSchema) as any, defaultValues: { quantity: 1, rentPerUnit: 0, typ: 'RENT_OUT', customerName: '', customerPhone: '', notes: '' } });
+    const damageForm = useForm<z.infer<typeof damageSchema>>({ resolver: zodResolver(damageSchema) as any, defaultValues: { quantity: 1, notes: '' } });
 
     // Watch values for Rent Calculation
     const rentQty = rentForm.watch('quantity');

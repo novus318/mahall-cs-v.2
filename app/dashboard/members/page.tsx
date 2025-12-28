@@ -28,7 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { MemberDialog } from "@/components/dashboard/MemberDialog"
 
 export default function MembersPage() {
-    const [members, setMembers] = useState([])
+    const [members, setMembers] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
     const [editingMember, setEditingMember] = useState<any>(null)
