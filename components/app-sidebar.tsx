@@ -15,7 +15,10 @@ import {
   Package,
   Building2,
   FileText,
-  User
+  User,
+  Wallet,
+  IndianRupee,
+  Landmark
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -44,13 +47,21 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboard,
-      isActive: true,
+    },
+    {
+      title: "Finances",
+      url: "#",
+      icon: Wallet,
       items: [
         {
-          title: "Overview",
-          url: "/dashboard",
+          title: "Accounts",
+          url: "/dashboard/accounts",
+        },
+        {
+          title: "Transactions",
+          url: "/dashboard/transactions",
         }
-      ],
+      ]
     },
     {
       title: "Family Management",
