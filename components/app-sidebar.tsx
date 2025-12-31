@@ -58,6 +58,10 @@ const data = {
           url: "/dashboard/accounts",
         },
         {
+          title: "Payments",
+          url: "/dashboard/payments",
+        },
+        {
           title: "Transactions",
           url: "/dashboard/transactions",
         }

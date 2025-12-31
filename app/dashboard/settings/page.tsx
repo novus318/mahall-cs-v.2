@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import ProfileTab from '@/components/settings/ProfileTab';
 import UserManagementTab from '@/components/settings/UserManagementTab';
 import NotificationSettingsTab from '@/components/settings/NotificationSettingsTab';
+import PaymentSettingsTab from '@/components/settings/PaymentSettingsTab';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
@@ -52,6 +53,12 @@ export default function SettingsPage() {
                                 >
                                     Notification Contacts
                                 </TabsTrigger>
+                                <TabsTrigger
+                                    value="payments"
+                                    className="justify-start px-3 py-2 h-9 data-[state=active]:bg-muted data-[state=active]:text-foreground font-normal hover:bg-muted/50 rounded-md transition-colors text-muted-foreground"
+                                >
+                                    Payment Settings
+                                </TabsTrigger>
                             </>
                         )}
                     </TabsList>
@@ -83,6 +90,14 @@ export default function SettingsPage() {
                                     <p className="text-xs text-muted-foreground">Configure recipients for system alerts.</p>
                                 </div>
                                 <NotificationSettingsTab />
+                            </TabsContent>
+
+                            <TabsContent value="payments" className="mt-0 space-y-4 animate-in fade-in-50 duration-300">
+                                <div className="mb-4 hidden md:block border-b pb-2">
+                                    <h2 className="text-lg font-medium">Payment Configuration</h2>
+                                    <p className="text-xs text-muted-foreground">Manage receipt numbering and payment settings.</p>
+                                </div>
+                                <PaymentSettingsTab />
                             </TabsContent>
                         </>
                     )}

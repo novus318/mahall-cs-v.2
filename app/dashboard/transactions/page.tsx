@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
-    Loader2, Search, Filter, Calendar as CalendarIcon,
-    ArrowLeft, ArrowRight, Download, RefreshCcw
+    ArrowLeft, ArrowRight, Download, RefreshCcw, ExternalLink,
+    Loader2, Search, Filter, Calendar as CalendarIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -257,6 +257,11 @@ export default function TransactionsPage() {
                                             </TableCell>
                                             <TableCell className="font-medium text-sm">
                                                 {tx.description}
+                                                {tx.payment && (
+                                                    <a href={`/dashboard/payments/${tx.payment._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
+                                                        <ExternalLink className="h-3 w-3" /> {tx.payment.receiptNo}
+                                                    </a>
+                                                )}
                                                 {tx.relatedAccount && (
                                                     <div className="flex items-center gap-1 mt-0.5">
                                                         <span className="text-[10px] text-muted-foreground bg-slate-100 px-1.5 rounded-full border">

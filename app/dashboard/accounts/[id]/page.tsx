@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, ArrowRightLeft, Download, Filter } from 'lucide-react';
+import { ArrowLeft, Loader2, ArrowRightLeft, Download, Filter, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -107,6 +107,11 @@ export default function AccountDetailPage() {
                                             </TableCell>
                                             <TableCell className="font-medium text-sm">
                                                 {tx.description}
+                                                {tx.payment && (
+                                                    <a href={`/dashboard/payments/${tx.payment._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
+                                                        <ExternalLink className="h-3 w-3" /> {tx.payment.receiptNo}
+                                                    </a>
+                                                )}
                                                 {tx.relatedAccount && (
                                                     <span className="ml-2 text-xs text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">
                                                         {tx.type === 'TRANSFER_IN' ? 'From' : 'To'}: {tx.relatedAccount.name}
