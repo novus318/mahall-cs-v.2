@@ -27,6 +27,7 @@ export default function CreatePaymentPage() {
     const [accountId, setAccountId] = useState('');
     const [categoryId, setCategoryId] = useState('');
     const [payee, setPayee] = useState('');
+    const [payeeContact, setPayeeContact] = useState(''); // Added
     const [description, setDescription] = useState(''); // Narration
     const [items, setItems] = useState<{ description: string, amount: string }[]>([
         { description: '', amount: '' },
@@ -101,6 +102,7 @@ export default function CreatePaymentPage() {
                 accountId,
                 categoryId,
                 payee,
+                payeeContact, // Added
                 description,
                 items: validItems.map(i => ({ description: i.description, amount: Number(i.amount) }))
             });
@@ -198,14 +200,25 @@ export default function CreatePaymentPage() {
                     </div>
 
                     <div className="mt-4 pt-4 border-t border-border">
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payee (Paid To)</Label>
-                            <Input
-                                placeholder="Enter Name of Person or Entity..."
-                                className="bg-background border-input h-9 font-medium"
-                                value={payee}
-                                onChange={(e) => setPayee(e.target.value)}
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payee (Paid To)</Label>
+                                <Input
+                                    placeholder="Enter Name of Person or Entity..."
+                                    className="bg-background border-input h-9 font-medium"
+                                    value={payee}
+                                    onChange={(e) => setPayee(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contact Number (Optional)</Label>
+                                <Input
+                                    placeholder="Enter Mobile Number..."
+                                    className="bg-background border-input h-9 font-medium"
+                                    value={payeeContact}
+                                    onChange={(e) => setPayeeContact(e.target.value)}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

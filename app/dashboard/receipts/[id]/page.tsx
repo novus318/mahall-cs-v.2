@@ -81,6 +81,7 @@ export default function ReceiptDetailPage() {
                         <div className="space-y-1">
                             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Received From (Payer)</span>
                             <div className="font-semibold text-slate-900 text-base">{receipt.payer}</div>
+                            {receipt.payerContact && <div className="text-slate-600 text-xs">{receipt.payerContact}</div>}
                             <div className="text-slate-500 text-xs">{receipt.description || 'No additional notes'}</div>
                         </div>
 

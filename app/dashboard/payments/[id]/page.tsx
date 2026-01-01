@@ -79,6 +79,7 @@ export default function PaymentDetailPage() {
                         <div className="space-y-1">
                             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Pay To</span>
                             <div className="font-semibold text-slate-900 text-base">{payment.payee}</div>
+                            {payment.payeeContact && <div className="text-slate-600 text-xs">{payment.payeeContact}</div>}
                             <div className="text-slate-500 text-xs">{payment.description || 'No additional notes'}</div>
                         </div>
 

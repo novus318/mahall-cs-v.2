@@ -28,6 +28,7 @@ export default function EditReceiptPage() {
     const [accountId, setAccountId] = useState('');
     const [categoryId, setCategoryId] = useState('');
     const [payer, setPayer] = useState('');
+    const [payerContact, setPayerContact] = useState(''); // Added
     const [description, setDescription] = useState('');
     const [items, setItems] = useState<{ description: string, amount: string }[]>([
         { description: '', amount: '' }
@@ -52,6 +53,7 @@ export default function EditReceiptPage() {
                 setAccountId(receipt.account?._id || receipt.account);
                 setCategoryId(receipt.category?._id || receipt.category);
                 setPayer(receipt.payer);
+                setPayerContact(receipt.payerContact || ''); // Added
                 setDescription(receipt.description);
                 setItems(receipt.items.map((i: any) => ({ description: i.description, amount: String(i.amount) })));
                 setReceiptNo(receipt.receiptNo);
@@ -107,6 +109,7 @@ export default function EditReceiptPage() {
                 accountId,
                 categoryId,
                 payer,
+                payerContact, // Added
                 description,
                 items: validItems.map(i => ({ description: i.description, amount: Number(i.amount) }))
             });
@@ -203,14 +206,25 @@ export default function EditReceiptPage() {
                     </div>
 
                     <div className="mt-4 pt-4 border-t border-border">
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Received From</Label>
-                            <Input
-                                placeholder="Enter Name..."
-                                className="bg-background border-input h-9 font-medium"
-                                value={payer}
-                                onChange={(e) => setPayer(e.target.value)}
-                            />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Received From</Label>
+                                <Input
+                                    placeholder="Enter Name..."
+                                    className="bg-background border-input h-9 font-medium"
+                                    value={payer}
+                                    onChange={(e) => setPayer(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contact Number</Label>
+                                <Input
+                                    placeholder="Enter Mobile Number..."
+                                    className="bg-background border-input h-9 font-medium"
+                                    value={payerContact}
+                                    onChange={(e) => setPayerContact(e.target.value)}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
