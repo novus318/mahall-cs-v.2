@@ -112,6 +112,11 @@ export default function AccountDetailPage() {
                                                         <ExternalLink className="h-3 w-3" /> {tx.payment.receiptNo}
                                                     </a>
                                                 )}
+                                                {tx.receipt && (
+                                                    <a href={`/dashboard/receipts/${tx.receipt._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
+                                                        <ExternalLink className="h-3 w-3" /> {tx.receipt.receiptNo}
+                                                    </a>
+                                                )}
                                                 {tx.relatedAccount && (
                                                     <span className="ml-2 text-xs text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">
                                                         {tx.type === 'TRANSFER_IN' ? 'From' : 'To'}: {tx.relatedAccount.name}

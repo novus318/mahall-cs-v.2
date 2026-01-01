@@ -262,6 +262,11 @@ export default function TransactionsPage() {
                                                         <ExternalLink className="h-3 w-3" /> {tx.payment.receiptNo}
                                                     </a>
                                                 )}
+                                                {tx.receipt && (
+                                                    <a href={`/dashboard/receipts/${tx.receipt._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
+                                                        <ExternalLink className="h-3 w-3" /> {tx.receipt.receiptNo}
+                                                    </a>
+                                                )}
                                                 {tx.relatedAccount && (
                                                     <div className="flex items-center gap-1 mt-0.5">
                                                         <span className="text-[10px] text-muted-foreground bg-slate-100 px-1.5 rounded-full border">

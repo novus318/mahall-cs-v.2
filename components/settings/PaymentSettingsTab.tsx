@@ -13,9 +13,14 @@ export default function PaymentSettingsTab() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [settings, setSettings] = useState({
-        receiptPrefix: 'PA-',
-        receiptCurrentNumber: 1,
-        receiptSequenceLimit: 999
+        payment: {
+            receiptPrefix: 'PA-',
+            receiptCurrentNumber: 1
+        },
+        income: {
+            receiptPrefix: 'RC-',
+            receiptCurrentNumber: 1
+        }
     });
 
     useEffect(() => {
@@ -27,10 +32,13 @@ export default function PaymentSettingsTab() {
         try {
             const { data } = await api.get('/settings/payments');
             if (data.data) {
-                setSettings(data.data);
+                setSettings({
+                    payment: data.data.paymentSettings || { receiptPrefix: 'PA-', receiptCurrentNumber: 1 },
+                    income: data.data.incomeSettings || { receiptPrefix: 'RC-', receiptCurrentNumber: 1 }
+                });
             }
         } catch (error) {
-            toast.error("Failed to load payment settings");
+            toast.error("Failed to load settings");
         } finally {
             setLoading(false);
         }
@@ -39,8 +47,11 @@ export default function PaymentSettingsTab() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            await api.put('/settings/payments', settings);
-            toast.success("Payment settings updated");
+            await api.put('/settings/payments', {
+                paymentSettings: settings.payment,
+                incomeSettings: settings.income
+            });
+            toast.success("Settings updated successfully");
         } catch (error) {
             toast.error("Failed to update settings");
         } finally {
@@ -48,17 +59,15 @@ export default function PaymentSettingsTab() {
         }
     };
 
-
-
     if (loading) return <div className="p-4"><Loader2 className="h-6 w-6 animate-spin" /></div>;
 
     return (
         <div className="space-y-6">
-            <Card className='py-4'>
+            <Card>
                 <CardHeader>
-                    <CardTitle>Receipt Configuration</CardTitle>
+                    <CardTitle>Payment (Expense) Settings</CardTitle>
                     <CardDescription>
-                        Customize how payment receipt numbers are generated.
+                        Configuration for outgoing payment vouchers.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -66,45 +75,78 @@ export default function PaymentSettingsTab() {
                         <div className="space-y-2">
                             <Label>Receipt Prefix</Label>
                             <Input
-                                value={settings.receiptPrefix}
-                                onChange={(e) => setSettings({ ...settings, receiptPrefix: e.target.value })}
+                                value={settings.payment.receiptPrefix}
+                                onChange={(e) => setSettings({
+                                    ...settings,
+                                    payment: { ...settings.payment, receiptPrefix: e.target.value }
+                                })}
                                 placeholder="PA-"
                             />
                             <p className="text-[0.8rem] text-muted-foreground">
-                                Prefix for receipt numbers (e.g., PA-, 2024-).
+                                Prefix for expense vouchers.
                             </p>
                         </div>
                         <div className="space-y-2">
-                            <Label>Next Receipt Number</Label>
+                            <Label>Next Sequence Number</Label>
                             <Input
                                 type="number"
-                                value={settings.receiptCurrentNumber}
-                                onChange={(e) => setSettings({ ...settings, receiptCurrentNumber: Number(e.target.value) })}
+                                value={settings.payment.receiptCurrentNumber}
+                                onChange={(e) => setSettings({
+                                    ...settings,
+                                    payment: { ...settings.payment, receiptCurrentNumber: Number(e.target.value) }
+                                })}
                             />
                             <p className="text-[0.8rem] text-muted-foreground">
-                                The number to be used for the next payment.
+                                Next voucher: <strong>{settings.payment.receiptPrefix}{String(settings.payment.receiptCurrentNumber).padStart(3, '0')}</strong>
                             </p>
                         </div>
                     </div>
+                </CardContent>
+            </Card>
 
-                    <div className="rounded-md bg-muted p-4 mt-2">
-                        <div className="flex items-center justify-between text-sm">
-                            <div className="flex flex-col gap-1">
-                                <span className="font-medium text-foreground">Next Receipt Preview</span>
-                                <span className="text-muted-foreground">This is how the next receipt will look.</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="font-mono text-lg font-bold text-primary bg-background px-3 py-1 rounded border">
-                                    {settings.receiptPrefix}{String(settings.receiptCurrentNumber).padStart(3, '0')}
-                                </span>
-                            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Receipt (Income) Settings</CardTitle>
+                    <CardDescription>
+                        Configuration for incoming receipts/donations.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label>Receipt Prefix</Label>
+                            <Input
+                                value={settings.income.receiptPrefix}
+                                onChange={(e) => setSettings({
+                                    ...settings,
+                                    income: { ...settings.income, receiptPrefix: e.target.value }
+                                })}
+                                placeholder="RC-"
+                            />
+                            <p className="text-[0.8rem] text-muted-foreground">
+                                Prefix for income receipts.
+                            </p>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Next Sequence Number</Label>
+                            <Input
+                                type="number"
+                                value={settings.income.receiptCurrentNumber}
+                                onChange={(e) => setSettings({
+                                    ...settings,
+                                    income: { ...settings.income, receiptCurrentNumber: Number(e.target.value) }
+                                })}
+                            />
+                            <p className="text-[0.8rem] text-muted-foreground">
+                                Next receipt: <strong>{settings.income.receiptPrefix}{String(settings.income.receiptCurrentNumber).padStart(3, '0')}</strong>
+                            </p>
                         </div>
                     </div>
                 </CardContent>
                 <CardFooter className="border-t px-6 py-4">
                     <Button onClick={handleSave} disabled={saving}>
                         {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        <Save className="mr-2 h-4 w-4" /> Save Changes
+                        <Save className="mr-2 h-4 w-4" /> Save All Changes
                     </Button>
                 </CardFooter>
             </Card>

@@ -62,6 +62,10 @@ const data = {
           url: "/dashboard/payments",
         },
         {
+          title: "Receipts (Income)",
+          url: "/dashboard/receipts",
+        },
+        {
           title: "Transactions",
           url: "/dashboard/transactions",
         }
