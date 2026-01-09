@@ -18,7 +18,8 @@ import {
   User,
   Wallet,
   IndianRupee,
-  Landmark
+  Landmark,
+  MessageCircle
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -123,6 +124,11 @@ const data = {
           icon: User,
         }
       ]
+    },
+    {
+      title: "WhatsApp Inbox",
+      url: "/dashboard/whatsapp",
+      icon: MessageCircle,
     },
     {
       title: "Settings",
