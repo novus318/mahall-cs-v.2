@@ -106,7 +106,7 @@ export default function AudioPlayer({ src, className, isOutbound = false }: Audi
 
     return (
         <div className={cn(
-            "flex items-center gap-2 p-2 rounded-xl min-w-60",
+            "flex items-center gap-2 p-2 rounded-lg min-w-60 border",
             isOutbound ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
             className
         )}>

@@ -50,6 +50,12 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import EmojiPicker from 'emoji-picker-react';
 import AudioPlayer from '@/components/whatsapp/AudioPlayer';
 
 
@@ -78,6 +84,7 @@ interface Message {
     timestamp: string;
     mediaId?: string;
     isAnimated?: boolean;
+    replyTo?: Message;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
@@ -91,6 +98,7 @@ export default function WhatsAppPage() {
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [sending, setSending] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // 1. Fetch Contacts
     const fetchContacts = async () => {
@@ -135,9 +143,7 @@ export default function WhatsAppPage() {
 
     // 3. Auto-scroll to bottom
     useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
     }, [messages, loadingMessages]);
 
     // 4. Send Message
@@ -202,6 +208,18 @@ export default function WhatsAppPage() {
         const today = new Date();
         if (date.toDateString() === today.toDateString()) return formatTime(dateStr);
         return format(date, 'MMM d');
+    };
+
+    const handleScrollToMessage = (messageId: string) => {
+        const element = document.getElementById(`msg-${messageId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // specific highlight logic can be added here if needed
+            element.classList.add('ring-1', 'ring-primary', 'ring-offset-1', 'bg-muted');
+            setTimeout(() => element.classList.remove('ring-1', 'ring-primary', 'ring-offset-1', 'bg-muted'), 2000);
+        } else {
+            toast.info("Message not loaded in current view");
+        }
     };
 
     return (
@@ -329,8 +347,8 @@ export default function WhatsAppPage() {
                         </div>
 
                         {/* Messages Area */}
-                        <ScrollArea className="flex-1 p-4 h-[calc(100vh-11.5rem)]" ref={scrollRef}>
-                            <div className="space-y-2 pb-4">
+                        <ScrollArea className="flex-1 px-2 h-[calc(100vh-11.5rem)]" ref={scrollRef}>
+                            <div className="space-y-2 pb-3 pt-2">
                                 {loadingMessages ? (
                                     <div className="flex justify-center items-center h-full">
                                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
@@ -343,20 +361,47 @@ export default function WhatsAppPage() {
                                             const isSameSender = index < messages.length - 1 && messages[index + 1].direction === msg.direction;
 
                                             return (
-                                                <div key={msg._id} className={cn(
-                                                    "flex w-full animate-in fade-in slide-in-from-bottom-1 duration-200",
+                                                <div key={msg._id} id={`msg-${msg._id}`} className={cn(
+                                                    "flex w-full animate-in fade-in slide-in-from-bottom-1 duration-200 transition-all",
                                                     isOutbound ? "justify-end" : "justify-start"
                                                 )}>
                                                     <div className={cn(
-                                                        "max-w-[75%] shadow-sm relative group mb-0.5 text-sm",
+                                                        "max-w-[75%] shadow-sm relative group mb-0.5 text-sm min-w-[8%]",
                                                         isOutbound
-                                                            ? "bg-primary text-primary-foreground rounded-2xl rounded-tr-sm"
-                                                            : "bg-card text-card-foreground border border-border/50 rounded-2xl rounded-tl-sm",
-                                                        (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker' || msg.type === 'audio' || msg.type === 'document') ? "p-1 bg-black-[1%] border-none shadow-none" : "px-3 py-1.5"
+                                                            ? "bg-primary text-primary-foreground rounded-xl rounded-tr-sm"
+                                                            : "bg-card text-card-foreground border border-border rounded-xl rounded-tl-xs",
+                                                        (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker' || msg.type === 'audio' || msg.type === 'document') ? "p-1 bg-black-[1%] border-none shadow-none" : "px-2 py-1"
                                                     )}>
 
+                                                        {/* Reply Quote */}
+                                                        {msg.replyTo && (
+                                                            <div
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    if (msg.replyTo) handleScrollToMessage(msg.replyTo._id);
+                                                                }}
+                                                                className={cn(
+                                                                    "mb-1 rounded-lg p-1 text-xs border-l-4 opacity-90 cursor-pointer overflow-hidden hover:opacity-100 transition-opacity",
+                                                                    isOutbound
+                                                                        ? "bg-primary-foreground/10 border-primary-foreground/50 text-primary-foreground"
+                                                                        : "bg-muted/50 border-primary/50 text-muted-foreground"
+                                                                )}>
+                                                                <p className="font-semibold text-[10px] mb-0.5 opacity-80">
+                                                                    {msg.replyTo.direction === 'INBOUND' ? 'Them' : 'You'}
+                                                                </p>
+                                                                <p className="truncate line-clamp-1">
+                                                                    {msg.replyTo.type === 'image' ? '📷 Image'
+                                                                        : msg.replyTo.type === 'video' ? '🎥 Video'
+                                                                            : msg.replyTo.type === 'audio' ? '🎤 Audio'
+                                                                                : msg.replyTo.type === 'sticker' ? '💟 Sticker'
+                                                                                    : msg.replyTo.type === 'document' ? '📄 Document' // Added document handling here 
+                                                                                        : msg.replyTo.body}
+                                                                </p>
+                                                            </div>
+                                                        )}
+
                                                         {msg.type === 'text' ? (
-                                                            <p className="whitespace-pre-wrap text-[13px] leading-relaxed">{msg.body}</p>
+                                                            <p className="whitespace-pre-wrap text-xs leading-relaxed">{msg.body}</p>
                                                         ) : msg.type === 'image' ? (
                                                             <div className="flex flex-col">
                                                                 {msg.mediaId ? (
@@ -439,7 +484,7 @@ export default function WhatsAppPage() {
                                                                 </a>
                                                             </div>
                                                         ) : msg.type === 'document' ? (
-                                                            <div className="bg-background border rounded flex items-center gap-3 p-2 min-w-[200px] cursor-pointer" onClick={() => msg.mediaId && window.open(`${API_BASE_URL}/whatsapp/media/${msg.mediaId}`, '_blank')}>
+                                                            <div className="bg-background border rounded-lg flex items-center gap-3 p-2 min-w-[200px] cursor-pointer mb-1" onClick={() => msg.mediaId && window.open(`${API_BASE_URL}/whatsapp/media/${msg.mediaId}`, '_blank')}>
                                                                 <div className="bg-red-100 p-2 rounded-lg text-red-600 shrink-0">
                                                                     <FileText className="h-6 w-6" />
                                                                 </div>
@@ -456,8 +501,8 @@ export default function WhatsAppPage() {
                                                         )}
 
                                                         <div className={cn(
-                                                            "text-[9px] flex items-center justify-end gap-0.5 select-none opacity-80",
-                                                            (msg.type === 'image' || msg.type === 'video') ? "absolute bottom-1.5 right-1.5 text-white drop-shadow-md bg-black/20 px-1 rounded-full" : "mt-0.5",
+                                                            "text-[8px] flex items-center justify-end gap-0.5 select-none opacity-90",
+                                                            (msg.type === 'image' || msg.type === 'video') ? "absolute bottom-1.5 right-1.5 text-white drop-shadow-md bg-black/20 px-1 rounded-full" : "-mt-1",
                                                             isOutbound && !((msg.type === 'image' || msg.type === 'video')) ? "text-primary-foreground" : "text-muted-foreground"
                                                         )}>
                                                             {formatTime(msg.timestamp)}
@@ -472,6 +517,7 @@ export default function WhatsAppPage() {
 
                                             );
                                         })}
+                                        <div ref={messagesEndRef} />
                                     </>
                                 )}
                             </div>
@@ -501,9 +547,19 @@ export default function WhatsAppPage() {
                                             }
                                         }}
                                     />
-                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground shrink-0 ml-2 -mb-0.5">
-                                        <Smile className="h-4 w-4" />
-                                    </Button>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground shrink-0 ml-2 -mb-0.5">
+                                                <Smile className="h-4 w-4" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent side="top" className="w-full p-0 border-none shadow-none bg-transparent" align="end">
+                                            <EmojiPicker
+                                                onEmojiClick={(emojiData) => setInputText((prev) => prev + emojiData.emoji)}
+                                                lazyLoadEmojis={true}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                                 <div className="flex items-center gap-1 shrink-0">
                                     {inputText.trim() ? (
