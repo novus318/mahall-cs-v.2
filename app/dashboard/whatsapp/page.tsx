@@ -415,7 +415,10 @@ export default function WhatsAppPage() {
     return (
         <div className="flex flex-1 h-[calc(100vh-4.5rem)] bg-background">
             {/* LEFT PANE: Contact List */}
-            <div className="w-72 border-r border-border flex flex-col bg-muted/10 h-[calc(100vh-4.5rem)]">
+            <div className={cn(
+                "flex flex-col bg-muted/10 h-[calc(100vh-4.5rem)] border-r border-border md:w-72 shrink-0",
+                selectedContact ? "hidden md:flex" : "w-full flex"
+            )}>
                 <div className="p-3 border-b border-border shrink-0 bg-muted/10">
                     <div className="relative">
                         <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
@@ -474,17 +477,23 @@ export default function WhatsAppPage() {
             </div>
 
             {/* MIDDLE PANE: Chat Window */}
-            <div className="flex-1 flex flex-col min-w-0 bg-muted relative">
+            <div className={cn(
+                "flex-1 flex-col min-w-0 bg-muted relative h-[calc(100vh-1rem)] md:h-[calc(100vh-4.5rem)]",
+                selectedContact ? "flex fixed inset-0 z-50 md:static md:z-auto" : "hidden md:flex"
+            )}>
                 {/* Chat Wallpaper Pattern (CSS-based dot pattern or similar) */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
                 }} />
 
                 {selectedContact ? (
-                    <div className='h-[calc(100vh-5rem)]'>
+                    <div className='md:h-[calc(100vh-5rem)] h-[calc(100vh-1rem)] flex flex-col'>
                         {/* Header */}
                         <div className="h-12 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-3 shrink-0 z-10">
                             <div className="flex items-center gap-2">
+                                <Button variant="ghost" size="icon" className="md:hidden -ml-2 h-8 w-8" onClick={() => setSelectedContact(null)}>
+                                    <ArrowLeft className="h-5 w-5" />
+                                </Button>
                                 <Avatar className="h-7 w-7 ring-1 ring-border">
                                     <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{selectedContact.displayName?.substring(0, 2)}</AvatarFallback>
                                 </Avatar>
