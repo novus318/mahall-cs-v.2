@@ -48,7 +48,7 @@ export default function CreatePaymentPage() {
                 setCategories(catRes.data.data);
 
                 // Calculate Next Receipt for display
-                const settings = setRes.data.data;
+                const settings = setRes.data.data?.paymentSettings;
                 if (settings) {
                     const nextStr = `${settings.receiptPrefix}${String(settings.receiptCurrentNumber).padStart(3, '0')}`;
                     setNextReceipt(nextStr);
