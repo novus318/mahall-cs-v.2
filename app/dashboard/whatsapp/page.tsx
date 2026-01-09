@@ -100,6 +100,196 @@ export default function WhatsAppPage() {
     const scrollRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Recording State
+    const [isRecording, setIsRecording] = useState(false);
+    const [recordingDuration, setRecordingDuration] = useState(0);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
+    const [mimeType, setMimeType] = useState('audio/webm');
+
+    // Helper: Format Duration
+    const formatDuration = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    };
+
+    // Start Recording
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            // Determine supported mime type
+            let selectedMimeType = 'audio/webm';
+            if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                selectedMimeType = 'audio/mp4';
+            } else if (MediaRecorder.isTypeSupported('audio/ogg; codecs=opus')) {
+                selectedMimeType = 'audio/ogg; codecs=opus';
+            } else if (MediaRecorder.isTypeSupported('audio/webm; codecs=opus')) {
+                selectedMimeType = 'audio/webm; codecs=opus';
+            }
+
+            setMimeType(selectedMimeType);
+
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMimeType });
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+
+            // ... (rest of configuration moved to onstop in handleSendVoice)
+
+            mediaRecorder.start();
+            setIsRecording(true);
+            setRecordingDuration(0);
+
+            timerIntervalRef.current = setInterval(() => {
+                setRecordingDuration(prev => prev + 1);
+            }, 1000);
+
+        } catch (error: any) {
+            console.error("Error accessing microphone:", error);
+            if (error.name === 'NotAllowedError') {
+                toast.error("Microphone permission denied. Please allow access.");
+            } else if (error.name === 'NotFoundError') {
+                toast.error("No microphone found. Please check your device.");
+            } else {
+                toast.error("Could not access microphone.");
+            }
+        }
+    };
+
+    // Stop and Send Recording
+    const handleSendVoice = () => {
+        if (!mediaRecorderRef.current) return;
+
+        // Listener for the final blob availability
+        mediaRecorderRef.current.onstop = async () => {
+            // Clean up tracks
+            mediaRecorderRef.current?.stream.getTracks().forEach(track => track.stop());
+
+            const audioBlob = new Blob(audioChunksRef.current, { type: mimeType }); // mimeType is determined in startRecording
+
+            // Upload
+            setSending(true);
+            const formData = new FormData();
+            formData.append('file', audioBlob, 'recording.webm'); // Name doesn't matter much as backend renames it
+
+            try {
+                // 1. Upload
+                const uploadRes = await api.post('/whatsapp/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                const mediaId = uploadRes.data.mediaId;
+
+                // 2. Send Message
+                const res = await api.post('/whatsapp/send', {
+                    contactId: selectedContact?._id,
+                    messageType: 'audio',
+                    content: mediaId
+                });
+
+                // Append message locally
+                setMessages(prev => [...prev, res.data.data]);
+
+                // Update contact last message
+                if (selectedContact) {
+                    setContacts(prev => prev.map(c =>
+                        c._id === selectedContact._id ? {
+                            ...c,
+                            lastMessage: `You: 🎤 Voice Message`,
+                            lastMessageAt: new Date().toISOString()
+                        } : c
+                    ).sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()));
+                }
+
+            } catch (error: any) {
+                toast.error("Failed to send voice message");
+            } finally {
+                setSending(false);
+                setIsRecording(false);
+                setRecordingDuration(0);
+                if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+            }
+        };
+
+        mediaRecorderRef.current.stop();
+    };
+
+    // File Attachment Logic
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Reset input so same file can be selected again if needed
+        e.target.value = '';
+
+        setSending(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            // 1. Upload
+            const uploadRes = await api.post('/whatsapp/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            const mediaId = uploadRes.data.mediaId;
+
+            // 2. Determine Message Type
+            let messageType = 'document'; // Default
+            if (file.type.startsWith('image/')) messageType = 'image';
+            else if (file.type.startsWith('video/')) messageType = 'video'; // Not strictly supported by our simplified `sendMessage` yet but good to have
+            else if (file.type.startsWith('audio/')) messageType = 'audio';
+
+            // 3. Send Message
+            const res = await api.post('/whatsapp/send', {
+                contactId: selectedContact?._id,
+                messageType: messageType,
+                content: mediaId,
+                caption: file.name // Send filename as caption for docs/images if supported
+            });
+
+            // Append message locally
+            setMessages(prev => [...prev, res.data.data]);
+
+            // Update contact last message
+            if (selectedContact) {
+                setContacts(prev => prev.map(c =>
+                    c._id === selectedContact._id ? {
+                        ...c,
+                        lastMessage: `You: 📎 ${file.name}`,
+                        lastMessageAt: new Date().toISOString()
+                    } : c
+                ).sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()));
+            }
+
+        } catch (error: any) {
+            console.error("File upload error:", error);
+            toast.error("Failed to send file");
+        } finally {
+            setSending(false);
+        }
+    };
+
+    // Cancel Recording
+    const cancelRecording = () => {
+        if (mediaRecorderRef.current) {
+            mediaRecorderRef.current.onstop = null; // Remove listener to prevent send
+            mediaRecorderRef.current.stop();
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+        }
+        setIsRecording(false);
+        setRecordingDuration(0);
+        if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
+    };
+
     // 1. Fetch Contacts
     const fetchContacts = async () => {
         try {
@@ -215,8 +405,8 @@ export default function WhatsAppPage() {
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             // specific highlight logic can be added here if needed
-            element.classList.add('ring-1', 'ring-primary', 'ring-offset-1', 'bg-muted');
-            setTimeout(() => element.classList.remove('ring-1', 'ring-primary', 'ring-offset-1', 'bg-muted'), 2000);
+            element.classList.add('ring-1', 'ring-primary', 'ring-offset-1', 'bg-primary/10');
+            setTimeout(() => element.classList.remove('ring-1', 'ring-primary', 'ring-offset-1', 'bg-primary/10'), 2000);
         } else {
             toast.info("Message not loaded in current view");
         }
@@ -284,7 +474,7 @@ export default function WhatsAppPage() {
             </div>
 
             {/* MIDDLE PANE: Chat Window */}
-            <div className="flex-1 flex flex-col min-w-0 bg-background relative">
+            <div className="flex-1 flex flex-col min-w-0 bg-muted relative">
                 {/* Chat Wallpaper Pattern (CSS-based dot pattern or similar) */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
@@ -347,7 +537,7 @@ export default function WhatsAppPage() {
                         </div>
 
                         {/* Messages Area */}
-                        <ScrollArea className="flex-1 px-2 h-[calc(100vh-11.5rem)]" ref={scrollRef}>
+                        <ScrollArea className="flex-1 px-2 h-[calc(100vh-11rem)]" ref={scrollRef}>
                             <div className="space-y-2 pb-3 pt-2">
                                 {loadingMessages ? (
                                     <div className="flex justify-center items-center h-full">
@@ -526,52 +716,83 @@ export default function WhatsAppPage() {
                         {/* Input Area */}
                         <div className="p-3 bg-background border-t border-border z-10 shrink-0">
                             <div className="flex w-full items-end gap-2 bg-background p-1">
-                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0">
-                                    <Paperclip className="h-5 w-5" />
-                                </Button>
-                                <div className="flex-1 bg-muted/30 border border-input focus-within:ring-1 focus-within:ring-primary/20 rounded-[22px] flex items-end px-3 py-2 min-h-[44px]">
-                                    <Textarea
-                                        className="flex-1 bg-transparent border-0 shadow-none focus-visible:ring-0 p-0 text-sm resize-none max-h-32 min-h-[24px] placeholder:text-muted-foreground/70 leading-relaxed"
-                                        placeholder="Type a message..."
-                                        rows={1}
-                                        value={inputText}
-                                        onChange={(e) => {
-                                            setInputText(e.target.value);
-                                            e.target.style.height = 'auto';
-                                            e.target.style.height = e.target.scrollHeight + 'px';
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                handleSend();
-                                            }
-                                        }}
-                                    />
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground shrink-0 ml-2 -mb-0.5">
-                                                <Smile className="h-4 w-4" />
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent side="top" className="w-full p-0 border-none shadow-none bg-transparent" align="end">
-                                            <EmojiPicker
-                                                onEmojiClick={(emojiData) => setInputText((prev) => prev + emojiData.emoji)}
-                                                lazyLoadEmojis={true}
+                                {isRecording ? (
+                                    <div className="flex-1 flex items-center gap-2 h-11 px-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                        <div className="flex-1 bg-red-50 border border-red-100 rounded-[22px] flex items-center px-4 py-2 gap-3 text-red-500 relative overflow-hidden">
+                                            <div className="animate-pulse rounded-full bg-red-500 h-2.5 w-2.5 shrink-0"></div>
+                                            <span className="font-mono font-medium text-sm tabular-nums text-red-600 min-w-12.5">
+                                                {formatDuration(recordingDuration)}
+                                            </span>
+                                            <span className="text-xs text-red-400 font-medium">Recording...</span>
+
+                                            <div className="ml-auto flex items-center gap-1">
+                                                <Button variant="ghost" size="icon" onClick={cancelRecording} className="h-8 w-8 hover:bg-red-100 hover:text-red-600 text-red-400 rounded-full" title="Cancel">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <Button size="icon" className="h-10 w-10 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md animate-pulse" onClick={handleSendVoice} disabled={sending}>
+                                            <Send className="h-5 w-5 pl-0.5" />
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            className="hidden"
+                                            onChange={handleFileSelect}
+                                            // Accept common WhatsApp types
+                                            accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                                        />
+                                        <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0" title="Attach File">
+                                            <Paperclip className="h-5 w-5" />
+                                        </Button>
+                                        <div className="flex-1 bg-muted/30 border border-input focus-within:ring-1 focus-within:ring-primary/20 rounded-[22px] flex items-end px-3 py-2 min-h-[44px]">
+                                            <Textarea
+                                                className="flex-1 bg-transparent border-0 shadow-none focus-visible:ring-0 p-0 text-sm resize-none max-h-32 min-h-[24px] placeholder:text-muted-foreground/70 leading-relaxed"
+                                                placeholder="Type a message..."
+                                                rows={1}
+                                                value={inputText}
+                                                onChange={(e) => {
+                                                    setInputText(e.target.value);
+                                                    e.target.style.height = 'auto';
+                                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        handleSend();
+                                                    }
+                                                }}
                                             />
-                                        </PopoverContent>
-                                    </Popover>
-                                </div>
-                                <div className="flex items-center gap-1 shrink-0">
-                                    {inputText.trim() ? (
-                                        <Button size="icon" className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-sm" onClick={handleSend} disabled={sending}>
-                                            <Send className="h-4.5 w-4.5 pl-0.5" />
-                                        </Button>
-                                    ) : (
-                                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground">
-                                            <Mic className="h-5 w-5" />
-                                        </Button>
-                                    )}
-                                </div>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground shrink-0 ml-2 -mb-0.5">
+                                                        <Smile className="h-4 w-4" />
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent side="top" className="w-full p-0 border-none shadow-none bg-transparent" align="end">
+                                                    <EmojiPicker
+                                                        onEmojiClick={(emojiData) => setInputText((prev) => prev + emojiData.emoji)}
+                                                        lazyLoadEmojis={true}
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            {inputText.trim() ? (
+                                                <Button size="icon" className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-sm" onClick={handleSend} disabled={sending}>
+                                                    <Send className="h-4.5 w-4.5 pl-0.5" />
+                                                </Button>
+                                            ) : (
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground" onClick={startRecording}>
+                                                    <Mic className="h-5 w-5" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
