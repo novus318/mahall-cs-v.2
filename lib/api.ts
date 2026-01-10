@@ -104,6 +104,7 @@ export const deleteHouse = async (id: string) => (await api.delete(`/houses/${id
 
 // --- Members ---
 export const getMembers = async (params?: any) => (await api.get('/members', { params })).data;
+export const getMember = async (id: string) => (await api.get(`/members/${id}`)).data;
 export const createMember = async (data: any) => (await api.post('/members', data)).data;
 export const updateMember = async (id: string, data: any) => (await api.put(`/members/${id}`, data)).data;
 export const deleteMember = async (id: string) => (await api.delete(`/members/${id}`)).data;
@@ -114,5 +115,23 @@ export const importMembers = async (file: File) => {
         headers: { 'Content-Type': 'multipart/form-data' }
     })).data;
 };
+
+// --- Collections ---
+export const updateSubscription = async (type: 'house' | 'member', id: string, data: any) =>
+    (await api.put(`/collections/${type}/${id}/subscription`, data)).data;
+
+export const getDues = async (params: any) => (await api.get('/collections/dues', { params })).data;
+
+export const generateDue = async (data: { entityType: 'House' | 'Member', entityId: string, period: string }) =>
+    (await api.post('/collections/generate/single', data)).data;
+
+export const payDue = async (data: { dueId: string, amount: number, accountId: string, paymentMethod?: string }) =>
+    (await api.post('/collections/pay', data)).data;
+
+// --- Accounts ---
+export const getAccounts = async () => (await api.get('/accounts')).data;
+
+export const initiateRejection = async (dueId: string) => (await api.post('/collections/reject/initiate', { dueId })).data;
+export const confirmRejection = async (dueId: string, otp: string) => (await api.post('/collections/reject/confirm', { dueId, otp })).data;
 
 export default api;

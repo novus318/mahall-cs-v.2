@@ -22,7 +22,8 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
-import { Plus, Trash2, UserPlus, Loader2, Search, ChevronLeft, ChevronRight, Pencil, Download, Upload, FileDown } from "lucide-react"
+import { Plus, Trash2, UserPlus, Loader2, Search, ChevronLeft, ChevronRight, Pencil, Download, Upload, FileDown, Eye } from "lucide-react"
+import Link from "next/link"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { MemberDialog } from "@/components/dashboard/MemberDialog"
@@ -431,14 +432,22 @@ export default function MembersPage() {
                                         <TableCell className="py-2 text-sm font-mono font-medium">{member.customId || "-"}</TableCell>
                                         <TableCell className="py-2">
                                             <div className="flex flex-col">
-                                                <span className="text-sm font-medium">{member.name}</span>
+                                                <Link href={`/dashboard/members/${member._id}`} className="text-sm font-medium hover:underline hover:text-blue-600 transition-colors">
+                                                    {member.name}
+                                                </Link>
                                                 <span className="text-[10px] text-muted-foreground">
                                                     {member.gender}, {new Date(member.dateOfBirth).getFullYear()}
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="py-2 text-sm text-muted-foreground">
-                                            {member.house?.name || "-"}
+                                            {member.house ? (
+                                                <Link href={`/dashboard/houses/${(member.house as any)._id}`} className="hover:underline hover:text-blue-600 transition-colors">
+                                                    {member.house.name}
+                                                </Link>
+                                            ) : (
+                                                "-"
+                                            )}
                                         </TableCell>
                                         <TableCell className="py-2 text-sm text-muted-foreground">
                                             {member.family?.name || "Independent"}
@@ -459,6 +468,11 @@ export default function MembersPage() {
                                                 >
                                                     <Pencil className="h-3.5 w-3.5 text-amber-500" />
                                                 </Button>
+                                                <Link href={`/dashboard/members/${member._id}`}>
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500 hover:text-blue-700">
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"

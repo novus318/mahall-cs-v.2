@@ -677,11 +677,11 @@ export default function FamilyDetailDashboard() {
 
     const onNodeClick = (_: any, node: any) => {
         if (node.type === 'member') {
-            const member = members.find(m => m._id === node.id)
-            if (member) {
-                setSelectedMember(member)
-                setIsDetailsOpen(true)
-            }
+            router.push(`/dashboard/members/${node.id}`)
+        } else if (!node.id.startsWith('root') && !node.id.startsWith('marriage')) {
+            // It's a house node (assuming houses are standard nodes and check against known types)
+            // House ID is node.id
+            router.push(`/dashboard/houses/${node.id}`)
         }
     }
 

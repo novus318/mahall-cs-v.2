@@ -4,16 +4,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Crown, User, Calendar, Phone, Briefcase, Heart, MapPin, Mail, GraduationCap, Building } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Crown, User, Calendar, Phone, Briefcase, Heart, MapPin, Mail, GraduationCap, Building, Coins, LayoutGrid } from "lucide-react"
+import { HouseCollectionTab } from "@/components/dashboard/HouseCollectionTab"
 
 interface MemberDetailsDialogProps {
     member: any
     open: boolean
     onOpenChange: (open: boolean) => void
     onEdit?: (member: any) => void
+    onUpdate?: () => void
 }
 
-export function MemberDetailsDialog({ member, open, onOpenChange, onEdit }: MemberDetailsDialogProps) {
+export function MemberDetailsDialog({ member, open, onOpenChange, onEdit, onUpdate }: MemberDetailsDialogProps) {
     if (!member) return null
 
     const formatDate = (dateString: string) => {
@@ -75,53 +78,76 @@ export function MemberDetailsDialog({ member, open, onOpenChange, onEdit }: Memb
                     </div>
                 </DialogHeader>
 
-                <ScrollArea className="flex-1">
-                    <div className="p-6 grid gap-6">
-                        {/* Section: Personal Info */}
-                        <div className="space-y-3">
-                            <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
-                                <User className="h-4 w-4" /> Personal Information
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <Field icon={Calendar} label="Date of Birth" value={`${formatDate(member.dateOfBirth)} (${calculateAge(member.dateOfBirth)})`} />
-                                <Field icon={Heart} label="Marital Status" value={member.maritalStatus} />
-                                <Field icon={Heart} label="Blood Group" value={member.bloodGroup} className="text-red-600" />
-                                <Field icon={Briefcase} label="Occupation" value={member.occupation} />
-                                <Field icon={GraduationCap} label="Education" value={member.education} />
-                                <Field icon={Building} label="Madrassa" value={member.madrassa} />
-                            </div>
-                        </div>
+                <Tabs defaultValue="profile" className="flex-1 flex flex-col overflow-hidden">
+                    <TabsList className="w-full justify-start rounded-none border-b bg-slate-50/50 px-6 h-12">
+                        <TabsTrigger value="profile" className="flex items-center gap-2">
+                            <LayoutGrid className="h-4 w-4" /> Profile
+                        </TabsTrigger>
+                        <TabsTrigger value="collections" className="flex items-center gap-2">
+                            <Coins className="h-4 w-4" /> Collections
+                        </TabsTrigger>
+                    </TabsList>
 
-                        {/* Section: Contact */}
-                        <div className="space-y-3">
-                            <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
-                                <Phone className="h-4 w-4" /> Contact & Location
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <Field icon={Phone} label="Mobile" value={member.mobile} />
-                                <Field icon={Phone} label="WhatsApp" value={member.whatsapp} />
-                                <Field icon={MapPin} label="Current Place" value={member.place} />
-                            </div>
-                        </div>
+                    <TabsContent value="profile" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden">
+                        <ScrollArea className="flex-1 h-full">
+                            <div className="p-6 grid gap-6">
+                                {/* Section: Personal Info */}
+                                <div className="space-y-3">
+                                    <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
+                                        <User className="h-4 w-4" /> Personal Information
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <Field icon={Calendar} label="Date of Birth" value={`${formatDate(member.dateOfBirth)} (${calculateAge(member.dateOfBirth)})`} />
+                                        <Field icon={Heart} label="Marital Status" value={member.maritalStatus} />
+                                        <Field icon={Heart} label="Blood Group" value={member.bloodGroup} className="text-red-600" />
+                                        <Field icon={Briefcase} label="Occupation" value={member.occupation} />
+                                        <Field icon={GraduationCap} label="Education" value={member.education} />
+                                        <Field icon={Building} label="Madrassa" value={member.madrassa} />
+                                    </div>
+                                </div>
 
-                        {/* Section: ID Cards */}
-                        <div className="space-y-3 hidden md:block">
-                            <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
-                                <Briefcase className="h-4 w-4" /> Identification
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                                {Object.entries(member.idCards || {}).map(([key, value]) => (
-                                    (value as boolean) && (
-                                        <Badge key={key} variant="outline" className="capitalize bg-slate-50 dark:bg-neutral-800 border-slate-200">
-                                            {key.replace(/([A-Z])/g, ' $1').trim()}
-                                        </Badge>
-                                    )
-                                ))}
-                                {!Object.values(member.idCards || {}).some(v => Boolean(v)) && <span className="text-sm text-muted-foreground italic">No ID cards recorded</span>}
+                                {/* Section: Contact */}
+                                <div className="space-y-3">
+                                    <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
+                                        <Phone className="h-4 w-4" /> Contact & Location
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <Field icon={Phone} label="Mobile" value={member.mobile} />
+                                        <Field icon={Phone} label="WhatsApp" value={member.whatsapp} />
+                                        <Field icon={MapPin} label="Current Place" value={member.place} />
+                                    </div>
+                                </div>
+
+                                {/* Section: ID Cards */}
+                                <div className="space-y-3 hidden md:block">
+                                    <h4 className="text-sm font-bold flex items-center gap-2 text-primary">
+                                        <Briefcase className="h-4 w-4" /> Identification
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {Object.entries(member.idCards || {}).map(([key, value]) => (
+                                            (value as boolean) && (
+                                                <Badge key={key} variant="outline" className="capitalize bg-slate-50 dark:bg-neutral-800 border-slate-200">
+                                                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                                                </Badge>
+                                            )
+                                        ))}
+                                        {!Object.values(member.idCards || {}).some(v => Boolean(v)) && <span className="text-sm text-muted-foreground italic">No ID cards recorded</span>}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                </ScrollArea>
+                        </ScrollArea>
+                    </TabsContent>
+
+                    <TabsContent value="collections" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden">
+                        <HouseCollectionTab
+                            type="member"
+                            entityId={member._id}
+                            entityName={member.name}
+                            currentSubscription={member.subscription}
+                            onUpdate={onUpdate || (() => { })}
+                        />
+                    </TabsContent>
+                </Tabs>
             </DialogContent>
         </Dialog>
     )

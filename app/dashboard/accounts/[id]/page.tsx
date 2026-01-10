@@ -117,6 +117,24 @@ export default function AccountDetailPage() {
                                                         <ExternalLink className="h-3 w-3" /> {tx.receipt.receiptNo}
                                                     </a>
                                                 )}
+                                                {tx.collectionReceipt && (
+                                                    <span className="inline-flex items-center gap-1 ml-2">
+                                                        <span className="text-xs text-muted-foreground">{tx.collectionReceipt.receiptNo}</span>
+                                                        {tx.collectionReceipt.payer && (
+                                                            <a
+                                                                href={tx.collectionReceipt.payer.entityType === 'House'
+                                                                    ? `/dashboard/houses/${tx.collectionReceipt.payer.entityId?._id}`
+                                                                    : `/dashboard/members/${tx.collectionReceipt.payer.entityId?._id}`
+                                                                }
+                                                                className="inline-flex items-center gap-1 ml-1 text-primary hover:underline text-xs"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <ExternalLink className="h-3 w-3" />
+                                                                {tx.collectionReceipt.payer.entityType}
+                                                            </a>
+                                                        )}
+                                                    </span>
+                                                )}
                                                 {tx.relatedAccount && (
                                                     <span className="ml-2 text-xs text-muted-foreground bg-slate-100 px-1.5 py-0.5 rounded">
                                                         {tx.type === 'TRANSFER_IN' ? 'From' : 'To'}: {tx.relatedAccount.name}

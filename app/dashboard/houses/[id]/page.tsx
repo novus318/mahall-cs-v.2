@@ -1,10 +1,11 @@
 "use client"
 import { useEffect, useState, useCallback } from "react"
 import { getHouse, getMembers, deleteMember, createMember, updateMember, updateHouse } from "@/lib/api"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Loader2, ArrowLeft, Trash2, Home, User, AlignJustify, Network, MapPin, Plus, Pencil, Crown } from "lucide-react"
+import { Loader2, ArrowLeft, Trash2, Home, User, AlignJustify, Network, MapPin, Plus, Pencil, Crown, Coins } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
 import Link from "next/link"
 import { ReactFlow, Controls, Background, useNodesState, useEdgesState, BackgroundVariant, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
@@ -34,6 +35,7 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
+    AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { MemberDialog } from "@/components/dashboard/MemberDialog"
 import { MemberDetailsDialog } from "@/components/dashboard/MemberDetailsDialog"
@@ -49,6 +51,7 @@ import { Label } from "@/components/ui/label"
 
 // Imports (Ensure MemberNode is part of the file imports, adding it here if needed or assuming it's imported)
 import MemberNode from '@/components/dashboard/MemberNode';
+import { HouseCollectionTab } from "@/components/dashboard/HouseCollectionTab"
 
 // Node Types Registry
 const nodeTypes = {
@@ -111,17 +114,9 @@ const getLayoutedElements = (nodes: any[], edges: any[], direction = 'TB') => {
     return { nodes: newNodes, edges };
 };
 
-// ... (HouseDetailPage component starts) ...
-// INSIDE Component, around line 450 (VisualTree definition)
-
-
-
-// ... (Data Fetching Logic Update to use 'member' type) ...
-// I will need another replace call to update the data transformation loop. 
-// This chunk focuses on layout and component registration.
-
 export default function HouseDetailPage() {
     const { id } = useParams()
+    const router = useRouter()
     const [loading, setLoading] = useState(true)
     const [house, setHouse] = useState<any>(null)
     const [members, setMembers] = useState<any[]>([])
@@ -139,7 +134,18 @@ export default function HouseDetailPage() {
     const [selectedMember, setSelectedMember] = useState<any>(null)
     const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
+    // View State (Desktop)
+    const [viewMode, setViewMode] = useState<'tree' | 'collections'>('tree')
 
+    // Sync selectedMember with updated members list
+    useEffect(() => {
+        if (selectedMember && members.length > 0) {
+            const current = members.find(m => m._id === selectedMember._id)
+            if (current && current !== selectedMember) {
+                setSelectedMember(current)
+            }
+        }
+    }, [members, selectedMember])
 
     const fetchData = useCallback(async () => {
         try {
@@ -206,12 +212,8 @@ export default function HouseDetailPage() {
                     style: { width: 220, height: 120 } // Used by Dagre layout
                 })
 
-
-
                 // Edge: House -> Member (Structural Root Link)
                 const parentId = 'root'; // In single house view, they belong to the house (root)
-
-                // Edge Loop
             })
 
             // --- Post-Process House Connections ---
@@ -506,11 +508,7 @@ export default function HouseDetailPage() {
 
     const onNodeClick = (_: any, node: any) => {
         if (node.type === 'member') {
-            const member = members.find(m => m._id === node.id)
-            if (member) {
-                setSelectedMember(member)
-                setIsDetailsOpen(true)
-            }
+            router.push(`/dashboard/members/${node.id}`)
         }
     }
 
@@ -564,13 +562,32 @@ export default function HouseDetailPage() {
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
-                    <div>
-                        <h1 className="text-lg font-bold flex items-center gap-2">
-                            <Home className="h-4 w-4 text-blue-500" />
-                            {house?.name}
-                        </h1>
-                        <p className="text-xs text-muted-foreground font-mono">{house?.customId}</p>
-                    </div>
+                    <h1 className="text-lg font-bold flex items-center gap-2">
+                        <Home className="h-4 w-4 text-blue-500" />
+                        {house?.name}
+                    </h1>
+                    <p className="text-xs text-muted-foreground font-mono">{house?.customId}</p>
+                </div>
+
+                {/* View Switcher (Desktop) */}
+                {/* View Switcher (Desktop) */}
+                <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-neutral-800 p-1 rounded-lg">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 text-xs gap-2 ${viewMode === 'tree' ? 'bg-white shadow-sm text-foreground' : 'text-muted-foreground'}`}
+                        onClick={() => setViewMode('tree')}
+                    >
+                        <Network className="h-3.5 w-3.5" /> Visual Tree
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`h-7 text-xs gap-2 ${viewMode === 'collections' ? 'bg-white shadow-sm text-foreground' : 'text-muted-foreground'}`}
+                        onClick={() => setViewMode('collections')}
+                    >
+                        <Coins className="h-3.5 w-3.5" /> Collections
+                    </Button>
                 </div>
             </header>
 
@@ -581,9 +598,19 @@ export default function HouseDetailPage() {
                     <InfoSection />
                     <MembersList />
                 </div>
-                {/* Right Pane: Visual Tree */}
-                <div className="col-span-3 h-full relative bg-slate-50/50 dark:bg-black/20">
-                    <VisualTree />
+                {/* Right Pane: Main Content */}
+                <div className="col-span-3 h-full relative bg-slate-50/50 dark:bg-black/20 overflow-hidden">
+                    {viewMode === 'tree' ? (
+                        <VisualTree />
+                    ) : (
+                        <HouseCollectionTab
+                            type="house"
+                            entityId={id as string}
+                            entityName={house?.name || ""}
+                            currentSubscription={house?.subscription}
+                            onUpdate={fetchData}
+                        />
+                    )}
                 </div>
             </div>
 
@@ -597,6 +624,9 @@ export default function HouseDetailPage() {
                         <TabsTrigger value="tree" className="flex items-center gap-2">
                             <Network className="h-4 w-4" /> Visual Tree
                         </TabsTrigger>
+                        <TabsTrigger value="collections" className="flex items-center gap-2">
+                            <Coins className="h-4 w-4" /> Collections
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="flex-1 flex flex-col overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden">
@@ -608,6 +638,16 @@ export default function HouseDetailPage() {
 
                     <TabsContent value="tree" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden relative bg-slate-50/50">
                         <VisualTree />
+                    </TabsContent>
+
+                    <TabsContent value="collections" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden">
+                        <HouseCollectionTab
+                            type="house"
+                            entityId={id as string}
+                            entityName={house?.name || ""}
+                            currentSubscription={house?.subscription}
+                            onUpdate={fetchData}
+                        />
                     </TabsContent>
                 </Tabs>
             </div>
@@ -629,6 +669,7 @@ export default function HouseDetailPage() {
                     setEditingMember(member)
                     setIsAddMemberOpen(true)
                 }}
+                onUpdate={() => fetchData()}
             />
 
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
