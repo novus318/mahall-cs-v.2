@@ -11,7 +11,15 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
-  LayoutDashboard
+  LayoutDashboard,
+  Package,
+  Building2,
+  FileText,
+  User,
+  Wallet,
+  IndianRupee,
+  Landmark,
+  MessageCircle
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -40,13 +48,29 @@ const data = {
       title: "Dashboard",
       url: "/dashboard",
       icon: LayoutDashboard,
-      isActive: true,
+    },
+    {
+      title: "Finances",
+      url: "#",
+      icon: Wallet,
       items: [
         {
-          title: "Overview",
-          url: "/dashboard",
+          title: "Accounts",
+          url: "/dashboard/accounts",
+        },
+        {
+          title: "Payments",
+          url: "/dashboard/payments",
+        },
+        {
+          title: "Receipts (Income)",
+          url: "/dashboard/receipts",
+        },
+        {
+          title: "Transactions",
+          url: "/dashboard/transactions",
         }
-      ],
+      ]
     },
     {
       title: "Family Management",
@@ -66,6 +90,50 @@ const data = {
           url: "/dashboard/members",
         },
       ],
+    },
+    {
+      title: "Property Management",
+      url: "#",
+      icon: Building2,
+      items: [
+        {
+          title: "Inventory (Assets)",
+          url: "/dashboard/inventory",
+          icon: Package
+        },
+        {
+          title: "Buildings & Rooms",
+          url: "/dashboard/buildings",
+          icon: Building2
+        },
+        {
+          title: "Rental Contracts",
+          url: "/dashboard/contracts",
+          icon: FileText
+        },
+      ]
+    },
+    {
+      title: "Staff Management",
+      url: "#",
+      icon: User,
+      items: [
+        {
+          title: "Staff Directory",
+          url: "/dashboard/staff",
+          icon: User,
+        }
+      ]
+    },
+    {
+      title: "WhatsApp Inbox",
+      url: "/dashboard/whatsapp",
+      icon: MessageCircle,
+    },
+    {
+      title: "Settings",
+      url: "/dashboard/settings",
+      icon: Settings2,
     }
   ]
 }

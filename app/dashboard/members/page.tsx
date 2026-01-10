@@ -50,7 +50,7 @@ interface ImportResult {
 }
 
 export default function MembersPage() {
-    const [members, setMembers] = useState<Member[]>([])
+    const [members, setMembers] = useState([])
     const [loading, setLoading] = useState(true)
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
     const [editingMember, setEditingMember] = useState<Member | null>(null)

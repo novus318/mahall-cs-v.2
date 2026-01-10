@@ -1,11 +1,25 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api', // Should be in env, hardcoded for now
+    baseURL: 'http://localhost:5000/api',
     headers: {
         'Content-Type': 'application/json',
     },
 });
+
+let isRefreshing = false;
+let failedQueue: { resolve: (token: string) => void; reject: (error: any) => void }[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token!);
+        }
+    });
+    failedQueue = [];
+};
 
 // Request Interceptor: Attach Access Token
 api.interceptors.request.use(
@@ -21,7 +35,7 @@ api.interceptors.request.use(
     }
 );
 
-// Response Interceptor: Handle Token Refresh
+// Response Interceptor: Handle Token Refresh with Queueing
 api.interceptors.response.use(
     (response) => {
         return response;
@@ -31,7 +45,20 @@ api.interceptors.response.use(
 
         // Check if error is 401 and we haven't tried refreshing yet
         if (error.response?.status === 401 && !originalRequest._retry) {
+
+            if (isRefreshing) {
+                return new Promise(function (resolve, reject) {
+                    failedQueue.push({ resolve, reject });
+                }).then(token => {
+                    originalRequest.headers['Authorization'] = 'Bearer ' + token;
+                    return api(originalRequest);
+                }).catch(err => {
+                    return Promise.reject(err);
+                });
+            }
+
             originalRequest._retry = true;
+            isRefreshing = true;
 
             try {
                 const refreshToken = localStorage.getItem('refreshToken');
@@ -43,23 +70,31 @@ api.interceptors.response.use(
                     refreshToken,
                 });
 
-                if (!data.accessToken) {
+                if (!data.data.accessToken) { // API returns { status: true, data: { accessToken: ... } }
                     throw new Error('Refresh failed - no access token returned');
                 }
 
-                localStorage.setItem('accessToken', data.accessToken);
+                const newAccessToken = data.data.accessToken;
 
-                // Update authorization header with new token
-                originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
+                localStorage.setItem('accessToken', newAccessToken);
+                // Also update user object if needed? usually strictly token here.
 
+                // Update authorization header
+                api.defaults.headers.common['Authorization'] = 'Bearer ' + newAccessToken;
+                originalRequest.headers['Authorization'] = 'Bearer ' + newAccessToken;
+
+                processQueue(null, newAccessToken);
                 return api(originalRequest);
             } catch (refreshError) {
-                // Refresh failed (or no token), redirect to login
+                processQueue(refreshError, null);
+                // Logout logic
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                localStorage.removeItem('user'); // If stored
+                localStorage.removeItem('user');
                 window.location.href = '/login';
                 return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
 
