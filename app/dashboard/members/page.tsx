@@ -50,7 +50,7 @@ interface ImportResult {
 }
 
 export default function MembersPage() {
-    const [members, setMembers] = useState([])
+    const [members, setMembers] = useState<Member[]>([])
     const [loading, setLoading] = useState(true)
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
     const [editingMember, setEditingMember] = useState<Member | null>(null)
@@ -151,10 +151,27 @@ export default function MembersPage() {
     }
 
     const downloadSample = () => {
-        const headers = ["Name", "Gender", "HouseID", "FamilyID", "Mobile", "DOB", "BloodGroup", "MaritalStatus", "FatherID", "MotherID", "SpouseID"];
+        const headers = ["Name", "Gender", "HouseID", "FamilyID", "Mobile", "WhatsApp", "DOB", "BloodGroup", "MaritalStatus", "Education", "Madrassa", "Occupation", "Place", "ID_Aadhaar", "ID_DrivingLicense", "ID_VoterID", "ID_PAN", "ID_HealthCard", "RelatedMemberID", "Relationship"];
         const rows = [
-            ["John Doe", "Male", "CYS001", "CYS", "0501234567", "1980-01-01", "A+", "Married", "", "", ""],
-            ["Jane Doe", "Female", "CYS001", "CYS", "0507654321", "1985-05-05", "O+", "Married", "", "", "CYS00001"]
+            // SMP001: Standard Family (Head, Wife, Son)
+            ["Ahmed SMP", "Male", "SMP001", "SMP", "0501111111", "0501111111", "1980-01-01", "A+", "Married", "Bachelors", "Other", "Engineer", "Dubai", "Yes", "Yes", "Yes", "Yes", "No", "", ""],
+            ["Fatima SMP", "Female", "SMP001", "SMP", "0502222222", "", "1985-05-05", "O+", "Married", "Masters", "12", "Teacher", "Home", "Yes", "No", "Yes", "No", "No", "SMP00101", "Wife"],
+            ["Ali SMP", "Male", "SMP001", "SMP", "0502222222", "", "2010-03-15", "A+", "Single", "Below 10", "Below 5", "Student", "Home", "No", "No", "No", "No", "No", "SMP00101", "Son"],
+
+            // SMP002: Another Branch
+            ["Yusuf SMP", "Male", "SMP002", "SMP", "0503333333", "", "1990-07-20", "B+", "Married", "Diploma", "10", "Technician", "Riyadh", "Yes", "Yes", "Yes", "No", "No", "", ""],
+
+            // ANF001: Joint Family (Head, Brother, Father)
+            ["Kareem ANF", "Male", "ANF001", "ANF", "0504444444", "", "1988-11-11", "AB+", "Married", "SSLC", "10", "Driver", "Local", "Yes", "Yes", "Yes", "No", "Yes", "", ""],
+            ["Rahim ANF", "Male", "ANF001", "ANF", "0505555555", "", "1992-02-14", "O-", "Single", "Bachelors", "Other", "Accountant", "Local", "Yes", "Yes", "Yes", "Yes", "No", "ANF00101", "Brother"],
+            ["Old Man ANF", "Male", "ANF001", "ANF", "0502222222", "", "1960-01-01", "A+", "Widowed", "Below 10", "Other", "Retired", "Home", "Yes", "No", "Yes", "No", "Yes", "ANF00101", "Father"],
+
+            // ANF002
+            ["Sameer ANF", "Male", "ANF002", "ANF", "0506666666", "", "1995-09-09", "B-", "Single", "Bachelors", "12", "Sales", "Doha", "Yes", "Yes", "Yes", "No", "No", "", ""],
+
+            // 0IN001 & 0IN002: Independent Houses
+            ["Independent John", "Male", "0IN001", "0IN", "0507777777", "", "1982-12-12", "O+", "Single", "Masters", "Other", "Doctor", "UK", "Yes", "Yes", "No", "Yes", "No", "", ""],
+            ["Independent Jane", "Female", "0IN002", "0IN", "0508888888", "", "1990-04-04", "A-", "Divorced", "Bachelors", "10", "Nurse", "Local", "Yes", "No", "Yes", "No", "Yes", "", ""]
         ];
         const csvContent = [
             headers.join(","),

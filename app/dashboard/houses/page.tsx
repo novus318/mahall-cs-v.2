@@ -145,8 +145,12 @@ export default function HousesPage() {
     const downloadSample = () => {
         const headers = ["name", "familyCustomId", "address"];
         const rows = [
-            ["House A-101", "CYS", "123 Main St"],
-            ["House B-202", "", "456 Side Ave"]
+            ["House SMP-1", "SMP", "123 Main St"],
+            ["House SMP-2", "SMP", "123 Main St"],
+            ["House ANF-1", "ANF", "456 Side Ave"],
+            ["House ANF-2", "ANF", "456 Side Ave"],
+            ["House IN-1", "IN", "456 Side Ave"],
+            ["House IN-2", "IN", "456 Side Ave"],
         ];
         const csvContent = [
             headers.join(","),

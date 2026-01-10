@@ -169,8 +169,9 @@ export default function FamiliesPage() {
     const downloadSample = () => {
         const headers = ["name", "customId", "description"];
         const rows = [
-            ["Sample Family", "001", "Description here"],
-            ["Another Family", "002", ""]
+            ["Sample Family", "SMP", "Description here"],
+            ["Another Family", "ANF", "Description here"],
+            ["Injured Family", "IN", "Description here"],
         ];
         const csvContent = [
             headers.join(","),

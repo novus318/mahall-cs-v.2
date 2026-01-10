@@ -21,6 +21,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { MemberDialog } from "@/components/dashboard/MemberDialog"
+import { MemberDetailsDialog } from "@/components/dashboard/MemberDetailsDialog"
 import {
     Select,
     SelectContent,
@@ -46,24 +47,38 @@ import {
     AccordionTrigger,
 } from "@/components/ui/accordion"
 
-// --- Visual Tree Layout Logic ---
+// Imports (Ensure MemberNode is part of the file imports, adding it here if needed or assuming it's imported)
+import MemberNode from '@/components/dashboard/MemberNode';
+
+// Node Types Registry
+const nodeTypes = {
+    member: MemberNode,
+};
+
+// Layout Graph Function
 const getLayoutedElements = (nodes: any[], edges: any[], direction = 'TB') => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-    // Optimized spacing for Family Tree clarity
-    const nodeWidth = 180;
-    const nodeHeight = 50;
+    // Increased size for Card Nodes
+    const nodeWidth = 220;
+    const nodeHeight = 120; // Approx height of card
 
     dagreGraph.setGraph({
         rankdir: direction,
-        nodesep: 60, // Increased from 30 to separate siblings/spouses better
-        ranksep: 80, // Increased from 50 to separate generations clearly
-        edgesep: 20  // Prevent edge overlap
+        nodesep: 50, // Horizontal separation
+        ranksep: 100, // Vertical separation (Generations)
     });
 
     nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+        // Special size for small marriage nodes
+        if (node.id.startsWith('marriage')) {
+            dagreGraph.setNode(node.id, { width: 20, height: 20 });
+        } else if (node.id === 'root') {
+            dagreGraph.setNode(node.id, { width: 200, height: 60 });
+        } else {
+            dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+        }
     });
 
     edges.forEach((edge) => {
@@ -74,14 +89,21 @@ const getLayoutedElements = (nodes: any[], edges: any[], direction = 'TB') => {
 
     const newNodes = nodes.map((node) => {
         const nodeWithPosition = dagreGraph.node(node.id);
-        const isRoot = node.id === 'root';
+
+        // Center alignment adjustments based on actual node size
+        let w = nodeWidth;
+        let h = nodeHeight;
+
+        if (node.id.startsWith('marriage')) { w = 20; h = 20; }
+        if (node.id === 'root') { w = 200; h = 60; }
+
         return {
             ...node,
             targetPosition: Position.Top,
             sourcePosition: Position.Bottom,
             position: {
-                x: nodeWithPosition.x - nodeWidth / 2,
-                y: nodeWithPosition.y - nodeHeight / 2,
+                x: nodeWithPosition.x - w / 2,
+                y: nodeWithPosition.y - h / 2,
             },
         };
     });
@@ -115,6 +137,10 @@ export default function FamilyDetailDashboard() {
 
     // Forms State
     const [houseForm, setHouseForm] = useState({ name: "", address: "" })
+
+    // Details View State
+    const [selectedMember, setSelectedMember] = useState<any>(null)
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false)
 
 
 
@@ -184,137 +210,137 @@ export default function FamilyDetailDashboard() {
                 })
             })
 
-            // Members
+            // Members Nodes
             membersList.forEach((member: any) => {
-                const parentId = member.house ? member.house._id : 'root';
+                const isExplicitHead = housesList.some((h: any) => {
+                    const hHeadId = h.head ? (typeof h.head === 'string' ? h.head : h.head._id) : null;
+                    return hHeadId === member._id;
+                });
+
+                const isHead = member.relationshipToHead === 'Head' || isExplicitHead;
+                const isResident = member.relationshipToHead === 'Resident';
+
+                // Determine Spouse status relation
+                let isSpouse = false;
+                if (member.spouse) isSpouse = true;
+
                 newNodes.push({
                     id: member._id,
-                    data: { label: member.name }, // Simple label for compact view
+                    type: 'member', // Use Custom Node
+                    data: {
+                        label: member.name,
+                        subLabel: isHead ? 'Head' : member.relationshipToHead,
+                        gender: member.gender,
+                        dateOfBirth: member.dateOfBirth,
+                        isHead: isHead,
+                        isResident: isResident,
+                        isSpouse: isSpouse
+                    },
                     position: { x: 0, y: 0 },
-                    style: {
-                        background: '#f8fafc',
-                        border: '1px solid #cbd5e1',
-                        color: '#475569',
-                        width: 140,
-                        borderRadius: 20,
-                        padding: '4px',
-                        fontSize: '11px',
-                        textAlign: 'center'
-                    }
+                    // Inline styling removed
+                    style: { width: 220, height: 120 }
                 })
-
-                // Edge: House -> Member (Structural Layout)
-                // New Logic to strictly enforce ONE Head of House (the first created/oldest).
-                // 1. Collect all "Root" candidates (Members with NO parents in house).
-
-                const hasParentsInHouse = member.parents && member.parents.length > 0 && member.parents.some((p: any) => membersList.find((m: any) => m._id === (typeof p === 'string' ? p : p._id)));
-
-                let isRoot = !hasParentsInHouse;
-
-                // If member works for the house connection?
-                // If married, we only want ONE of them to be the anchor candidate to avoid double checking.
-                // Let's rely on the "Husband" or "First Created" rule later.
-                // Actually, simplest is: Treat EVERY root as a candidate anchor, but then group them?
-                // No, just collect all roots.
-
-                // WAIT: We need to do this OUTSIDE the loop if we want to sort globally.
-                // BUT, inside this loop we are processing "member".
-                // Better strategy:
-                // Just add them to a list "houseConnectionCandidates" and process edges AFTER this loop.
             })
 
             // --- Post-Process House Connections ---
-            // New Strategy:
-            // 1. Connect Explicit Heads first (Primary Anchor). They get "Head of House" edge.
-            // 2. Connect remaining Roots (Residents). They get "Resident" edge.
+            // connect members to their house or root
 
             const processedAnchors = new Set<string>();
             const headsAssignedByParent = new Set<string>();
 
-            // Pass 1: Explicit Heads
-            housesList.forEach((house: any) => {
-                if (house.head) {
-                    const headId = typeof house.head === 'string' ? house.head : house.head._id;
-                    const member = membersList.find((m: any) => m._id === headId);
-                    if (member) {
-                        const parentId = house._id;
+            // Strategy: Use relationshipToHead to drive connections where possible
+
+            membersList.forEach((member: any) => {
+                // Skip if already processed
+                if (processedAnchors.has(member._id)) return;
+
+                const parentId = member.house ? member.house._id : 'root';
+
+                // If member is Spouse of someone else who is already anchored to House/Root?
+                // (Marriage logic handles spouse-spouse link, but we usually want one of them anchored to the House Node)
+
+                // If relationshipToHead is 'Head', they are the primary anchor.
+                if (member.relationshipToHead === 'Head') {
+                    newEdges.push({
+                        id: `e-${parentId}-${member._id}`,
+                        source: parentId,
+                        target: member._id,
+                        type: 'smoothstep',
+                        style: { stroke: '#eab308', strokeWidth: 2 },
+                        label: 'Head of House',
+                        labelStyle: { fill: '#b45309', fontWeight: 700, fontSize: 10 },
+                        labelBgStyle: { fill: '#fffbeb' }
+                    });
+                    processedAnchors.add(member._id);
+                    headsAssignedByParent.add(parentId);
+                    return;
+                }
+
+                // If relationshipToHead is 'Resident' (Explicit), connect as resident
+                if (member.relationshipToHead === 'Resident') {
+                    newEdges.push({
+                        id: `e-${parentId}-${member._id}`,
+                        source: parentId,
+                        target: member._id,
+                        type: 'smoothstep',
+                        style: { stroke: '#cbd5e1', strokeDasharray: '5,5' },
+                        label: 'Resident',
+                        labelStyle: { fill: '#94a3b8', fontSize: 9 }
+                    });
+                    processedAnchors.add(member._id);
+                    return;
+                }
+
+                // Fallback: If "Other" / "Son" / etc but NO parents found in graph -> Connect to House as "Resident" (or Member)
+                // This handles the "First Created" logic if 'Head' wasn't explicitly set yet, OR simply loose members.
+                const hasParents = member.parents && member.parents.length > 0;
+                if (!hasParents && !member.spouse) { // If spouse exists, let marriage logic handle or spouse anchor them? No, we need at least one anchor.
+
+                    // Check if their spouse is already anchored?
+                    // Verify complex cases later. For now, if no parents, anchor to house.
+
+                    // But if they have a spouse, maybe the spouse is the Head?
+                    // If spouse is Head, this member is connected via Marriage Node (handled below), so NO house edge needed?
+                    // YES. Layout engine handles floating clusters if they are connected.
+                    // But we want visual hierarchy. Only Roots need House Edge.
+
+                    // So: If no parents, and not Head...
+
+                    // Check if spouse is Head? member.spouse -> check ID -> check relationshipToHead
+                    let spouseIsHead = false;
+                    if (member.spouse) {
+                        const spouseId = typeof member.spouse === 'string' ? member.spouse : member.spouse._id;
+                        const spouse = membersList.find((m: any) => m._id === spouseId);
+                        if (spouse && spouse.relationshipToHead === 'Head') spouseIsHead = true;
+                    }
+
+                    if (!spouseIsHead) {
+                        // Then this member is a Root resident (or Head fallback)
+                        const houseHasHead = headsAssignedByParent.has(parentId);
+
+                        let label = 'Member';
+                        let style = { stroke: '#cbd5e1' } as any;
+
+                        if (!houseHasHead && !member.spouse) { // First singleton becomes Head heuristic
+                            label = 'Head of House';
+                            style = { stroke: '#eab308', strokeWidth: 2 };
+                            headsAssignedByParent.add(parentId);
+                            // Update local styling for consistent visual? (Node style was set above, this is Edge)
+                        }
+
                         newEdges.push({
                             id: `e-${parentId}-${member._id}`,
                             source: parentId,
                             target: member._id,
                             type: 'smoothstep',
-                            style: { stroke: '#64748b', strokeWidth: 1.5 },
-                            label: 'Head of House',
-                            labelStyle: { fill: '#64748b', fontWeight: 700, fontSize: 10 },
-                            labelBgStyle: { fill: '#f1f5f9' }
+                            style: style,
+                            label: label,
+                            labelStyle: { fill: '#64748b', fontSize: 9 }
                         });
                         processedAnchors.add(member._id);
-                        headsAssignedByParent.add(parentId);
-
-                        if (member.spouse) {
-                            const spouseId = typeof member.spouse === 'string' ? member.spouse : member.spouse._id;
-                            processedAnchors.add(spouseId); // Mark spouse as handled to avoid double connection
-                        }
                     }
                 }
             });
-
-            // Pass 2: Remaining Roots (Residents)
-            // Roots are members with NO parents in house.
-            const rootMembers = membersList.filter((m: any) => {
-                const hasParents = m.parents && m.parents.length > 0 && m.parents.some((p: any) => membersList.find((existing: any) => existing._id === (typeof p === 'string' ? p : p._id)));
-                return !hasParents;
-            });
-            const sortedRoots = [...rootMembers].sort((a: any, b: any) => a._id.localeCompare(b._id));
-
-            sortedRoots.forEach((member: any) => {
-                // Check if already processed (either as Head or as Spouse of Head)
-                if (processedAnchors.has(member._id)) return;
-
-                // Check spouse
-                if (member.spouse) {
-                    const spouseId = typeof member.spouse === 'string' ? member.spouse : member.spouse._id;
-                    if (processedAnchors.has(spouseId)) return; // Spouse handled
-                }
-
-                const parentId = member.house ? member.house._id : 'root';
-                const houseHasHead = headsAssignedByParent.has(parentId);
-
-                // If house has a Head assigned (from Pass 1), this root is a Resident.
-                // If NOT, then this is the "First Created" fallback logic.
-
-                let label = 'Resident';
-                let style = { stroke: '#e2e8f0', strokeDasharray: '5,5' };
-                let labelColor = '#94a3b8';
-
-                if (!houseHasHead) {
-                    // Fallback: This is the first root, make them Head (heuristic)
-                    label = 'Head of House';
-                    style = { stroke: '#64748b', strokeWidth: 1.5 } as any; // Cast to avoid TS strictness on strokeDasharray mismatch types
-                    labelColor = '#64748b';
-
-                    // Mark house as having head now
-                    headsAssignedByParent.add(parentId);
-                }
-
-                newEdges.push({
-                    id: `e-${parentId}-${member._id}`,
-                    source: parentId,
-                    target: member._id,
-                    type: 'smoothstep',
-                    style: style,
-                    label: label,
-                    labelStyle: { fill: labelColor, fontSize: 9 },
-                    labelBgStyle: { fill: '#f8fafc' }
-                });
-
-                processedAnchors.add(member._id);
-                if (member.spouse) {
-                    const spouseId = typeof member.spouse === 'string' ? member.spouse : member.spouse._id;
-                    processedAnchors.add(spouseId);
-                }
-            });
-            // End of House Connection Logic
 
             // Track processed marriages to avoid duplicates
             const processedMarriages = new Set<string>();
@@ -649,12 +675,24 @@ export default function FamilyDetailDashboard() {
         )
     }
 
+    const onNodeClick = (_: any, node: any) => {
+        if (node.type === 'member') {
+            const member = members.find(m => m._id === node.id)
+            if (member) {
+                setSelectedMember(member)
+                setIsDetailsOpen(true)
+            }
+        }
+    }
+
     const VisualTree = () => (
         <ReactFlow
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            onNodeClick={onNodeClick}
             fitView
             attributionPosition="bottom-right"
         >
@@ -762,17 +800,22 @@ export default function FamilyDetailDashboard() {
             <HouseDialog />
             <MemberDialog
                 open={isAddMemberOpen}
-                onOpenChange={(val) => {
-                    setIsAddMemberOpen(val)
-                    if (!val) {
-                        setSelectedHouseIdForAdd(undefined) // Reset selection
-                        setEditingMember(null)
-                    }
-                }}
+                onOpenChange={setIsAddMemberOpen}
                 defaultFamilyId={id as string}
                 defaultHouseId={selectedHouseIdForAdd}
-                memberToEdit={editingMember}
                 onSuccess={() => { fetchData() }}
+                memberToEdit={editingMember}
+            />
+
+            <MemberDetailsDialog
+                open={isDetailsOpen}
+                onOpenChange={setIsDetailsOpen}
+                member={selectedMember}
+                onEdit={(member) => {
+                    setIsDetailsOpen(false)
+                    setEditingMember(member)
+                    setIsAddMemberOpen(true)
+                }}
             />
         </div>
     )

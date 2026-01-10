@@ -36,6 +36,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { MemberDialog } from "@/components/dashboard/MemberDialog"
+import { MemberDetailsDialog } from "@/components/dashboard/MemberDetailsDialog"
 import {
     Select,
     SelectContent,
@@ -46,18 +47,38 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+// Imports (Ensure MemberNode is part of the file imports, adding it here if needed or assuming it's imported)
+import MemberNode from '@/components/dashboard/MemberNode';
+
+// Node Types Registry
+const nodeTypes = {
+    member: MemberNode,
+};
+
 // Layout Graph Function
 const getLayoutedElements = (nodes: any[], edges: any[], direction = 'TB') => {
     const dagreGraph = new dagre.graphlib.Graph();
     dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-    const nodeWidth = 180;
-    const nodeHeight = 50;
+    // Increased size for Card Nodes
+    const nodeWidth = 220;
+    const nodeHeight = 120; // Approx height of card
 
-    dagreGraph.setGraph({ rankdir: direction, nodesep: 30, ranksep: 50 });
+    dagreGraph.setGraph({
+        rankdir: direction,
+        nodesep: 50, // Horizontal separation
+        ranksep: 100, // Vertical separation (Generations)
+    });
 
     nodes.forEach((node) => {
-        dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+        // Special size for small marriage nodes
+        if (node.id.startsWith('marriage')) {
+            dagreGraph.setNode(node.id, { width: 20, height: 20 });
+        } else if (node.id === 'root') {
+            dagreGraph.setNode(node.id, { width: 200, height: 60 });
+        } else {
+            dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+        }
     });
 
     edges.forEach((edge) => {
@@ -68,13 +89,21 @@ const getLayoutedElements = (nodes: any[], edges: any[], direction = 'TB') => {
 
     const newNodes = nodes.map((node) => {
         const nodeWithPosition = dagreGraph.node(node.id);
+
+        // Center alignment adjustments based on actual node size
+        let w = nodeWidth;
+        let h = nodeHeight;
+
+        if (node.id.startsWith('marriage')) { w = 20; h = 20; }
+        if (node.id === 'root') { w = 200; h = 60; }
+
         return {
             ...node,
             targetPosition: Position.Top,
             sourcePosition: Position.Bottom,
             position: {
-                x: nodeWithPosition.x - nodeWidth / 2,
-                y: nodeWithPosition.y - nodeHeight / 2,
+                x: nodeWithPosition.x - w / 2,
+                y: nodeWithPosition.y - h / 2,
             },
         };
     });
@@ -82,18 +111,35 @@ const getLayoutedElements = (nodes: any[], edges: any[], direction = 'TB') => {
     return { nodes: newNodes, edges };
 };
 
+// ... (HouseDetailPage component starts) ...
+// INSIDE Component, around line 450 (VisualTree definition)
+
+
+
+// ... (Data Fetching Logic Update to use 'member' type) ...
+// I will need another replace call to update the data transformation loop. 
+// This chunk focuses on layout and component registration.
+
 export default function HouseDetailPage() {
     const { id } = useParams()
     const [loading, setLoading] = useState(true)
     const [house, setHouse] = useState<any>(null)
     const [members, setMembers] = useState<any[]>([])
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false)
-    const [editingMember, setEditingMember] = useState<any>(null)
-    const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
 
+    // Visual Tree State
     const [nodes, setNodes, onNodesChange] = useNodesState<any>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
+    const [editingMember, setEditingMember] = useState<any>(null)
+    const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
+
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+
+    // Details View State
+    const [selectedMember, setSelectedMember] = useState<any>(null)
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+
+
 
     const fetchData = useCallback(async () => {
         try {
@@ -135,21 +181,32 @@ export default function HouseDetailPage() {
 
             // 2. Member Nodes (Children of House)
             membersList.forEach((member: any) => {
+                const headId = houseData.head ? (typeof houseData.head === 'string' ? houseData.head : houseData.head._id) : null;
+                const isHead = headId === member._id;
+                const isResident = member.relationshipToHead === 'Resident';
+
+                // Determine Spouse status relation
+                let isSpouse = false;
+                if (member.spouse) isSpouse = true;
+
                 newNodes.push({
                     id: member._id,
-                    data: { label: member.name },
+                    type: 'member', // Use Custom Node
+                    data: {
+                        label: member.name,
+                        subLabel: isHead ? 'Head' : member.relationshipToHead,
+                        gender: member.gender,
+                        dateOfBirth: member.dateOfBirth,
+                        isHead: isHead,
+                        isResident: isResident,
+                        isSpouse: isSpouse
+                    },
                     position: { x: 0, y: 0 },
-                    style: {
-                        background: '#f8fafc',
-                        border: '1px solid #cbd5e1',
-                        color: '#475569',
-                        width: 140,
-                        borderRadius: 20,
-                        padding: '4px',
-                        fontSize: '11px',
-                        textAlign: 'center'
-                    }
+                    // Inline style removed - handled by component
+                    style: { width: 220, height: 120 } // Used by Dagre layout
                 })
+
+
 
                 // Edge: House -> Member (Structural Root Link)
                 const parentId = 'root'; // In single house view, they belong to the house (root)
@@ -179,10 +236,10 @@ export default function HouseDetailPage() {
                         source: 'root',
                         target: member._id,
                         type: 'smoothstep',
-                        style: { stroke: '#64748b', strokeWidth: 1.5 },
+                        style: { stroke: '#eab308', strokeWidth: 2 },
                         label: 'Head of House',
-                        labelStyle: { fill: '#64748b', fontWeight: 700, fontSize: 10 },
-                        labelBgStyle: { fill: '#f1f5f9' }
+                        labelStyle: { fill: '#b45309', fontWeight: 700, fontSize: 10 },
+                        labelBgStyle: { fill: '#fffbeb' }
                     });
                     processedRoots.add(member._id);
                     headAssigned = true;
@@ -222,10 +279,10 @@ export default function HouseDetailPage() {
                             source: parentId,
                             target: member._id,
                             type: 'smoothstep',
-                            style: { stroke: '#64748b', strokeWidth: 1.5 },
+                            style: { stroke: '#eab308', strokeWidth: 2 },
                             label: 'Head of House',
-                            labelStyle: { fill: '#64748b', fontWeight: 700, fontSize: 10 },
-                            labelBgStyle: { fill: '#f1f5f9' }
+                            labelStyle: { fill: '#b45309', fontWeight: 700, fontSize: 10 },
+                            labelBgStyle: { fill: '#fffbeb' }
                         })
                     } else {
                         // Resident
@@ -234,7 +291,7 @@ export default function HouseDetailPage() {
                             source: parentId,
                             target: member._id,
                             type: 'smoothstep',
-                            style: { stroke: '#e2e8f0', strokeDasharray: '5,5' },
+                            style: { stroke: '#cbd5e1', strokeDasharray: '5,5' },
                             label: 'Resident',
                             labelStyle: { fill: '#94a3b8', fontSize: 9 },
                             labelBgStyle: { fill: '#f8fafc' }
@@ -242,6 +299,7 @@ export default function HouseDetailPage() {
                     }
                 }
             })
+
 
             // Track processed marriages to avoid duplicates
             const processedMarriages = new Set<string>();
@@ -446,17 +504,29 @@ export default function HouseDetailPage() {
         </div>
     )
 
+    const onNodeClick = (_: any, node: any) => {
+        if (node.type === 'member') {
+            const member = members.find(m => m._id === node.id)
+            if (member) {
+                setSelectedMember(member)
+                setIsDetailsOpen(true)
+            }
+        }
+    }
+
     const VisualTree = () => (
         <ReactFlow
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            onNodeClick={onNodeClick}
             fitView
             attributionPosition="bottom-right"
         >
             <Controls className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 shadow-sm" />
-            <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
+            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#cbd5e1" />
         </ReactFlow>
     )
 
@@ -548,6 +618,17 @@ export default function HouseDetailPage() {
                 defaultHouseId={id as string}
                 onSuccess={() => { fetchData() }}
                 memberToEdit={editingMember}
+            />
+
+            <MemberDetailsDialog
+                open={isDetailsOpen}
+                onOpenChange={setIsDetailsOpen}
+                member={selectedMember}
+                onEdit={(member) => {
+                    setIsDetailsOpen(false)
+                    setEditingMember(member)
+                    setIsAddMemberOpen(true)
+                }}
             />
 
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
