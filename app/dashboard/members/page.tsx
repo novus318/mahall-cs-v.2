@@ -214,15 +214,31 @@ export default function MembersPage() {
                                 return
                             }
 
-                            const headers = ["ID", "Name", "Gender", "House", "Family", "Mobile", "DOB"]
-                            const rows = membersToExport.map((m: Member) => [
+                            const headers = [
+                                "ID", "Name", "Gender", "House", "Family", "Mobile", "WhatsApp", "DOB",
+                                "BloodGroup", "MaritalStatus", "Education", "Madrassa", "Occupation", "Place",
+                                "ID_Aadhaar", "ID_DrivingLicense", "ID_VoterID", "ID_PAN", "ID_HealthCard"
+                            ]
+                            const rows = membersToExport.map((m: any) => [
                                 m.customId || "",
                                 `"${m.name}"`,
                                 m.gender || "",
                                 `"${m.house?.name || ""}"`,
                                 `"${m.family?.name || "Independent"}"`,
                                 `"${m.mobile || ""}"`,
-                                m.dateOfBirth ? new Date(m.dateOfBirth).toISOString().split('T')[0] : ""
+                                `"${m.whatsapp || ""}"`,
+                                m.dateOfBirth ? new Date(m.dateOfBirth).toISOString().split('T')[0] : "",
+                                m.bloodGroup || "",
+                                m.maritalStatus || "",
+                                m.education || "",
+                                m.madrassa || "",
+                                m.occupation || "",
+                                m.place || "",
+                                m.idCards?.aadhaar ? "Yes" : "No",
+                                m.idCards?.drivingLicense ? "Yes" : "No",
+                                m.idCards?.voterId ? "Yes" : "No",
+                                m.idCards?.panCard ? "Yes" : "No",
+                                m.idCards?.healthCard ? "Yes" : "No"
                             ])
 
                             const csvContent = [
