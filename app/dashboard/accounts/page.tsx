@@ -333,7 +333,7 @@ export default function AccountsPage() {
                                     <FormControl>
                                         <div className="relative">
                                             <span className="absolute left-3 top-2.5 text-slate-500">₹</span>
-                                            <Input type="number" className="pl-7 font-bold" {...field} value={field.value} />
+                                            <Input type="number" className="pl-7 font-bold" {...field} value={(field.value as number) ?? ''} />
                                         </div>
                                     </FormControl>
                                 </FormItem>

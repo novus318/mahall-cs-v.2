@@ -137,8 +137,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     const currentSalary = staff.baseSalary;
     const payLeave = paymentForm.watch('leaveDays') || 0;
     const payAdvance = paymentForm.watch('advanceDeduction') || 0;
-    const leaveCost = Math.round((currentSalary / 30) * payLeave);
-    const estimatedNet = Math.max(0, currentSalary - leaveCost - payAdvance);
+    const leaveCost = Math.round((currentSalary / 30) * Number(payLeave));
+    const estimatedNet = Math.max(0, currentSalary - leaveCost - Number(payAdvance));
 
     // Calculate Age
     const age = differenceInYears(new Date(), new Date(staff.dob));

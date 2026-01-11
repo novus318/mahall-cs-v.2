@@ -365,25 +365,12 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                             size="icon"
                                                             className="h-6 w-6 ml-2"
                                                             title="View Receipt"
-                                                            onClick={async () => {
+                                                            onClick={() => {
                                                                 const lastTx = due.transactions[due.transactions.length - 1];
                                                                 const recId = lastTx.collectionReceipt || lastTx.receiptId;
 
                                                                 if (recId) {
-                                                                    try {
-                                                                        // Fetch PDF as blob with authentication
-                                                                        const response = await import("@/lib/api").then(m => m.downloadCollectionReceipt(recId));
-
-                                                                        // Create Blob URL
-                                                                        const blob = new Blob([response.data], { type: 'application/pdf' });
-                                                                        const url = window.URL.createObjectURL(blob);
-
-                                                                        // Open in new tab
-                                                                        window.open(url, '_blank');
-                                                                    } catch (error) {
-                                                                        console.error("Failed to load PDF", error);
-                                                                        toast.error("Failed to load receipt PDF");
-                                                                    }
+                                                                    window.location.href = `/dashboard/collection-receipts/${recId}`;
                                                                 }
                                                             }}
                                                         >

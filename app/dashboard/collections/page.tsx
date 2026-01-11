@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getDues, downloadCollectionReceipt } from "@/lib/api"
+import { getDues } from "@/lib/api"
 import { Loader2, Search, Filter, ExternalLink, Calendar, Building2, User } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -95,20 +95,12 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
         )
     })
 
-    const handleDownloadReceipt = async (due: any) => {
+    const handleViewReceipt = (due: any) => {
         const lastTx = due.transactions[due.transactions.length - 1];
         const recId = lastTx?.collectionReceipt || lastTx?.receiptId;
 
         if (recId) {
-            try {
-                const response = await downloadCollectionReceipt(recId);
-                const blob = new Blob([response.data], { type: 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
-                window.open(url, '_blank');
-            } catch (error) {
-                console.error("Failed to load PDF", error);
-                toast.error("Failed to load receipt PDF");
-            }
+            window.location.href = `/dashboard/collection-receipts/${recId}`;
         }
     }
 
@@ -232,7 +224,7 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8"
-                                                    onClick={() => handleDownloadReceipt(due)}
+                                                    onClick={() => handleViewReceipt(due)}
                                                     title="View Receipt"
                                                 >
                                                     <ExternalLink className="h-4 w-4 text-primary" />
