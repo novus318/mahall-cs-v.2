@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getMembers, deleteMember, importMembers } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -22,15 +21,18 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
-import { Plus, Trash2, UserPlus, Loader2, Search, ChevronLeft, ChevronRight, Pencil, Download, Upload, FileDown, Eye } from "lucide-react"
+import { Plus, Trash2, UserPlus, Loader2, Search, ChevronLeft, ChevronRight, Pencil, Download, Upload, FileDown, Eye, Settings2 } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { MemberDialog } from "@/components/dashboard/MemberDialog"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
+// Ensure updateSubscription is imported
+import { getMembers, deleteMember, importMembers, updateSubscription } from "@/lib/api"
 
 interface Member {
     _id: string;
@@ -72,11 +74,17 @@ export default function MembersPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
 
+    // Subscription State
+    const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false)
+    const [subscriptionMember, setSubscriptionMember] = useState<any>(null) // using any to bypass type strictness for now
+    const [subscriptionData, setSubscriptionData] = useState({ frequency: "None", amount: 0 })
+    const [frequencyFilter, setFrequencyFilter] = useState("ALL")
+
     const fetchMembers = async () => {
         setLoading(true)
         try {
             // Updated to pass pagination params
-            const data = await getMembers({ page, limit, search })
+            const data = await getMembers({ page, limit, search, frequency: frequencyFilter })
             if (Array.isArray(data)) {
                 // Handle legacy response if backend ignores params or returns plain array
                 setMembers(data as Member[])
@@ -101,7 +109,7 @@ export default function MembersPage() {
             fetchMembers()
         }, 300)
         return () => clearTimeout(delayDebounceFn)
-    }, [page, search, limit])
+    }, [page, search, limit, frequencyFilter])
 
     const confirmDelete = (id: string) => {
         setDeletingMemberId(id)
@@ -120,6 +128,31 @@ export default function MembersPage() {
             toast.error(error.response?.data?.message || "Failed to delete member")
         }
     }
+
+
+
+    const handleSubscriptionUpdate = async () => {
+        if (!subscriptionMember) return;
+        try {
+            await updateSubscription('member', subscriptionMember._id, subscriptionData);
+            toast.success("Member subscription updated");
+            setIsSubscriptionOpen(false);
+            fetchMembers();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to update subscription");
+        }
+    }
+
+    const openSubscriptionDialog = (member: any) => {
+        setSubscriptionMember(member);
+        setSubscriptionData({
+            frequency: member.subscription?.frequency || "None",
+            amount: member.subscription?.amount || 0
+        });
+        setIsSubscriptionOpen(true);
+    }
+
+    // ... imports ...
 
     const handleImport = async () => {
         if (!importFile) return;
@@ -390,14 +423,32 @@ export default function MembersPage() {
                                 Showing {members.length} of {total} records
                             </CardDescription>
                         </div>
-                        <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by name, house..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="pl-8 h-9 text-sm"
-                            />
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search by name, house..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-8 h-9 text-sm"
+                                />
+                            </div>
+                            <div className="w-full sm:w-48">
+                                <Select
+                                    value={frequencyFilter}
+                                    onValueChange={(val) => setFrequencyFilter(val)}
+                                >
+                                    <SelectTrigger className="h-9 w-full">
+                                        <SelectValue placeholder="Filter Subscription" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="ALL">All Subscriptions</SelectItem>
+                                        <SelectItem value="Monthly">Monthly</SelectItem>
+                                        <SelectItem value="Yearly">Yearly</SelectItem>
+                                        <SelectItem value="None">None</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
                 </CardHeader>
@@ -410,7 +461,8 @@ export default function MembersPage() {
                                 <TableHead className="h-9 text-xs font-semibold">House</TableHead>
                                 <TableHead className="h-9 text-xs font-semibold">Family</TableHead>
                                 <TableHead className="h-9 text-xs font-semibold">Mobile</TableHead>
-                                <TableHead className="text-right h-9 text-xs font-semibold w-[100px]">Actions</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold">Subscription</TableHead>
+                                <TableHead className="text-right h-9 text-xs font-semibold w-[140px]">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -455,8 +507,28 @@ export default function MembersPage() {
                                         <TableCell className="py-2 text-sm text-muted-foreground font-mono">
                                             {member.mobile || "-"}
                                         </TableCell>
+                                        <TableCell className="py-2 text-sm">
+                                            {(member as any).subscription?.frequency && (member as any).subscription?.frequency !== 'None' ? (
+                                                <div className="flex flex-col">
+                                                    <span className={cn(
+                                                        "text-xs font-medium px-1.5 py-0.5 rounded w-fit",
+                                                        (member as any).subscription.frequency === 'Monthly' ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                                                    )}>
+                                                        {(member as any).subscription.frequency}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                                                        ₹{(member as any).subscription.amount}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground italic">None</span>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="py-2 text-right">
                                             <div className="flex justify-end gap-1">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openSubscriptionDialog(member)}>
+                                                    <Settings2 className="h-3.5 w-3.5 text-slate-500" />
+                                                </Button>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
@@ -489,6 +561,54 @@ export default function MembersPage() {
                         </TableBody>
                     </Table>
                 </CardContent>
+
+                {/* Subscription Dialog */}
+                <Dialog open={isSubscriptionOpen} onOpenChange={setIsSubscriptionOpen}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Configure Subscription</DialogTitle>
+                            <DialogDescription>
+                                Set subscription frequency and amount for {subscriptionMember?.name}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Frequency</Label>
+                                <div className="col-span-3">
+                                    <Select
+                                        value={subscriptionData.frequency}
+                                        onValueChange={(val) => setSubscriptionData({ ...subscriptionData, frequency: val })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select Frequency" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Monthly">Monthly</SelectItem>
+                                            <SelectItem value="Yearly">Yearly</SelectItem>
+                                            <SelectItem value="None">None</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Amount</Label>
+                                <div className="col-span-3 relative">
+                                    <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">₹</span>
+                                    <Input
+                                        type="number"
+                                        value={subscriptionData.amount}
+                                        onChange={(e) => setSubscriptionData({ ...subscriptionData, amount: parseFloat(e.target.value) || 0 })}
+                                        className="pl-7"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsSubscriptionOpen(false)}>Cancel</Button>
+                            <Button onClick={handleSubscriptionUpdate}>Save Changes</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
                 {/* Pagination Footer */}
                 <div className="p-4 border-t grid grid-cols-3 sm:grid-cols-3 items-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
