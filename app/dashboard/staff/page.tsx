@@ -232,22 +232,22 @@ export default function StaffPage() {
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="employeeId" render={({ field }) => (<FormItem><FormLabel>Employee ID</FormLabel><FormControl><Input placeholder="EMP001" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="joinDate" render={({ field }) => (<FormItem><FormLabel>Join Date</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="employeeId" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Employee ID</FormLabel><FormControl><Input placeholder="EMP001" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="joinDate" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Join Date</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="dob" render={({ field }) => (<FormItem><FormLabel>Date of Birth</FormLabel><FormControl><Input type="date" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="dob" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Date of Birth</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="department" render={({ field }) => (<FormItem><FormLabel>Department</FormLabel><FormControl><Input placeholder="Cleaning, Security..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="position" render={({ field }) => (<FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="Supervisor..." {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="department" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Department</FormLabel><FormControl><Input placeholder="Cleaning, Security..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="position" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="Supervisor..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormLabel>Phone</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="baseSalary" render={({ field }) => (<FormItem><FormLabel>Monthly Salary</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6 font-bold" {...field} value={field.value ?? ''} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Phone</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={form.control} name="baseSalary" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Monthly Salary</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6 font-bold" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
                             </div>
-                            <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email (Optional)</FormLabel><FormControl><Input type="email" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={form.control} name="email" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Email (Optional)</FormLabel><FormControl><Input type="email" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
 
                             <DialogFooter>
                                 <Button type="submit">Create Staff Member</Button>

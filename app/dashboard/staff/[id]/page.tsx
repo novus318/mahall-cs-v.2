@@ -287,7 +287,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     <DialogHeader><DialogTitle>Give Salary Advance</DialogTitle><DialogDescription>Valid only if funds are disbursed.</DialogDescription></DialogHeader>
                     <Form {...advanceForm}>
                         <form onSubmit={advanceForm.handleSubmit(handleGiveAdvance)} className="space-y-4">
-                            <FormField control={advanceForm.control} name="amount" render={({ field }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" className="font-bold" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={advanceForm.control} name="amount" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" className="font-bold" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={advanceForm.control} name="notes" render={({ field }) => (<FormItem><FormLabel>Notes</FormLabel><FormControl><Input placeholder="Reason..." {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <DialogFooter><Button type="submit">Confirm Advance</Button></DialogFooter>
                         </form>
@@ -327,16 +327,16 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                 </div>
                                 <div className="h-px bg-slate-200" />
                                 <div className="space-y-3 pt-1">
-                                    <FormField control={paymentForm.control} name="leaveDays" render={({ field }) => (
+                                    <FormField control={paymentForm.control} name="leaveDays" render={({ field: { value, onChange, ...fieldProps } }) => (
                                         <FormItem className="flex flex-row items-center justify-between space-y-0 gap-4">
                                             <div className="space-y-0.5"><FormLabel className="text-base">Unpaid Leave Days</FormLabel><p className="text-[11px] text-muted-foreground">Daily Rate: ₹{Math.round(staff.baseSalary / 30)}</p></div>
-                                            <FormControl><Input type="number" className="w-24 text-right" {...field} value={field.value ?? ''} /></FormControl>
+                                            <FormControl><Input type="number" className="w-24 text-right" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : 0)} /></FormControl>
                                         </FormItem>
                                     )} />
-                                    <FormField control={paymentForm.control} name="advanceDeduction" render={({ field }) => (
+                                    <FormField control={paymentForm.control} name="advanceDeduction" render={({ field: { value, onChange, ...fieldProps } }) => (
                                         <FormItem className="flex flex-row items-center justify-between space-y-0 gap-4">
                                             <div className="space-y-0.5"><FormLabel className="text-base">Deduct Advance</FormLabel><p className="text-[11px] text-orange-600">Max Balance: ₹{staff.currentAdvance}</p></div>
-                                            <FormControl><Input type="number" className="w-24 text-right" {...field} value={field.value ?? ''} /></FormControl>
+                                            <FormControl><Input type="number" className="w-24 text-right" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : 0)} /></FormControl>
                                         </FormItem>
                                     )} />
                                 </div>
