@@ -40,7 +40,7 @@ api.interceptors.response.use(
             error.message = error.response.data.message || error.message;
         }
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/login')) {
             originalRequest._retry = true;
             try {
                 if (typeof window !== 'undefined') {

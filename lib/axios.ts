@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: 'https://api.tmj.org.in/api',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -44,7 +44,8 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         // Check if error is 401 and we haven't tried refreshing yet
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Also skip for login requests to allow the UI to handle invalid credentials
+        if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/login')) {
 
             if (isRefreshing) {
                 return new Promise(function (resolve, reject) {

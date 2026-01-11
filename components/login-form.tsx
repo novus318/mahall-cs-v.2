@@ -9,17 +9,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import api from "@/lib/axios"
 import { toast } from "sonner"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Building2, AlertCircle } from "lucide-react"
 
 export function LoginForm({
   className,
@@ -28,6 +25,7 @@ export function LoginForm({
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -35,11 +33,13 @@ export function LoginForm({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
+    if (error) setError(null); // Clear error on typing
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
 
     try {
       const { data } = await api.post('/auth/login', formData);
@@ -56,7 +56,8 @@ export function LoginForm({
       router.push('/dashboard');
     } catch (error: any) {
       console.error(error);
-      const message = error.response?.data?.message || 'Login failed';
+      const message = error.response?.data?.message || 'Login failed. Please check your credentials.';
+      setError(message);
       toast.error(message);
     } finally {
       setIsLoading(false);
@@ -65,35 +66,57 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="py-3 gap-2">
-        <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+      <Card className="overflow-hidden py-3">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <Building2 className="size-6" />
+            </div>
+          </div>
+          <CardTitle className="text-xl">Welcome back</CardTitle>
           <CardDescription>
-            Enter your credentials to login to your account
+            Login with your username and password
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin}>
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="username">Username</FieldLabel>
+            <div className="grid gap-3">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <div className="grid gap-2">
+                <Label htmlFor="username">Username</Label>
                 <Input
                   id="username"
                   type="text"
-                  placeholder="admin"
+                  placeholder="Enter your username"
                   required
                   value={formData.username}
                   onChange={handleChange}
                 />
-              </Field>
-              <Field>
+              </div>
+              <div className="grid gap-2">
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
+                  <Label htmlFor="password">Password</Label>
+                  <a
+                    href="#"
+                    className="ml-auto text-sm text-muted-foreground underline-offset-4 hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toast.info("Please contact admin to reset password");
+                    }}
+                  >
+                    Forgot your password?
+                  </a>
                 </div>
                 <div className="relative">
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
                     required
                     value={formData.password}
                     onChange={handleChange}
@@ -102,7 +125,7 @@ export function LoginForm({
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? (
@@ -115,16 +138,17 @@ export function LoginForm({
                     </span>
                   </Button>
                 </div>
-              </Field>
-              <Field>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Signing in..." : "Login"}
-                </Button>
-              </Field>
-            </FieldGroup>
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Signing in..." : "Login"}
+              </Button>
+            </div>
           </form>
         </CardContent>
       </Card>
+      <div className="text-center text-xs text-muted-foreground">
+        Mahall Management System
+      </div>
     </div>
   )
 }
