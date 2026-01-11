@@ -47,7 +47,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash2, Eye, Loader2, Pencil, Search, ChevronLeft, ChevronRight, Check, ChevronsUpDown, Upload, FileDown, Download } from "lucide-react"
+import { Plus, Trash2, Eye, Loader2, Pencil, Search, ChevronLeft, ChevronRight, Check, ChevronsUpDown, Upload, FileDown, Download, Settings2 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import Link from "next/link"
@@ -74,17 +75,38 @@ export default function HousesPage() {
     const [total, setTotal] = useState(0)
     const [limit, setLimit] = useState(10)
 
+    // Subscription State
+    const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false)
+    const [subscriptionHouse, setSubscriptionHouse] = useState<any>(null)
+    const [subscriptionData, setSubscriptionData] = useState({ frequency: 'None', amount: 0 })
+
+    const handleSubscriptionUpdate = async () => {
+        if (!subscriptionHouse) return;
+        try {
+            // dynamic import to avoid circular dependency issues if any, or just use api
+            const { updateSubscription } = await import("@/lib/api");
+            await updateSubscription('house', subscriptionHouse._id, subscriptionData);
+            toast.success("Subscription updated");
+            setIsSubscriptionOpen(false);
+            fetchHouses();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to update subscription");
+        }
+    }
+
     // Import State
     const [isImportOpen, setIsImportOpen] = useState(false)
     const [importFile, setImportFile] = useState<File | null>(null)
     const [importing, setImporting] = useState(false)
     const [importResult, setImportResult] = useState<any>(null)
 
+    const [frequencyFilter, setFrequencyFilter] = useState("ALL")
+
     const fetchHouses = async () => {
         setLoading(true)
         try {
             const [housesData, familiesData] = await Promise.all([
-                getHouses({ page, limit, search }),
+                getHouses({ page, limit, search, frequency: frequencyFilter }),
                 getFamilies()
             ])
             setHouses(housesData.houses)
@@ -112,7 +134,7 @@ export default function HousesPage() {
             fetchHouses()
         }, 300)
         return () => clearTimeout(delayDebounceFn)
-    }, [page, search, limit])
+    }, [page, search, limit, frequencyFilter])
 
     const handleImport = async () => {
         if (!importFile) return;
@@ -527,6 +549,52 @@ export default function HousesPage() {
                 </DialogContent>
             </Dialog>
 
+            {/* Subscription Dialog */}
+            <Dialog open={isSubscriptionOpen} onOpenChange={setIsSubscriptionOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Configure Subscription</DialogTitle>
+                        <DialogDescription>
+                            Set automated due generation for {subscriptionHouse?.name}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Frequency</Label>
+                            <div className="col-span-3">
+                                <Select
+                                    value={subscriptionData.frequency}
+                                    onValueChange={(val) => setSubscriptionData({ ...subscriptionData, frequency: val })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Frequency" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="None">None (Disable)</SelectItem>
+                                        <SelectItem value="Monthly">Monthly</SelectItem>
+                                        <SelectItem value="Yearly">Yearly</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        {subscriptionData.frequency !== 'None' && (
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label className="text-right">Amount (₹)</Label>
+                                <Input
+                                    type="number"
+                                    value={subscriptionData.amount}
+                                    onChange={(e) => setSubscriptionData({ ...subscriptionData, amount: parseFloat(e.target.value) || 0 })}
+                                    className="col-span-3"
+                                />
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={handleSubscriptionUpdate}>Save Configuration</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <Card className="border shadow-sm">
                 <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -545,6 +613,22 @@ export default function HousesPage() {
                                 className="pl-8 h-9 text-sm"
                             />
                         </div>
+                        <div className="w-full sm:w-48">
+                            <Select
+                                value={frequencyFilter}
+                                onValueChange={(val) => setFrequencyFilter(val)}
+                            >
+                                <SelectTrigger className="h-9 w-full">
+                                    <SelectValue placeholder="Filter Subscription" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Subscriptions</SelectItem>
+                                    <SelectItem value="Monthly">Monthly</SelectItem>
+                                    <SelectItem value="Yearly">Yearly</SelectItem>
+                                    <SelectItem value="None">None</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -555,6 +639,7 @@ export default function HousesPage() {
                                 <TableHead className="h-9 text-xs font-semibold">Name</TableHead>
                                 <TableHead className="h-9 text-xs font-semibold">Family</TableHead>
                                 <TableHead className="h-9 text-xs font-semibold">Address</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold">Subscription</TableHead>
                                 <TableHead className="text-right h-9 text-xs font-semibold w-[140px]">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -584,6 +669,13 @@ export default function HousesPage() {
                                             )}
                                         </TableCell>
                                         <TableCell className="py-2 text-sm text-muted-foreground truncate max-w-[200px]">{house.address || "-"}</TableCell>
+                                        <TableCell className="py-2 text-sm">
+                                            {house.subscription?.frequency !== 'None' ? (
+                                                <span className="font-mono text-xs">₹{house.subscription?.amount} / {house.subscription?.frequency}</span>
+                                            ) : (
+                                                <span className="text-muted-foreground text-xs italic">None</span>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="py-2 text-right">
                                             <div className="flex justify-end gap-1">
                                                 <Link href={`/dashboard/houses/${house._id}`}>
@@ -593,6 +685,22 @@ export default function HousesPage() {
                                                 </Link>
                                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(house)}>
                                                     <Pencil className="h-3.5 w-3.5 text-amber-500" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-7 w-7"
+                                                    onClick={() => {
+                                                        setSubscriptionHouse(house);
+                                                        setSubscriptionData({
+                                                            frequency: house.subscription?.frequency || 'None',
+                                                            amount: house.subscription?.amount || 0
+                                                        });
+                                                        setIsSubscriptionOpen(true);
+                                                    }}
+                                                    title="Configure Subscription"
+                                                >
+                                                    <Settings2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
                                                 </Button>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
@@ -671,6 +779,6 @@ export default function HousesPage() {
                     </div>
                 </div>
             </Card>
-        </div>
+        </div >
     )
 }

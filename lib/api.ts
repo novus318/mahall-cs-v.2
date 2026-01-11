@@ -122,6 +122,8 @@ export const updateSubscription = async (type: 'house' | 'member', id: string, d
 
 export const getDues = async (params: any) => (await api.get('/collections/dues', { params })).data;
 
+export const getCollectionPeriods = async () => (await api.get('/collections/periods')).data;
+
 export const generateDue = async (data: { entityType: 'House' | 'Member', entityId: string, period: string }) =>
     (await api.post('/collections/generate/single', data)).data;
 

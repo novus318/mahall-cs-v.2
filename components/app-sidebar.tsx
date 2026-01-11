@@ -67,6 +67,10 @@ const data = {
           url: "/dashboard/receipts",
         },
         {
+          title: "Collections (Dues)",
+          url: "/dashboard/collections",
+        },
+        {
           title: "Transactions",
           url: "/dashboard/transactions",
         }
