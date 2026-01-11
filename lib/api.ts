@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
+export const API_URL = 'http://localhost:5000/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -133,5 +133,11 @@ export const getAccounts = async () => (await api.get('/accounts')).data;
 
 export const initiateRejection = async (dueId: string) => (await api.post('/collections/reject/initiate', { dueId })).data;
 export const confirmRejection = async (dueId: string, otp: string) => (await api.post('/collections/reject/confirm', { dueId, otp })).data;
+
+export const downloadCollectionReceipt = async (id: string) => {
+    return api.get(`/collections/receipts/${id}/pdf`, {
+        responseType: 'blob'
+    });
+};
 
 export default api;

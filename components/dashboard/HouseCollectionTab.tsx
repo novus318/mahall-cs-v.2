@@ -6,9 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { updateSubscription, getDues, generateDue, payDue, getAccounts, initiateRejection, confirmRejection } from "@/lib/api"
+import { updateSubscription, getDues, generateDue, payDue, getAccounts, initiateRejection, confirmRejection, API_URL } from "@/lib/api"
 import { toast } from "sonner"
-import { Loader2, Coins, History, Calendar as CalendarIcon, Check, Settings2, Plus, CreditCard, Wallet, Landmark, ShieldAlert, LockKeyhole } from "lucide-react"
+import { Loader2, Coins, History, Calendar as CalendarIcon, Check, Settings2, Plus, CreditCard, Wallet, Landmark, ShieldAlert, LockKeyhole, ExternalLink } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
@@ -318,6 +318,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                 <TableRow className="hover:bg-transparent border-b">
                                     <TableHead className="h-9 text-xs font-semibold">Period</TableHead>
                                     <TableHead className="h-9 text-xs font-semibold">Status</TableHead>
+                                    <TableHead className="h-9 text-xs font-semibold">Paid On</TableHead>
                                     <TableHead className="h-9 text-xs font-semibold text-right">Amount</TableHead>
                                     <TableHead className="h-9 text-xs font-semibold text-right">Paid</TableHead>
                                     <TableHead className="h-9 text-xs font-semibold text-right w-[80px]"></TableHead>
@@ -326,49 +327,92 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                             <TableBody>
                                 {loadingDues ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="h-32 text-center">
+                                        <TableCell colSpan={6} className="h-32 text-center">
                                             <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
                                         </TableCell>
                                     </TableRow>
                                 ) : dues.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="h-32 text-center text-xs text-muted-foreground">
+                                        <TableCell colSpan={6} className="h-32 text-center text-xs text-muted-foreground">
                                             No dues found for this period.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    dues.map((due) => (
-                                        <TableRow key={due._id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 border-b last:border-0">
-                                            <TableCell className="py-2 text-xs font-medium">{due.period}</TableCell>
-                                            <TableCell className="py-2">
-                                                <Badge variant="outline" className={cn(
-                                                    "text-[10px] px-1.5 py-0 h-5 border-0 font-medium",
-                                                    due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                                                        due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                                                            due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-                                                                "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                                                )}>
-                                                    {due.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="py-2 text-xs font-mono text-right">₹{due.amount}</TableCell>
-                                            <TableCell className="py-2 text-xs font-mono text-right text-muted-foreground">
-                                                {due.paidAmount > 0 ? `₹${due.paidAmount}` : '-'}
-                                            </TableCell>
-                                            <TableCell className="py-2 text-right">
-                                                {due.status !== 'PAID' && due.status !== 'REJECTED' && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="secondary"
-                                                        className="h-6 w-12 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                                                        onClick={() => openPayDialog(due)}
-                                                    >
-                                                        Pay
-                                                    </Button>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
+                                    dues.map((due) => {
+                                        // Determine Payment Date (Last transaction date if exists)
+                                        const paidDate = due.transactions?.length > 0
+                                            ? new Date(due.transactions[due.transactions.length - 1].date).toLocaleDateString('en-GB')
+                                            : '-';
+
+                                        return (
+                                            <TableRow key={due._id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 border-b last:border-0">
+                                                <TableCell className="py-2 text-xs font-medium">{due.period}</TableCell>
+                                                <TableCell className="py-2">
+                                                    <Badge variant="outline" className={cn(
+                                                        "text-[10px] px-1.5 py-0 h-5 border-0 font-medium",
+                                                        due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                                                            due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                                                due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+                                                                    "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                                    )}>
+                                                        {due.status}
+                                                    </Badge>
+
+                                                    {/* Receipt Link if Paid/Partial and has transactions */}
+                                                    {(due.status === 'PAID' || due.status === 'PARTIAL') && due.transactions?.length > 0 && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 ml-2"
+                                                            title="View Receipt"
+                                                            onClick={async () => {
+                                                                const lastTx = due.transactions[due.transactions.length - 1];
+                                                                const recId = lastTx.collectionReceipt || lastTx.receiptId;
+
+                                                                if (recId) {
+                                                                    try {
+                                                                        // Fetch PDF as blob with authentication
+                                                                        const response = await import("@/lib/api").then(m => m.downloadCollectionReceipt(recId));
+
+                                                                        // Create Blob URL
+                                                                        const blob = new Blob([response.data], { type: 'application/pdf' });
+                                                                        const url = window.URL.createObjectURL(blob);
+
+                                                                        // Open in new tab
+                                                                        window.open(url, '_blank');
+                                                                    } catch (error) {
+                                                                        console.error("Failed to load PDF", error);
+                                                                        toast.error("Failed to load receipt PDF");
+                                                                    }
+                                                                }
+                                                            }}
+                                                        >
+                                                            <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
+                                                <TableCell className="py-2 text-[10px] text-muted-foreground font-mono">
+                                                    {paidDate}
+                                                </TableCell>
+                                                <TableCell className="py-2 text-xs font-mono text-right">₹{due.amount}</TableCell>
+                                                <TableCell className="py-2 text-xs font-mono text-right text-muted-foreground">
+                                                    {due.paidAmount > 0 ? `₹${due.paidAmount}` : '-'}
+                                                </TableCell>
+                                                <TableCell className="py-2 text-right">
+                                                    {due.status !== 'PAID' && due.status !== 'REJECTED' && (
+                                                        <Button
+                                                            size="sm"
+                                                            variant="secondary"
+                                                            className="h-6 w-12 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                                            onClick={() => openPayDialog(due)}
+                                                        >
+                                                            Pay
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
+                                            </TableRow>
+                                        )
+                                    })
                                 )}
                             </TableBody>
                         </Table>
