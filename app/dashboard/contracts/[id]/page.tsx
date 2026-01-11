@@ -70,6 +70,7 @@ const generateRentSchema = z.object({
 
 const collectRentSchema = z.object({
     amount: z.coerce.number().min(1),
+    accountId: z.string().min(1, "Select an account"),
     date: z.string(),
     notes: z.string().optional()
 });
@@ -147,6 +148,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     const [contract, setContract] = useState<Contract | null>(null);
     const [rents, setRents] = useState<RentDue[]>([]);
     const [deposits, setDeposits] = useState<DepositTx[]>([]);
+    const [accounts, setAccounts] = useState<any[]>([]); // Added accounts state
     const [loading, setLoading] = useState(true);
     const [isEditMode, setIsEditMode] = useState(false);
 
@@ -162,7 +164,10 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
         resolver: zodResolver(generateRentSchema),
         defaultValues: { month: String(new Date().getMonth() + 1), year: String(new Date().getFullYear()), amount: 0 }
     });
-    const collectRentForm = useForm({ resolver: zodResolver(collectRentSchema), defaultValues: { amount: 0, date: new Date().toISOString().split('T')[0], notes: '' } });
+    const collectRentForm = useForm({
+        resolver: zodResolver(collectRentSchema),
+        defaultValues: { amount: 0, accountId: '', date: new Date().toISOString().split('T')[0], notes: '' }
+    });
     const terminateForm = useForm({ resolver: zodResolver(terminateSchema), defaultValues: { returnAmount: 0, confirm: false } });
 
     useEffect(() => {
@@ -186,6 +191,9 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
             setContract(contractRes.data);
             setRents(financialsRes.data.rents);
             setDeposits(financialsRes.data.deposits);
+
+            // Fetch accounts for payment
+            api.get('/accounts').then(res => setAccounts(res.data.data)).catch(console.error);
 
             // Populate edit form
             editForm.reset({
@@ -469,6 +477,26 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                     <Form {...collectRentForm}>
                         <form onSubmit={collectRentForm.handleSubmit(handleCollectRent)} className="space-y-4">
                             <FormField control={collectRentForm.control} name="amount" render={({ field }) => (<FormItem><FormLabel className="text-xs">Amount Received</FormLabel><FormControl><Input type="number" className="h-8 text-xs font-bold" {...field} value={(field.value as number) ?? ''} /></FormControl><FormMessage /></FormItem>)} />
+
+                            <FormField control={collectRentForm.control} name="accountId" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs">Deposit To Account</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="h-8 text-xs w-full">
+                                                <SelectValue placeholder="Select Account" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {accounts.map(acc => (
+                                                <SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+
                             <FormField control={collectRentForm.control} name="date" render={({ field }) => (<FormItem><FormLabel className="text-xs">Date</FormLabel><FormControl><Input type="date" className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={collectRentForm.control} name="notes" render={({ field }) => (<FormItem><FormLabel className="text-xs">Notes</FormLabel><FormControl><Input className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
                             <DialogFooter><Button type="submit" size="sm">Record Payment</Button></DialogFooter>

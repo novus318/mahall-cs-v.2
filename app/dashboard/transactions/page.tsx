@@ -285,6 +285,16 @@ export default function TransactionsPage() {
                                                         )}
                                                     </span>
                                                 )}
+                                                {tx.staff && (
+                                                    <a href={`/dashboard/staff/${tx.staff._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
+                                                        <ExternalLink className="h-3 w-3" /> Staff Profile
+                                                    </a>
+                                                )}
+                                                {tx.contract && (
+                                                    <a href={`/dashboard/contracts/${tx.contract._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
+                                                        <ExternalLink className="h-3 w-3" /> Contract
+                                                    </a>
+                                                )}
                                                 {tx.relatedAccount && (
                                                     <div className="flex items-center gap-1 mt-0.5">
                                                         <span className="text-[10px] text-muted-foreground bg-slate-100 px-1.5 rounded-full border">

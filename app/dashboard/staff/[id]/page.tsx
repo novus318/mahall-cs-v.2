@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ArrowLeft, User, Phone, Mail, Building2, Briefcase, Calendar, Plus, Wallet, FileText, Download, CheckCircle2, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, Building2, Briefcase, Calendar, Plus, Wallet, FileText, Download, CheckCircle2, Loader2, Landmark, ShieldAlert, LockKeyhole } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -51,6 +51,14 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     // Payment Dialog State
     const [isPayOpen, setIsPayOpen] = useState(false);
     const [selectedPayslip, setSelectedPayslip] = useState<any>(null);
+    const [accounts, setAccounts] = useState<any[]>([]);
+    const [selectedAccount, setSelectedAccount] = useState<string>("");
+
+    // Rejection State
+    const [isOtpOpen, setIsOtpOpen] = useState(false);
+    const [otp, setOtp] = useState("");
+    const [sendingOtp, setSendingOtp] = useState(false);
+    const [verifyingOtp, setVerifyingOtp] = useState(false);
 
     const advanceForm = useForm({
         resolver: zodResolver(advanceSchema),
@@ -112,21 +120,63 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         }
     };
 
-    const openPaymentDialog = (payslip: any) => {
+    const openPaymentDialog = async (payslip: any) => {
         setSelectedPayslip(payslip);
         paymentForm.reset({ leaveDays: 0, advanceDeduction: 0 });
+
+        // Fetch Accounts
+        try {
+            const { data } = await api.get('/accounts?status=ACTIVE');
+            setAccounts(data.data || []);
+            const defaultAcc = data.data.find((a: any) => a.isPrimary) || data.data[0];
+            if (defaultAcc) setSelectedAccount(defaultAcc._id);
+        } catch (e) {
+            console.error("Failed to load accounts");
+        }
+
         setIsPayOpen(true);
     };
 
     const handleConfirmPayment = async (values: any) => {
-        if (!selectedPayslip) return;
+        if (!selectedPayslip || !selectedAccount) return;
         try {
-            await api.put(`/staff/${resolvedParams.id}/payslips/${selectedPayslip._id}/pay`, values);
+            await api.put(`/staff/${resolvedParams.id}/payslips/${selectedPayslip._id}/pay`, { ...values, accountId: selectedAccount });
             toast.success("Payment successful");
             setIsPayOpen(false);
             fetchData();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Payment failed");
+        }
+    };
+
+    const handleInitiateRejection = async () => {
+        if (!selectedPayslip) return;
+        setSendingOtp(true);
+        try {
+            await api.post(`/staff/${resolvedParams.id}/payslips/${selectedPayslip._id}/reject/initiate`);
+            toast.success("OTP sent to administrators");
+            setIsPayOpen(false);
+            setIsOtpOpen(true);
+            setOtp("");
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to initiate rejection");
+        } finally {
+            setSendingOtp(false);
+        }
+    };
+
+    const handleConfirmRejection = async () => {
+        if (!selectedPayslip || otp.length < 6) return;
+        setVerifyingOtp(true);
+        try {
+            await api.post(`/staff/${resolvedParams.id}/payslips/${selectedPayslip._id}/reject/confirm`, { otp });
+            toast.success("Payslip rejected successfully");
+            setIsOtpOpen(false);
+            fetchData();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Invalid OTP");
+        } finally {
+            setVerifyingOtp(false);
         }
     };
 
@@ -233,10 +283,14 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                                 </TableCell>
                                                 <TableCell className="font-bold text-slate-800">₹{slip.finalAmount.toLocaleString()}</TableCell>
                                                 <TableCell>
-                                                    <Badge variant={slip.status === 'PAID' ? 'default' : 'secondary'} className={slip.status === 'PAID' ? 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200'}>{slip.status}</Badge>
+                                                    <Badge variant={slip.status === 'PAID' ? 'default' : 'secondary'} className={
+                                                        slip.status === 'PAID' ? 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200' :
+                                                            slip.status === 'REJECTED' ? 'bg-red-100 text-red-700 hover:bg-red-100 border-red-200' :
+                                                                'bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200'
+                                                    }>{slip.status}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {slip.status !== 'PAID' ? (
+                                                    {slip.status === 'PENDING' ? (
                                                         <Button size="sm" onClick={() => openPaymentDialog(slip)}>Pay Now</Button>
                                                     ) : (
                                                         <span className="text-[10px] text-muted-foreground font-medium">Pd: {slip.paymentDate ? format(new Date(slip.paymentDate), 'dd MMM') : '-'}</span>
@@ -302,7 +356,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     <Form {...generateForm}>
                         <form onSubmit={generateForm.handleSubmit(handleGeneratePayslip)} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
-                                <FormField control={generateForm.control} name="month" render={({ field }) => (<FormItem><FormLabel>Month</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                                <FormField control={generateForm.control} name="month" render={({ field }) => (<FormItem><FormLabel>Month</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className='w-full'><SelectValue /></SelectTrigger></FormControl><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                 <FormField control={generateForm.control} name="year" render={({ field }) => (<FormItem><FormLabel>Year</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                             <DialogFooter><Button type="submit">Generate Draft</Button></DialogFooter>
@@ -346,12 +400,82 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                     <span className="font-bold text-2xl text-green-700">₹{estimatedNet.toLocaleString()}</span>
                                 </div>
                             </div>
-                            <DialogFooter>
-                                <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)}>Cancel</Button>
-                                <Button type="submit" className="bg-green-600 hover:bg-green-700">Confirm Payment</Button>
+
+                            <div className="space-y-2">
+                                <FormLabel>Payment Account</FormLabel>
+                                <Select value={selectedAccount} onValueChange={setSelectedAccount}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select Account" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {accounts.map(acc => (
+                                            <SelectItem key={acc._id} value={acc._id}>
+                                                <div className="flex items-center gap-2">
+                                                    {acc.type === 'BANK' ? <Landmark className="h-4 w-4 text-muted-foreground" /> : <Wallet className="h-4 w-4 text-muted-foreground" />}
+                                                    <span>{acc.name}</span>
+                                                    <span className="text-xs text-muted-foreground ml-auto">₹{acc.balance.toLocaleString()}</span>
+                                                </div>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <DialogFooter className="flex justify-between sm:justify-between">
+                                <Button type="button" variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleInitiateRejection} disabled={sendingOtp}>
+                                    {sendingOtp ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reject Payslip"}
+                                </Button>
+                                <div className="flex gap-2">
+                                    <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)}>Cancel</Button>
+                                    <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={!selectedAccount}>Confirm Payment</Button>
+                                </div>
                             </DialogFooter>
                         </form>
                     </Form>
+                </DialogContent>
+            </Dialog>
+
+            {/* OTP Rejection Dialog */}
+            <Dialog open={isOtpOpen} onOpenChange={setIsOtpOpen}>
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-red-600">
+                            <ShieldAlert className="h-5 w-5" /> Reject Payslip
+                        </DialogTitle>
+                        <DialogDescription>
+                            Enter the OTP sent to administrator WhatsApp to confirm rejection.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid gap-4 py-4">
+                        <div className="space-y-2">
+                            <div className="relative">
+                                <LockKeyhole className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    className="pl-9 font-mono tracking-widest"
+                                    placeholder="000000"
+                                    maxLength={6}
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">
+                                OTP is valid for 10 minutes.
+                            </p>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setIsOtpOpen(false)}>Cancel</Button>
+                        <Button
+                            variant="destructive"
+                            onClick={handleConfirmRejection}
+                            disabled={verifyingOtp || otp.length < 6}
+                        >
+                            {verifyingOtp && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Confirm Rejection
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>
