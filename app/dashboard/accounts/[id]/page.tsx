@@ -83,7 +83,7 @@ export default function AccountDetailPage() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[120px]">Date</TableHead>
+                                <TableHead className="w-30">Date</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead className="text-right">Credit</TableHead>

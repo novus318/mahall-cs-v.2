@@ -153,32 +153,38 @@ export default function PaymentsPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Receipt No</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Payee</TableHead>
-                                        <TableHead>Category</TableHead>
-                                        <TableHead>Account</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
-                                        <TableHead className="w-[50px]"></TableHead>
+                                        <TableHead className="w-12.5 font-semibold text-xs uppercase tracking-wider">#</TableHead>
+                                        <TableHead className="w-27.5 font-semibold text-xs uppercase tracking-wider">Date</TableHead>
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Payee</TableHead>
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Category</TableHead>
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Account</TableHead>
+                                        <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Amount</TableHead>
+                                        <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {loading ? (
-                                        <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="animate-spin h-6 w-6 mx-auto" /></TableCell></TableRow>
+                                        <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="animate-spin h-6 w-6 mx-auto" /></TableCell></TableRow>
                                     ) : payments.length === 0 ? (
-                                        <TableRow><TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No payments found.</TableCell></TableRow>
+                                        <TableRow><TableCell colSpan={7} className="h-24 text-center text-muted-foreground">No payments found.</TableCell></TableRow>
                                     ) : (
                                         payments.map((payment) => (
-                                            <TableRow key={payment._id}>
-                                                <TableCell className="font-mono font-medium">{payment.receiptNo}</TableCell>
-                                                <TableCell className="text-muted-foreground text-xs">{format(new Date(payment.date), 'dd MMM yyyy')}</TableCell>
-                                                <TableCell className="font-medium">{payment.payee}</TableCell>
-                                                <TableCell><Badge variant="outline" className="font-normal">{payment.category?.name}</Badge></TableCell>
-                                                <TableCell className="text-xs text-muted-foreground">{payment.account?.name}</TableCell>
-                                                <TableCell className="text-right font-bold">₹{payment.amount?.toLocaleString()}</TableCell>
+                                            <TableRow key={payment._id} className="hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/payments/edit/${payment._id}`)}>
+                                                <TableCell className="font-medium text-xs text-muted-foreground">{payment.receiptNo}</TableCell>
+                                                <TableCell className="text-xs">{format(new Date(payment.date), 'MMM d, yyyy')}</TableCell>
+                                                <TableCell className="font-medium">
+                                                    <div className="flex flex-col">
+                                                        <span>{payment.payee?.name || '-'}</span>
+                                                        {payment.payee?.type && <span className="text-[10px] text-muted-foreground uppercase">{payment.payee.type}</span>}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant="secondary" className="font-normal text-xs">{payment.category?.name || '-'}</Badge>
+                                                </TableCell>
+                                                <TableCell className="text-sm text-muted-foreground">{payment.account?.name || '-'}</TableCell>
+                                                <TableCell className="text-right font-medium">₹{payment.amount.toLocaleString()}</TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/dashboard/payments/edit/${payment._id}`)}>
-                                                        <span className="sr-only">Edit</span>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/payments/edit/${payment._id}`); }}>
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
                                                     </Button>
                                                 </TableCell>
@@ -191,14 +197,14 @@ export default function PaymentsPage() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="categories" className="animate-in fade-in-50">
-                    <Card className="border-border shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border bg-muted/20">
-                            <div>
+                <TabsContent value="categories" className="space-y-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <div className="space-y-1">
                                 <CardTitle className="text-base font-semibold">Categories</CardTitle>
                                 <p className="text-xs text-muted-foreground mt-1">Manage payment classification types.</p>
                             </div>
-                            <Button size="sm" onClick={() => handleOpenCatDialog()}>
+                            <Button size="sm" onClick={() => setIsCatDialogOpen(true)}>
                                 <Plus className="mr-2 h-3.5 w-3.5" /> Add Category
                             </Button>
                         </CardHeader>
@@ -206,9 +212,9 @@ export default function PaymentsPage() {
                             <Table>
                                 <TableHeader className="bg-muted/50">
                                     <TableRow>
-                                        <TableHead className="w-[200px] font-semibold text-xs uppercase tracking-wider">Name</TableHead>
+                                        <TableHead className="w-50 font-semibold text-xs uppercase tracking-wider">Name</TableHead>
                                         <TableHead className="font-semibold text-xs uppercase tracking-wider">Description</TableHead>
-                                        <TableHead className="w-[150px] text-right font-semibold text-xs uppercase tracking-wider">Action</TableHead>
+                                        <TableHead className="w-37.5 text-right font-semibold text-xs uppercase tracking-wider">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>

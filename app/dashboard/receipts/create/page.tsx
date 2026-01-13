@@ -14,6 +14,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function CreateReceiptPage() {
     const router = useRouter();
@@ -34,6 +36,11 @@ export default function CreateReceiptPage() {
         { description: '', amount: '' }
     ]);
     const [nextReceipt, setNextReceipt] = useState('');
+
+    // Inline Category Creation
+    const [isCatDialogOpen, setIsCatDialogOpen] = useState(false);
+    const [newCatName, setNewCatName] = useState('');
+    const [newCatDesc, setNewCatDesc] = useState('');
 
     useEffect(() => {
         const loadData = async () => {
@@ -59,6 +66,24 @@ export default function CreateReceiptPage() {
         };
         loadData();
     }, []);
+
+    const handleCreateCategory = async () => {
+        if (!newCatName.trim()) {
+            toast.error("Category name required");
+            return;
+        }
+        try {
+            const { data } = await api.post('/receipts/categories', { name: newCatName, description: newCatDesc });
+            setCategories([...categories, data.data]);
+            setCategoryId(data.data._id); // Auto-select
+            toast.success("Category created");
+            setIsCatDialogOpen(false);
+            setNewCatName('');
+            setNewCatDesc('');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to create category");
+        }
+    };
 
     const handleAddItem = () => {
         setItems([...items, { description: '', amount: '' }]);
@@ -123,7 +148,7 @@ export default function CreateReceiptPage() {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h2 className="text-xl font-bold tracking-tight text-foreground">Income Receipt</h2>
+                        <h2 className="text-xl font-semibold tracking-tight text-green-700">New Income Receipt</h2>
                         <p className="text-muted-foreground text-sm">Record new income/donation entry.</p>
                     </div>
                 </div>
@@ -186,16 +211,27 @@ export default function CreateReceiptPage() {
 
                         <div className="space-y-1.5">
                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
-                            <Select value={categoryId} onValueChange={setCategoryId}>
-                                <SelectTrigger className="w-full bg-background border-input h-9">
-                                    <SelectValue placeholder="Income Category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {categories.map(cat => (
-                                        <SelectItem key={cat._id} value={cat._id}>{cat.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="flex gap-2">
+                                <Select value={categoryId} onValueChange={setCategoryId}>
+                                    <SelectTrigger className="w-full bg-background border-input h-9">
+                                        <SelectValue placeholder="Income Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map(cat => (
+                                            <SelectItem key={cat._id} value={cat._id}>{cat.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-9 w-9 shrink-0"
+                                    onClick={() => setIsCatDialogOpen(true)}
+                                    type="button"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
@@ -317,6 +353,27 @@ export default function CreateReceiptPage() {
                     </div>
                 </div>
             </Card>
+
+            <Dialog open={isCatDialogOpen} onOpenChange={setIsCatDialogOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add New Category</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>Name</Label>
+                            <Input placeholder="e.g. Donation" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Description</Label>
+                            <Textarea placeholder="Optional description" value={newCatDesc} onChange={(e) => setNewCatDesc(e.target.value)} />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button onClick={handleCreateCategory}>Create Category</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

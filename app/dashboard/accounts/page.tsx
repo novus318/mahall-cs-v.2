@@ -54,6 +54,8 @@ export default function AccountsPage() {
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isTransferOpen, setIsTransferOpen] = useState(false);
+    const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
     const [editingAccount, setEditingAccount] = useState<any>(null);
     const [search, setSearch] = useState('');
     const router = useRouter();
@@ -163,6 +165,24 @@ export default function AccountsPage() {
         }
     };
 
+    const confirmDelete = (id: string) => {
+        setDeleteId(id);
+        setIsDeleteAlertOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!deleteId) return;
+        try {
+            await api.delete(`/accounts/${deleteId}`);
+            toast.success("Account deleted successfully");
+            setIsDeleteAlertOpen(false);
+            setDeleteId(null);
+            fetchAccounts();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to delete account");
+        }
+    };
+
     const filteredAccounts = accounts.filter(acc =>
         acc.name.toLowerCase().includes(search.toLowerCase()) ||
         acc.holderName.toLowerCase().includes(search.toLowerCase()) ||
@@ -211,9 +231,9 @@ export default function AccountsPage() {
                         <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
                             <TableRow className="hover:bg-transparent">
                                 <TableHead className="w-[50px] h-9"></TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Account Details</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Holder</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Bank Info</TableHead>
+                                <TableHead className="w-12.5 font-semibold text-xs uppercase tracking-wider">#</TableHead>
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Account Name</TableHead>
+                                <TableHead className="w-25 font-semibold text-xs uppercase tracking-wider">Type</TableHead>
                                 <TableHead className="text-right h-9 text-xs font-semibold">Balance</TableHead>
                                 <TableHead className="text-right h-9 text-xs font-semibold w-[100px]">Action</TableHead>
                             </TableRow>
@@ -262,6 +282,14 @@ export default function AccountsPage() {
                                                 >
                                                     <Pencil className="h-3.5 w-3.5" />
                                                 </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                    onClick={() => confirmDelete(acc._id)}
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </Button>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -271,6 +299,23 @@ export default function AccountsPage() {
                     </Table>
                 </CardContent>
             </Card>
+
+            {/* Delete Confirmation */}
+            <Dialog open={isDeleteAlertOpen} onOpenChange={setIsDeleteAlertOpen}>
+                <DialogContent className="sm:max-w-[450px]">
+                    <DialogHeader>
+                        <DialogTitle>Are you absolutely sure?</DialogTitle>
+                        <DialogDescription>
+                            This action cannot be undone. This will permanently delete your
+                            account and remove your data from our servers.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="flex-row gap-2">
+                        <Button variant="outline" onClick={() => setIsDeleteAlertOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
             {/* Create Dialog */}
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
@@ -363,7 +408,7 @@ export default function AccountsPage() {
 
             {/* Edit Dialog */}
             <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                <DialogContent className="sm:max-w-[450px]">
+                <DialogContent className="sm:max-w-112.5">
                     <DialogHeader>
                         <DialogTitle>Edit Account</DialogTitle>
                         <DialogDescription>Update account details. Balance cannot be edited directly.</DialogDescription>
@@ -427,7 +472,7 @@ export default function AccountsPage() {
 
             {/* Transfer Dialog */}
             <Dialog open={isTransferOpen} onOpenChange={setIsTransferOpen}>
-                <DialogContent className="sm:max-w-[450px]">
+                <DialogContent className="sm:max-w-112.5">
                     <DialogHeader>
                         <DialogTitle>Transfer Funds</DialogTitle>
                         <DialogDescription>Move money between accounts.</DialogDescription>

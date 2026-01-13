@@ -227,7 +227,7 @@ export default function TransactionsPage() {
                     <Table>
                         <TableHeader className="bg-slate-50">
                             <TableRow>
-                                <TableHead className="w-[110px]">Date</TableHead>
+                                <TableHead className="w-27.5">Date</TableHead>
                                 <TableHead>Account</TableHead>
                                 <TableHead>Description</TableHead>
                                 <TableHead>Type</TableHead>
@@ -263,7 +263,7 @@ export default function TransactionsPage() {
                                                     </a>
                                                 )}
                                                 {tx.receipt && (
-                                                    <a href={`/dashboard/receipts/${tx.receipt._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
+                                                    <a href={`/dashboard/receipts/edit/${tx.receipt._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
                                                         <ExternalLink className="h-3 w-3" /> {tx.receipt.receiptNo}
                                                     </a>
                                                 )}
