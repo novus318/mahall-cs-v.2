@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Fragment } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getDues, getAccounts, payDue, initiateRejection, confirmRejection, API_URL } from "@/lib/api"
-import { Loader2, Search, Filter, ExternalLink, Calendar, Building2, User, Coins, Wallet, Landmark, ShieldAlert, LockKeyhole } from "lucide-react"
+import { Loader2, Search, Filter, ExternalLink, Calendar, Building2, User, Coins, Wallet, Landmark, ShieldAlert, LockKeyhole, ChevronDown, ChevronUp, History } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -54,10 +54,14 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
     // Payment State
     const [payingDue, setPayingDue] = useState<any>(null)
     const [isPayOpen, setIsPayOpen] = useState(false)
+    const [paymentAmount, setPaymentAmount] = useState<number>(0)
     const [accounts, setAccounts] = useState<any[]>([])
     const [selectedAccount, setSelectedAccount] = useState<string>("")
     const [loadingAccounts, setLoadingAccounts] = useState(false)
     const [paying, setPaying] = useState(false)
+
+    // Expanded Row State for Yearly/Partial History
+    const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
 
     // Rejection / OTP State
     const [isOtpOpen, setIsOtpOpen] = useState(false)
@@ -124,6 +128,7 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
 
     const openPayDialog = (due: any) => {
         setPayingDue(due)
+        setPaymentAmount(due.amount - due.paidAmount)
         setIsPayOpen(true)
     }
 
@@ -134,7 +139,7 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
         try {
             await payDue({
                 dueId: payingDue._id,
-                amount: payingDue.amount - payingDue.paidAmount,
+                amount: Number(paymentAmount),
                 accountId: selectedAccount,
                 paymentMethod: 'Cash'
             })
@@ -194,7 +199,7 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
 
     const handleViewReceipt = (due: any) => {
         const lastTx = due.transactions[due.transactions.length - 1];
-        const recId = lastTx?.collectionReceipt || lastTx?.receiptId;
+        const recId = lastTx?.collectionReceipt || (typeof lastTx?.receiptId === 'object' ? lastTx.receiptId?._id : lastTx?.receiptId);
 
         if (recId) {
             // Direct PDF Download/View
@@ -277,72 +282,163 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                                         ? new Date(due.transactions[due.transactions.length - 1].date).toLocaleDateString('en-GB')
                                         : '-';
 
+                                    // Check if expandable (Yearly due)
+                                    const isYearly = due.frequency === 'Yearly' || due.status === 'PARTIAL';
+                                    const isExpanded = expandedRowId === due._id;
+
                                     return (
-                                        <TableRow key={due._id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50">
-                                            <TableCell className="font-medium">{due.period}</TableCell>
-                                            <TableCell>
-                                                <div className="flex flex-col">
-                                                    {type === 'House' ? (
-                                                        <Link href={`/dashboard/houses/${due.entityId?._id}`} className="font-medium text-sm hover:underline hover:text-primary transition-colors">
-                                                            {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1">({due.entityId?.customId || '-'})</span>
-                                                        </Link>
-                                                    ) : (
-                                                        <>
-                                                            <Link href={`/dashboard/members/${due.entityId?._id}`} className="font-medium text-sm hover:underline hover:text-primary transition-colors">
+                                        <Fragment key={due._id}>
+                                            <TableRow className={cn("hover:bg-slate-50 dark:hover:bg-neutral-800/50", isExpanded && "bg-slate-50 dark:bg-neutral-800/50")}>
+                                                <TableCell className="font-medium">
+                                                    <div className="flex items-center gap-2">
+                                                        {isYearly && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-5 w-5 p-0 text-muted-foreground"
+                                                                onClick={() => setExpandedRowId(isExpanded ? null : due._id)}
+                                                            >
+                                                                {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                                            </Button>
+                                                        )}
+                                                        {due.period}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col">
+                                                        {type === 'House' ? (
+                                                            <Link href={`/dashboard/houses/${due.entityId?._id}`} className="font-medium text-sm hover:underline hover:text-primary transition-colors">
                                                                 {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1">({due.entityId?.customId || '-'})</span>
                                                             </Link>
-                                                            {due.entityId?.houseId && (
-                                                                <Link href={`/dashboard/houses/${due.entityId.houseId._id}`} className="text-[10px] text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 mt-0.5">
-                                                                    <Building2 className="h-3 w-3" />
-                                                                    {due.entityId.houseId.customId || 'View House'}
+                                                        ) : (
+                                                            <>
+                                                                <Link href={`/dashboard/members/${due.entityId?._id}`} className="font-medium text-sm hover:underline hover:text-primary transition-colors">
+                                                                    {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1">({due.entityId?.customId || '-'})</span>
                                                                 </Link>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline" className={cn(
-                                                    "text-[10px] px-2 py-0.5 border-0 font-medium",
-                                                    due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                                                        due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                                                            due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-                                                                "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                                                )}>
-                                                    {due.status}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell className="text-xs text-muted-foreground font-mono">{paidDate}</TableCell>
-                                            <TableCell className="text-right font-mono text-sm">₹{due.amount}</TableCell>
-                                            <TableCell className="text-right font-mono text-sm text-green-600 font-bold">
-                                                {due.paidAmount > 0 ? `₹${due.paidAmount}` : '-'}
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    {(due.status === 'PAID' || due.status === 'PARTIAL') && due.transactions?.length > 0 && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8"
-                                                            onClick={() => handleViewReceipt(due)}
-                                                            title="View Receipt"
-                                                        >
-                                                            <ExternalLink className="h-4 w-4 text-primary" />
-                                                        </Button>
-                                                    )}
-                                                    {due.status !== 'PAID' && due.status !== 'REJECTED' && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="secondary"
-                                                            className="h-7 w-14 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                                                            onClick={() => openPayDialog(due)}
-                                                        >
-                                                            Pay
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
+                                                                {due.entityId?.houseId && (
+                                                                    <Link href={`/dashboard/ houses/${due.entityId.houseId._id}`} className="text-[10px] text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 mt-0.5">
+                                                                        <Building2 className="h-3 w-3" />
+                                                                        {due.entityId.houseId.customId || 'View House'}
+                                                                    </Link>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant="outline" className={cn(
+                                                        "text-[10px] px-2 py-0.5 border-0 font-medium",
+                                                        due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                                                            due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                                                due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+                                                                    "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                                    )}>
+                                                        {due.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-xs text-muted-foreground font-mono">{paidDate}</TableCell>
+                                                <TableCell className="text-right font-mono text-sm">₹{due.amount}</TableCell>
+                                                <TableCell className="text-right font-mono text-sm text-green-600 font-bold">
+                                                    {due.paidAmount > 0 ? `₹${due.paidAmount}` : '-'}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        {(due.status === 'PAID' || due.status === 'PARTIAL') && due.transactions?.length > 0 && !isYearly && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8"
+                                                                onClick={() => handleViewReceipt(due)}
+                                                                title="View Receipt"
+                                                            >
+                                                                <ExternalLink className="h-4 w-4 text-primary" />
+                                                            </Button>
+                                                        )}
+                                                        {due.status !== 'PAID' && due.status !== 'REJECTED' && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="secondary"
+                                                                className="h-7 w-14 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                                                onClick={() => openPayDialog(due)}
+                                                            >
+                                                                Pay
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                            {isExpanded && (
+                                                <TableRow className="bg-slate-50/50 dark:bg-neutral-900/20">
+                                                    <TableCell colSpan={7} className="p-0">
+                                                        <div className="p-4 pl-12 border-b">
+                                                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
+                                                                <History className="h-3 w-3" /> Payment History
+                                                            </h4>
+                                                            <Table>
+                                                                <TableHeader>
+                                                                    <TableRow className="h-8 hover:bg-transparent">
+                                                                        <TableHead className="h-8 text-xs">Date</TableHead>
+                                                                        <TableHead className="h-8 text-xs">Receipt No</TableHead>
+                                                                        <TableHead className="h-8 text-xs text-right">Amount</TableHead>
+                                                                        <TableHead className="h-8 text-xs text-right">Deposit Account</TableHead>
+                                                                        <TableHead className="h-8 text-xs w-[60px]"></TableHead>
+                                                                    </TableRow>
+                                                                </TableHeader>
+                                                                <TableBody>
+                                                                    {due.transactions?.map((tx: any, idx: number) => (
+                                                                        <TableRow key={tx._id || idx} className="h-8 border-none hover:bg-slate-100 dark:hover:bg-neutral-800">
+                                                                            <TableCell className="py-1 text-xs">{new Date(tx.date).toLocaleDateString('en-GB')}</TableCell>
+                                                                            <TableCell className="py-1 text-xs font-mono text-muted-foreground">
+                                                                                {/* Assuming receipt details are nested or we just use ID for now if number unavailable */}
+                                                                                #{typeof tx.receiptId === 'object' ? tx.receiptId?.receiptNo : tx.receiptId?.slice(-6).toUpperCase()}
+                                                                            </TableCell>
+                                                                            <TableCell className="py-1 text-xs text-right font-mono font-medium">₹{tx.amount}</TableCell>
+                                                                            <TableCell className="py-1 text-xs text-right text-muted-foreground">
+                                                                                {tx.receiptId?.account?._id ? (
+                                                                                    <div className="flex items-center justify-end gap-1.5">
+                                                                                        {tx.receiptId.account.type === 'BANK' ?
+                                                                                            <Landmark className="h-3 w-3" /> :
+                                                                                            <Wallet className="h-3 w-3" />
+                                                                                        }
+                                                                                        <Link href={`/dashboard/accounts/${tx.receiptId.account._id}`} className="hover:underline hover:text-primary transition-colors">
+                                                                                            {tx.receiptId.account.name}
+                                                                                        </Link>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <span className="flex items-center justify-end gap-1.5">
+                                                                                        <Wallet className="h-3 w-3" />
+                                                                                        {tx.receiptId?.account?.name || 'Cash'}
+                                                                                    </span>
+                                                                                )}
+                                                                            </TableCell>
+                                                                            <TableCell className="py-1 text-right">
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="icon"
+                                                                                    className="h-6 w-6"
+                                                                                    onClick={() => {
+                                                                                        const recId = tx.collectionReceipt || (typeof tx.receiptId === 'object' ? tx.receiptId?._id : tx.receiptId);
+                                                                                        if (recId) window.open(`${API_URL}/collections/receipts/${recId}/pdf`, '_blank');
+                                                                                    }}
+                                                                                    title="View Receipt"
+                                                                                >
+                                                                                    <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                                                </Button>
+                                                                            </TableCell>
+                                                                        </TableRow>
+                                                                    ))}
+                                                                    {(!due.transactions || due.transactions.length === 0) && (
+                                                                        <TableRow>
+                                                                            <TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-2">No transactions recorded.</TableCell>
+                                                                        </TableRow>
+                                                                    )}
+                                                                </TableBody>
+                                                            </Table>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </Fragment>
                                     )
                                 })
                             )}
@@ -373,6 +469,17 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                                     <span className="text-muted-foreground">Amount Due:</span>
                                     <span className="font-mono font-bold text-green-600">₹{payingDue.amount - payingDue.paidAmount}</span>
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Amount to Pay</Label>
+                                <Input
+                                    type="number"
+                                    value={paymentAmount}
+                                    onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                                    max={payingDue.amount - payingDue.paidAmount}
+                                    disabled={payingDue.frequency !== 'Yearly'}
+                                />
                             </div>
 
                             <div className="space-y-2">

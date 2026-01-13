@@ -11,7 +11,11 @@ import { toast } from "sonner"
 import { Loader2, Coins, History, Calendar as CalendarIcon, Check, Settings2, Plus, CreditCard, Wallet, Landmark, ShieldAlert, LockKeyhole, ExternalLink } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+
 import { cn } from "@/lib/utils"
+import Link from "next/link"
+import { Fragment } from "react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 interface CollectionTabProps {
     type: 'house' | 'member';
@@ -28,7 +32,9 @@ interface CollectionTabProps {
 export function HouseCollectionTab({ type, entityId, entityName, currentSubscription, onUpdate, entityStatus }: CollectionTabProps) {
     const [loadingDues, setLoadingDues] = useState(true)
     const [dues, setDues] = useState<any[]>([])
+
     const [generating, setGenerating] = useState(false)
+    const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
     // Subscription Editing
     const [isEditingSub, setIsEditingSub] = useState(false)
@@ -39,6 +45,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
     // Payment State
     const [payingDue, setPayingDue] = useState<any>(null)
     const [isPayOpen, setIsPayOpen] = useState(false)
+    const [paymentAmount, setPaymentAmount] = useState<number>(0)
     const [accounts, setAccounts] = useState<any[]>([])
     const [selectedAccount, setSelectedAccount] = useState<string>("")
     const [loadingAccounts, setLoadingAccounts] = useState(false)
@@ -144,6 +151,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
 
     const openPayDialog = (due: any) => {
         setPayingDue(due)
+        setPaymentAmount(due.amount - due.paidAmount)
         setIsPayOpen(true)
     }
 
@@ -154,7 +162,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
         try {
             await payDue({
                 dueId: payingDue._id,
-                amount: payingDue.amount - payingDue.paidAmount,
+                amount: Number(paymentAmount),
                 accountId: selectedAccount,
                 paymentMethod: 'Cash' // Can be dynamic based on account type if needed
             })
@@ -359,62 +367,144 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                             ? new Date(due.transactions[due.transactions.length - 1].date).toLocaleDateString('en-GB')
                                             : '-';
 
+                                        const isYearly = due.frequency === 'Yearly' || due.status === 'PARTIAL';
+                                        const isExpanded = expandedRowId === due._id;
+
                                         return (
-                                            <TableRow key={due._id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 border-b last:border-0">
-                                                <TableCell className="py-2 text-xs font-medium">{due.period}</TableCell>
-                                                <TableCell className="py-2">
-                                                    <Badge variant="outline" className={cn(
-                                                        "text-[10px] px-1.5 py-0 h-5 border-0 font-medium",
-                                                        due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                                                            due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                                                                due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-                                                                    "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                                                    )}>
-                                                        {due.status}
-                                                    </Badge>
+                                            <Fragment key={due._id}>
+                                                <TableRow className={cn("hover:bg-slate-50 dark:hover:bg-neutral-800/50 border-b last:border-0", isExpanded && "bg-slate-50 dark:bg-neutral-800/50")}>
+                                                    <TableCell className="py-2 text-xs font-medium">
+                                                        <div className="flex items-center gap-2">
+                                                            {isYearly && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-5 w-5 p-0 text-muted-foreground"
+                                                                    onClick={() => setExpandedRowId(isExpanded ? null : due._id)}
+                                                                >
+                                                                    {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                                                </Button>
+                                                            )}
+                                                            {due.period}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="py-2">
+                                                        <Badge variant="outline" className={cn(
+                                                            "text-[10px] px-1.5 py-0 h-5 border-0 font-medium",
+                                                            due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                                                                due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                                                    due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+                                                                        "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                                        )}>
+                                                            {due.status}
+                                                        </Badge>
 
-                                                    {/* Receipt Link if Paid/Partial and has transactions */}
-                                                    {(due.status === 'PAID' || due.status === 'PARTIAL') && due.transactions?.length > 0 && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-6 w-6 ml-2"
-                                                            title="View Receipt"
-                                                            onClick={() => {
-                                                                const lastTx = due.transactions[due.transactions.length - 1];
-                                                                const recId = lastTx.collectionReceipt || lastTx.receiptId;
+                                                        {/* Receipt Link if Paid/Partial and has transactions */}
+                                                        {(due.status === 'PAID' || due.status === 'PARTIAL') && due.transactions?.length > 0 && !isYearly && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-6 w-6 ml-2"
+                                                                title="View Receipt"
+                                                                onClick={() => {
+                                                                    const lastTx = due.transactions[due.transactions.length - 1];
+                                                                    const recId = lastTx?.collectionReceipt || (typeof lastTx?.receiptId === 'object' ? lastTx.receiptId?._id : lastTx?.receiptId);
 
-                                                                if (recId) {
-                                                                    window.open(`${API_URL}/collections/receipts/${recId}/pdf`, '_blank');
-                                                                }
-                                                            }}
-                                                        >
-                                                            <ExternalLink className="h-3 w-3 text-slate-500" />
-                                                        </Button>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell className="py-2 text-[10px] text-muted-foreground font-mono">
-                                                    {paidDate}
-                                                </TableCell>
-                                                <TableCell className="py-2 text-xs font-mono text-right">₹{due.amount}</TableCell>
-                                                <TableCell className="py-2 text-xs font-mono text-right text-muted-foreground">
-                                                    {due.paidAmount > 0 ? `₹${due.paidAmount}` : '-'}
-                                                </TableCell>
-                                                <TableCell className="py-2 text-right">
-                                                    {due.status !== 'PAID' && due.status !== 'REJECTED' && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="secondary"
-                                                            className="h-6 w-12 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                                                            onClick={() => openPayDialog(due)}
-                                                        >
-                                                            Pay
-                                                        </Button>
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
+                                                                    if (recId) {
+                                                                        window.open(`${API_URL}/collections/receipts/${recId}/pdf`, '_blank');
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                            </Button>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="py-2 text-[10px] text-muted-foreground font-mono">
+                                                        {paidDate}
+                                                    </TableCell>
+                                                    <TableCell className="py-2 text-xs font-mono text-right">₹{due.amount}</TableCell>
+                                                    <TableCell className="py-2 text-xs font-mono text-right text-muted-foreground">
+                                                        {due.paidAmount > 0 ? `₹${due.paidAmount}` : '-'}
+                                                    </TableCell>
+                                                    <TableCell className="py-2 text-right">
+                                                        {due.status !== 'PAID' && due.status !== 'REJECTED' && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="secondary"
+                                                                className="h-6 w-12 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                                                onClick={() => openPayDialog(due)}
+                                                            >
+                                                                Pay
+                                                            </Button>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                                {isExpanded && (
+                                                    <TableRow>
+                                                        <TableCell colSpan={6} className="p-0 border-b bg-slate-50/50 dark:bg-neutral-900/20">
+                                                            <div className="p-3 pl-8">
+                                                                <Table>
+                                                                    <TableHeader className="bg-transparent border-b">
+                                                                        <TableRow className="h-8 hover:bg-transparent">
+                                                                            <TableHead className="h-8 text-[10px] font-semibold">Date</TableHead>
+                                                                            <TableHead className="h-8 text-[10px] font-semibold">Receipt No</TableHead>
+                                                                            <TableHead className="h-8 text-[10px] font-semibold text-right">Amount</TableHead>
+                                                                            <TableHead className="h-8 text-[10px] font-semibold text-right">Deposit Account</TableHead>
+                                                                            <TableHead className="h-8 text-right w-[50px]"></TableHead>
+                                                                        </TableRow>
+                                                                    </TableHeader>
+                                                                    <TableBody>
+                                                                        {due.transactions?.map((tx: any, idx: number) => (
+                                                                            <TableRow key={tx._id || idx} className="h-8 border-none hover:bg-slate-100 dark:hover:bg-neutral-800">
+                                                                                <TableCell className="py-1 text-xs">{new Date(tx.date).toLocaleDateString('en-GB')}</TableCell>
+                                                                                <TableCell className="py-1 text-xs font-mono text-muted-foreground">
+                                                                                    #{typeof tx.receiptId === 'object' ? tx.receiptId?.receiptNo : tx.receiptId?.slice(-6).toUpperCase()}
+                                                                                </TableCell>
+                                                                                <TableCell className="py-1 text-xs text-right font-mono font-medium">₹{tx.amount}</TableCell>
+                                                                                <TableCell className="py-1 text-xs text-right text-muted-foreground">
+                                                                                    {tx.receiptId?.account?._id ? (
+                                                                                        <div className="flex items-center justify-end gap-1.5">
+                                                                                            {tx.receiptId.account.type === 'BANK' ?
+                                                                                                <Landmark className="h-3 w-3" /> :
+                                                                                                <Wallet className="h-3 w-3" />
+                                                                                            }
+                                                                                            <Link href={`/dashboard/accounts/${tx.receiptId.account._id}`} className="hover:underline hover:text-primary transition-colors">
+                                                                                                {tx.receiptId.account.name}
+                                                                                            </Link>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <span className="flex items-center justify-end gap-1.5">
+                                                                                            <Wallet className="h-3 w-3" />
+                                                                                            {tx.receiptId?.account?.name || 'Cash'}
+                                                                                        </span>
+                                                                                    )}
+                                                                                </TableCell>
+                                                                                <TableCell className="py-1 text-right">
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="h-6 w-6"
+                                                                                        onClick={() => {
+                                                                                            const recId = tx.collectionReceipt || (typeof tx.receiptId === 'object' ? tx.receiptId?._id : tx.receiptId);
+                                                                                            if (recId) window.open(`${API_URL}/collections/receipts/${recId}/pdf`, '_blank');
+                                                                                        }}
+                                                                                        title="View Receipt"
+                                                                                    >
+                                                                                        <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                                                    </Button>
+                                                                                </TableCell>
+                                                                            </TableRow>
+                                                                        ))}
+                                                                    </TableBody>
+                                                                </Table>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </Fragment>
                                         )
                                     })
+
                                 )}
                             </TableBody>
                         </Table>
@@ -444,6 +534,17 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                     <span className="text-muted-foreground">Amount Due:</span>
                                     <span className="font-mono font-bold text-green-600">₹{payingDue.amount - payingDue.paidAmount}</span>
                                 </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>Amount to Pay</Label>
+                                <Input
+                                    type="number"
+                                    value={paymentAmount}
+                                    onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                                    max={payingDue.amount - payingDue.paidAmount}
+                                    disabled={payingDue.frequency !== 'Yearly'}
+                                />
                             </div>
 
                             <div className="space-y-2">
