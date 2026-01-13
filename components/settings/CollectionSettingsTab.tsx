@@ -59,15 +59,15 @@ export default function CollectionSettingsTab() {
         }
     };
 
-    const handleGenerate = async (type: 'House' | 'Member') => {
-        setGenerating(type);
+    const handleGenerate = async (type: 'House' | 'Member', frequency: 'Monthly' | 'Yearly' = 'Monthly') => {
+        setGenerating(`${type}-${frequency}`);
         try {
             const { data } = await api.post('/collections/generate/bulk', {
-                entityType: type
+                entityType: type,
+                frequency: frequency
             });
             if (data.status) {
                 toast.success(data.message);
-                // Optionally show detailed stats (generated vs skipped)
                 toast.info(`Generated: ${data.data.generated}, Skipped: ${data.data.skipped}`);
             } else {
                 toast.error(data.message || "Failed to generate dues");
@@ -206,10 +206,10 @@ export default function CollectionSettingsTab() {
                 <CardHeader>
                     <CardTitle className="text-orange-700 dark:text-orange-400">Manual Triggers</CardTitle>
                     <CardDescription>
-                        Manually trigger the bulk generation process immediately. This will check all monthly subscribers and generate missing dues for the <strong>Last Month</strong>.
+                        Manually trigger the bulk generation process immediately.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                     <Alert variant="default" className="bg-white dark:bg-black">
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle>Note</AlertTitle>
@@ -218,23 +218,48 @@ export default function CollectionSettingsTab() {
                         </AlertDescription>
                     </Alert>
 
-                    <div className="flex flex-col sm:flex-row gap-4">
-                        <Button
-                            variant="outline"
-                            onClick={() => handleGenerate('House')}
-                            disabled={!!generating}
-                        >
-                            {generating === 'House' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
-                            Run House Generation
-                        </Button>
-                        <Button
-                            variant="outline"
-                            onClick={() => handleGenerate('Member')}
-                            disabled={!!generating}
-                        >
-                            {generating === 'Member' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
-                            Run Member Generation
-                        </Button>
+                    <div>
+                        <h4 className="text-sm font-medium mb-3">Monthly Generation (Last Month)</h4>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => handleGenerate('House', 'Monthly')}
+                                disabled={!!generating}
+                            >
+                                {generating === 'House-Monthly' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                                Run House Monthly
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => handleGenerate('Member', 'Monthly')}
+                                disabled={!!generating}
+                            >
+                                {generating === 'Member-Monthly' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                                Run Member Monthly
+                            </Button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 className="text-sm font-medium mb-3">Yearly Generation (Current Year)</h4>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Button
+                                variant="outline"
+                                onClick={() => handleGenerate('House', 'Yearly')}
+                                disabled={!!generating}
+                            >
+                                {generating === 'House-Yearly' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                                Run House Yearly
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => handleGenerate('Member', 'Yearly')}
+                                disabled={!!generating}
+                            >
+                                {generating === 'Member-Yearly' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                                Run Member Yearly
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
