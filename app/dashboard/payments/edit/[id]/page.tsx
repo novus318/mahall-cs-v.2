@@ -112,17 +112,17 @@ export default function EditPaymentPage() {
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h2 className="text-xl font-bold tracking-tight text-foreground">Edit Payment</h2>
+                        <h2 className="text-xl font-bold tracking-tight text-rose-700">Edit Payment</h2>
                         <p className="text-muted-foreground text-sm">Modify payment details.</p>
                     </div>
                 </div>
                 <div className="flex flex-col items-end px-4">
                     <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest border-b border-dashed border-border mb-0.5">Voucher No</span>
-                    <span className="text-xl font-mono font-bold text-foreground bg-muted/30 px-2 py-0.5 rounded-sm border border-border/50">{receiptNo || 'Loading...'}</span>
+                    <span className="text-xl font-mono font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-sm border border-rose-200">{receiptNo || 'Loading...'}</span>
                 </div>
             </div>
 
-            <Card className="border-border shadow-sm bg-card">
+            <Card className="border-rose-100 shadow-sm bg-rose-50/30">
                 {/* Header Section: Voucher Details */}
                 <div className="bg-muted/30 p-6 border-b border-border">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -176,7 +176,7 @@ export default function EditPaymentPage() {
                                 <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
                                 <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
                                     <DialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-5 w-5 -mr-1 text-primary hover:text-primary hover:bg-primary/10">
+                                        <Button variant="ghost" size="icon" className="h-5 w-5 -mr-1 text-rose-600 hover:text-rose-700 hover:bg-rose-50">
                                             <Plus className="h-3 w-3" />
                                         </Button>
                                     </DialogTrigger>
@@ -306,7 +306,7 @@ export default function EditPaymentPage() {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => setItems([...items, { description: '', amount: '' }])}
-                                            className="text-primary hover:text-primary hover:bg-primary/10 -ml-2"
+                                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 -ml-2"
                                         >
                                             <Plus className="h-4 w-4 mr-1" /> Add Expected Line
                                         </Button>
@@ -339,7 +339,7 @@ export default function EditPaymentPage() {
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        <Button size="lg" className="min-w-[150px] shadow-sm" onClick={async () => {
+                        <Button size="lg" className="min-w-37.5 shadow-sm bg-rose-600 hover:bg-rose-700" onClick={async () => {
                             if (!date || !accountId || !categoryId) {
                                 toast.error("Please fill required fields (Date, Account, Category)");
                                 return;

@@ -167,7 +167,7 @@ export default function EditReceiptPage() {
                 </div>
             </div>
 
-            <Card className="border-border shadow-sm bg-card">
+            <Card className="border-green-100 shadow-sm bg-green-50/30">
                 <div className="bg-muted/30 p-6 border-b border-border">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div className="space-y-1.5">
@@ -313,7 +313,7 @@ export default function EditReceiptPage() {
                             <tfoot className="bg-muted/20 border-t border-border">
                                 <tr>
                                     <td colSpan={2} className="px-6 py-3">
-                                        <Button variant="ghost" size="sm" onClick={handleAddItem} className="text-primary hover:text-primary hover:bg-primary/10 -ml-2">
+                                        <Button variant="ghost" size="sm" onClick={handleAddItem} className="text-green-600 hover:text-green-700 hover:bg-green-50 -ml-2">
                                             <Plus className="h-4 w-4 mr-1" /> Add Line
                                         </Button>
                                     </td>
@@ -344,7 +344,7 @@ export default function EditReceiptPage() {
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        <Button size="lg" className="min-w-[150px] shadow-sm" onClick={handleSubmit} disabled={loading}>
+                        <Button size="lg" className="min-w-37.5 shadow-sm bg-green-600 hover:bg-green-700" onClick={handleSubmit} disabled={loading}>
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             Update Receipt
                         </Button>
