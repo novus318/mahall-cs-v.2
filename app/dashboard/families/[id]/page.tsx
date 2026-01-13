@@ -517,242 +517,180 @@ export default function FamilyDetailDashboard() {
 
     if (!family) return <div className="p-8 text-center">Family not found</div>
 
-    // --- Sub-Components (Avoids duplication) ---
+    // --- Computed Data for Directory ---
+    const membersByHouse: Record<string, any[]> = {}
+    const independentMembers: any[] = []
 
-    // Unified Directory with Accordion
-    const FamilyDirectory = () => {
-        // Group members by house
-        const membersByHouse: Record<string, any[]> = {}
-        const independentMembers: any[] = []
-
-        members.forEach(m => {
-            if (m.house && m.house._id) {
-                if (!membersByHouse[m.house._id]) membersByHouse[m.house._id] = []
-                membersByHouse[m.house._id].push(m)
-            } else {
-                independentMembers.push(m)
-            }
-        })
-
-        return (
-            <div className="flex-1 flex flex-col min-h-0 border-b overflow-hidden">
-                <div className="p-3 border-b bg-slate-50/80 dark:bg-neutral-800/50 flex items-center justify-between shrink-0">
-                    <h3 className="text-sm font-semibold flex items-center gap-2">
-                        <Home className="h-3.5 w-3.5 text-slate-500" /> Structure ({houses.length} Houses)
-                    </h3>
-                    <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => {
-                        setHouseForm({ name: "", address: "" })
-                        setEditingHouse(null)
-                        setIsAddHouseOpen(true)
-                    }}>
-                        <Plus className="h-3.5 w-3.5" />
-                    </Button>
-                </div>
-                <ScrollArea className="flex-1 h-full w-full">
-                    <div className="p-2 pb-20"> {/* pb for scroll space */}
-                        <Accordion type="multiple" className="w-full space-y-2">
-                            {houses.map(house => {
-                                const houseMembers = membersByHouse[house._id] || []
-                                return (
-                                    <AccordionItem key={house._id} value={house._id} className="border rounded-md px-2 bg-white dark:bg-neutral-900">
-                                        <div className="flex items-center justify-between py-2 group">
-                                            <AccordionTrigger className="py-0 hover:no-underline flex-1 text-sm font-medium">
-                                                <div className="flex flex-col items-start text-left">
-                                                    <span>{house.name}</span>
-                                                    <span className="text-[10px] text-muted-foreground font-normal">{houseMembers.length} Members</span>
-                                                </div>
-                                            </AccordionTrigger>
-                                            <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button
-                                                    size="sm" variant="ghost" className="h-6 w-6"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        setEditingHouse(house)
-                                                        setHouseForm({ name: house.name, address: house.address || "" })
-                                                        setIsEditHouseOpen(true)
-                                                    }}
-                                                >
-                                                    <Pencil className="h-3 w-3 text-slate-500" />
-                                                </Button>
-                                                <Button
-                                                    size="sm" variant="ghost" className="h-6 w-6 ml-1"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        setSelectedHouseIdForAdd(house._id)
-                                                        setEditingMember(null)
-                                                        setIsAddMemberOpen(true)
-                                                    }}
-                                                >
-                                                    <Plus className="h-3 w-3 text-blue-500" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                        <AccordionContent className="pt-2 pb-2 border-t mt-1">
-                                            {houseMembers.length === 0 ? (
-                                                <div className="text-xs text-muted-foreground italic pl-2">No members.</div>
-                                            ) : (
-                                                <div className="space-y-1">
-                                                    {houseMembers.map(member => {
-                                                        const isHead = house.head === member._id || (!house.head && houseMembers[0]?._id === member._id);
-
-                                                        const isMovedOut = member.status === 'Moved Out';
-                                                        return (
-                                                            <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-neutral-50 dark:bg-neutral-900/50' : ''}`}>
-                                                                <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
-                                                                    isHead ? "bg-yellow-100 text-yellow-700" :
-                                                                        isMovedOut ? "bg-slate-100 text-slate-500" : "bg-blue-100 text-blue-600")}>
-                                                                    {isHead ? <Crown className="h-3 w-3" /> : member.name.charAt(0)}
-                                                                </div>
-                                                                <span className={`truncate flex-1 ${isMovedOut ? 'line-through text-muted-foreground' : ''}`}>{member.name}</span>
-                                                                {isMovedOut && (
-                                                                    <span className="text-[10px] bg-red-100 text-red-700 px-1.5 rounded border border-red-200 transform scale-[0.85] origin-right">Moved Out</span>
-                                                                )}
-                                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                                                                    {!isHead && !isMovedOut && (
-                                                                        <Button size="icon" variant="ghost" className="h-5 w-5" title="Make Head of House"
-                                                                            onClick={() => handleSetHeadOfHouse(house._id, member._id)}>
-                                                                            <Crown className="h-3 w-3 text-slate-400 hover:text-yellow-600" />
-                                                                        </Button>
-                                                                    )}
-                                                                    <Button size="icon" variant="ghost" className="h-5 w-5"
-                                                                        onClick={() => {
-                                                                            setEditingMember(member)
-                                                                            setIsAddMemberOpen(true)
-                                                                        }}>
-                                                                        <Pencil className="h-3 w-3 text-slate-400 hover:text-blue-600" />
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        )
-                                                    })}
-                                                </div>
-                                            )}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                )
-                            })}
-
-                            {/* Independent Members Section */}
-                            {independentMembers.length > 0 && (
-                                <AccordionItem value="independent" className="border rounded-md px-2 bg-slate-50 dark:bg-neutral-800/50">
-                                    <div className="flex items-center justify-between py-2">
-                                        <AccordionTrigger className="py-0 hover:no-underline flex-1 text-sm font-medium text-slate-600 dark:text-slate-400">
-                                            <div className="flex flex-col items-start text-left">
-                                                <span>Independent Members</span>
-                                                <span className="text-[10px] text-muted-foreground font-normal">{independentMembers.length} Members</span>
-                                            </div>
-                                        </AccordionTrigger>
-                                        <Button
-                                            size="sm" variant="ghost" className="h-7 w-7 ml-2"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                setSelectedHouseIdForAdd("none")
-                                                setEditingMember(null)
-                                                setIsAddMemberOpen(true)
-                                            }}
-                                        >
-                                            <Plus className="h-3.5 w-3.5 text-slate-500" />
-                                        </Button>
-                                    </div>
-                                    <AccordionContent className="pt-2 pb-2 border-t mt-1">
-                                        <div className="space-y-1">
-                                            {independentMembers.map(member => {
-                                                const isMovedOut = member.status === 'Moved Out';
-                                                return (
-                                                    <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-neutral-100' : ''}`}>
-                                                        <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isMovedOut ? "bg-slate-200 text-slate-500" : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"}`}>
-                                                            {member.name.charAt(0)}
-                                                        </div>
-                                                        <span className={`truncate flex-1 ${isMovedOut ? 'line-through text-muted-foreground' : ''}`}>{member.name}</span>
-                                                        {isMovedOut && (
-                                                            <span className="text-[9px] bg-red-100 text-red-700 px-1 rounded border border-red-200">Moved Out</span>
-                                                        )}
-                                                        <Button size="icon" variant="ghost" className="h-5 w-5 opacity-0 group-hover:opacity-100"
-                                                            onClick={() => {
-                                                                setEditingMember(member)
-                                                                setIsAddMemberOpen(true)
-                                                            }}>
-                                                            <Pencil className="h-3 w-3 text-slate-400 hover:text-blue-600" />
-                                                        </Button>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    </AccordionContent>
-                                </AccordionItem>
-                            )}
-                        </Accordion>
-                    </div>
-                </ScrollArea>
-            </div>
-        )
-    }
+    members.forEach(m => {
+        if (m.house && m.house._id) {
+            if (!membersByHouse[m.house._id]) membersByHouse[m.house._id] = []
+            membersByHouse[m.house._id].push(m)
+        } else {
+            independentMembers.push(m)
+        }
+    })
 
     const onNodeClick = (_: any, node: any) => {
         if (node.type === 'member') {
             router.push(`/dashboard/members/${node.id}`)
         } else if (!node.id.startsWith('root') && !node.id.startsWith('marriage')) {
-            // It's a house node (assuming houses are standard nodes and check against known types)
-            // House ID is node.id
             router.push(`/dashboard/houses/${node.id}`)
         }
     }
 
-    const VisualTree = () => (
-        <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            nodeTypes={nodeTypes}
-            onNodeClick={onNodeClick}
-            fitView
-            attributionPosition="bottom-right"
-        >
-            <Controls className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 shadow-sm" />
-            <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
-        </ReactFlow>
-    )
+    // Prepare content variables or just render inline
+    const familyDirectoryContent = (
+        <div className="flex-1 flex flex-col min-h-0 border-b overflow-hidden">
+            <div className="p-3 border-b bg-slate-50/80 dark:bg-neutral-800/50 flex items-center justify-between shrink-0">
+                <h3 className="text-sm font-semibold flex items-center gap-2">
+                    <Home className="h-3.5 w-3.5 text-slate-500" /> Structure ({houses.length} Houses)
+                </h3>
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => {
+                    setHouseForm({ name: "", address: "" })
+                    setEditingHouse(null)
+                    setIsAddHouseOpen(true)
+                }}>
+                    <Plus className="h-3.5 w-3.5" />
+                </Button>
+            </div>
+            <ScrollArea className="flex-1 h-full w-full">
+                <div className="p-2 pb-20">
+                    <Accordion type="multiple" className="w-full space-y-2">
+                        {houses.map(house => {
+                            const houseMembers = membersByHouse[house._id] || []
+                            return (
+                                <AccordionItem key={house._id} value={house._id} className="border rounded-md px-2 bg-white dark:bg-neutral-900">
+                                    <div className="flex items-center justify-between py-2 group">
+                                        <AccordionTrigger className="py-0 hover:no-underline flex-1 text-sm font-medium">
+                                            <div className="flex flex-col items-start text-left">
+                                                <span>{house.name}</span>
+                                                <span className="text-[10px] text-muted-foreground font-normal">{houseMembers.length} Members</span>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button
+                                                size="sm" variant="ghost" className="h-6 w-6"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setEditingHouse(house)
+                                                    setHouseForm({ name: house.name, address: house.address || "" })
+                                                    setIsEditHouseOpen(true)
+                                                }}
+                                            >
+                                                <Pencil className="h-3 w-3 text-slate-500" />
+                                            </Button>
+                                            <Button
+                                                size="sm" variant="ghost" className="h-6 w-6 ml-1"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    setSelectedHouseIdForAdd(house._id)
+                                                    setEditingMember(null)
+                                                    setIsAddMemberOpen(true)
+                                                }}
+                                            >
+                                                <Plus className="h-3 w-3 text-blue-500" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <AccordionContent className="pt-2 pb-2 border-t mt-1">
+                                        {houseMembers.length === 0 ? (
+                                            <div className="text-xs text-muted-foreground italic pl-2">No members.</div>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                {houseMembers.map(member => {
+                                                    const isHead = house.head === member._id || (!house.head && houseMembers[0]?._id === member._id);
 
-    const HouseDialog = () => (
-        <Dialog open={isAddHouseOpen || isEditHouseOpen} onOpenChange={(val) => {
-            setIsAddHouseOpen(val)
-            setIsEditHouseOpen(val)
-            if (!val) {
-                setEditingHouse(null)
-                setHouseForm({ name: "", address: "" })
-            }
-        }}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{editingHouse ? "Edit House" : "Add House"}</DialogTitle>
-                    <DialogDescription>{editingHouse ? "Update details" : `Add a new house to ${family?.name} `}</DialogDescription>
-                </DialogHeader>
-                <form onSubmit={editingHouse ? handleUpdateHouse : handleCreateHouse} className="space-y-4 py-4">
-                    <div className="space-y-2">
-                        <Label>House Name</Label>
-                        <Input
-                            placeholder="e.g. Block A-101"
-                            value={houseForm.name}
-                            onChange={(e) => setHouseForm({ ...houseForm, name: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Address</Label>
-                        <Textarea
-                            placeholder="Physical address..."
-                            value={houseForm.address}
-                            onChange={(e) => setHouseForm({ ...houseForm, address: e.target.value })}
-                        />
-                    </div>
-                    <DialogFooter>
-                        <Button type="submit">{editingHouse ? "Update" : "Create"}</Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    )
+                                                    const isMovedOut = member.status === 'Moved Out';
+                                                    return (
+                                                        <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-neutral-50 dark:bg-neutral-900/50' : ''}`}>
+                                                            <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                                                                isHead ? "bg-yellow-100 text-yellow-700" :
+                                                                    isMovedOut ? "bg-slate-100 text-slate-500" : "bg-blue-100 text-blue-600")}>
+                                                                {isHead ? <Crown className="h-3 w-3" /> : member.name.charAt(0)}
+                                                            </div>
+                                                            <span className={`truncate flex-1 ${isMovedOut ? 'line-through text-muted-foreground' : ''}`}>{member.name}</span>
+                                                            {isMovedOut && (
+                                                                <span className="text-[10px] bg-red-100 text-red-700 px-1.5 rounded border border-red-200 transform scale-[0.85] origin-right">Moved Out</span>
+                                                            )}
+                                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                                                                {!isHead && !isMovedOut && (
+                                                                    <Button size="icon" variant="ghost" className="h-5 w-5" title="Make Head of House"
+                                                                        onClick={() => handleSetHeadOfHouse(house._id, member._id)}>
+                                                                        <Crown className="h-3 w-3 text-slate-400 hover:text-yellow-600" />
+                                                                    </Button>
+                                                                )}
+                                                                <Button size="icon" variant="ghost" className="h-5 w-5"
+                                                                    onClick={() => {
+                                                                        setEditingMember(member)
+                                                                        setIsAddMemberOpen(true)
+                                                                    }}>
+                                                                    <Pencil className="h-3 w-3 text-slate-400 hover:text-blue-600" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        )}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            )
+                        })}
+
+                        {/* Independent Members Section */}
+                        {independentMembers.length > 0 && (
+                            <AccordionItem value="independent" className="border rounded-md px-2 bg-slate-50 dark:bg-neutral-800/50">
+                                <div className="flex items-center justify-between py-2">
+                                    <AccordionTrigger className="py-0 hover:no-underline flex-1 text-sm font-medium text-slate-600 dark:text-slate-400">
+                                        <div className="flex flex-col items-start text-left">
+                                            <span>Independent Members</span>
+                                            <span className="text-[10px] text-muted-foreground font-normal">{independentMembers.length} Members</span>
+                                        </div>
+                                    </AccordionTrigger>
+                                    <Button
+                                        size="sm" variant="ghost" className="h-7 w-7 ml-2"
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            setSelectedHouseIdForAdd("none")
+                                            setEditingMember(null)
+                                            setIsAddMemberOpen(true)
+                                        }}
+                                    >
+                                        <Plus className="h-3.5 w-3.5 text-slate-500" />
+                                    </Button>
+                                </div>
+                                <AccordionContent className="pt-2 pb-2 border-t mt-1">
+                                    <div className="space-y-1">
+                                        {independentMembers.map(member => {
+                                            const isMovedOut = member.status === 'Moved Out';
+                                            return (
+                                                <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-neutral-100' : ''}`}>
+                                                    <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isMovedOut ? "bg-slate-200 text-slate-500" : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"}`}>
+                                                        {member.name.charAt(0)}
+                                                    </div>
+                                                    <span className={`truncate flex-1 ${isMovedOut ? 'line-through text-muted-foreground' : ''}`}>{member.name}</span>
+                                                    {isMovedOut && (
+                                                        <span className="text-[9px] bg-red-100 text-red-700 px-1 rounded border border-red-200">Moved Out</span>
+                                                    )}
+                                                    <Button size="icon" variant="ghost" className="h-5 w-5 opacity-0 group-hover:opacity-100"
+                                                        onClick={() => {
+                                                            setEditingMember(member)
+                                                            setIsAddMemberOpen(true)
+                                                        }}>
+                                                        <Pencil className="h-3 w-3 text-slate-400 hover:text-blue-600" />
+                                                    </Button>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )}
+                    </Accordion>
+                </div>
+            </ScrollArea>
+        </div>
+    );
 
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)] bg-slate-50/50 dark:bg-black/10">
@@ -778,11 +716,23 @@ export default function FamilyDetailDashboard() {
             <div className="hidden lg:grid flex-1 w-full overflow-hidden grid-cols-4 h-full">
                 {/* Left Sidebar */}
                 <div className="col-span-1 border-r bg-white dark:bg-neutral-900 flex flex-col h-full overflow-hidden">
-                    <FamilyDirectory />
+                    {familyDirectoryContent}
                 </div>
                 {/* Right Pane: Visual Tree */}
                 <div className="col-span-3 h-full relative bg-slate-50/50 dark:bg-black/20">
-                    <VisualTree />
+                    <ReactFlow
+                        nodes={nodes}
+                        edges={edges}
+                        onNodesChange={onNodesChange}
+                        onEdgesChange={onEdgesChange}
+                        nodeTypes={nodeTypes}
+                        onNodeClick={onNodeClick}
+                        fitView
+                        attributionPosition="bottom-right"
+                    >
+                        <Controls className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 shadow-sm" />
+                        <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
+                    </ReactFlow>
                 </div>
             </div>
 
@@ -800,17 +750,66 @@ export default function FamilyDetailDashboard() {
 
                     <TabsContent value="overview" className="flex-1 flex flex-col overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden">
                         <div className="flex flex-col h-full bg-white dark:bg-neutral-900">
-                            <FamilyDirectory />
+                            {familyDirectoryContent}
                         </div>
                     </TabsContent>
 
                     <TabsContent value="tree" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden relative bg-slate-50/50">
-                        <VisualTree />
+                        <ReactFlow
+                            nodes={nodes}
+                            edges={edges}
+                            onNodesChange={onNodesChange}
+                            onEdgesChange={onEdgesChange}
+                            nodeTypes={nodeTypes}
+                            onNodeClick={onNodeClick}
+                            fitView
+                            attributionPosition="bottom-right"
+                        >
+                            <Controls className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 shadow-sm" />
+                            <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
+                        </ReactFlow>
                     </TabsContent>
                 </Tabs>
             </div>
 
-            <HouseDialog />
+            <Dialog open={isAddHouseOpen || isEditHouseOpen} onOpenChange={(val) => {
+                setIsAddHouseOpen(val)
+                setIsEditHouseOpen(val)
+                if (!val) {
+                    setEditingHouse(null)
+                    setHouseForm({ name: "", address: "" })
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{editingHouse ? "Edit House" : "Add House"}</DialogTitle>
+                        <DialogDescription>{editingHouse ? "Update details" : `Add a new house to ${family?.name} `}</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={editingHouse ? handleUpdateHouse : handleCreateHouse} className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <Label>House Name</Label>
+                            <Input
+                                placeholder="e.g. Block A-101"
+                                value={houseForm.name}
+                                onChange={(e) => setHouseForm({ ...houseForm, name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Address</Label>
+                            <Textarea
+                                placeholder="Physical address..."
+                                value={houseForm.address}
+                                onChange={(e) => setHouseForm({ ...houseForm, address: e.target.value })}
+                            />
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit">{editingHouse ? "Update" : "Create"}</Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
             <MemberDialog
                 open={isAddMemberOpen}
                 onOpenChange={setIsAddMemberOpen}
