@@ -249,7 +249,7 @@ export default function AccountsPage() {
                                                 </div>
                                             ) : '-'}
                                         </TableCell>
-                                        <TableCell className="text-right py-2 font-bold text-sm text-slate-700">
+                                        <TableCell className={`text-right py-2 font-bold text-sm ${acc.balance < 0 ? 'text-red-500' : 'text-slate-700'}`}>
                                             ₹{acc.balance.toLocaleString()}
                                         </TableCell>
                                         <TableCell className="py-2 text-right">

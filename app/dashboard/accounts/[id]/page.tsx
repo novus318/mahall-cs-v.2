@@ -108,7 +108,7 @@ export default function AccountDetailPage() {
                                             <TableCell className="font-medium text-sm">
                                                 {tx.description}
                                                 {tx.payment && (
-                                                    <a href={`/dashboard/payments/${tx.payment._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
+                                                    <a href={`/dashboard/payments/edit/${tx.payment._id}`} className="inline-flex items-center gap-1 ml-2 text-primary hover:underline text-xs" onClick={(e) => e.stopPropagation()}>
                                                         <ExternalLink className="h-3 w-3" /> {tx.payment.receiptNo}
                                                     </a>
                                                 )}

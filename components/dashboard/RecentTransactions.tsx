@@ -39,7 +39,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
     };
 
     const getLink = (transaction: Transaction) => {
-        if (transaction.payment?._id) return `/dashboard/payments/${transaction.payment._id}`;
+        if (transaction.payment?._id) return `/dashboard/payments/edit/${transaction.payment._id}`;
         if (transaction.receipt?._id) return `/dashboard/receipts/${transaction.receipt._id}`;
         if (transaction.staff?._id) return `/dashboard/staff/${transaction.staff._id}`;
         if (transaction.contract?._id) return `/dashboard/contracts/${transaction.contract._id}`;
@@ -48,7 +48,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
     };
 
     return (
-        <Card className="backdrop-blur-sm bg-white/50 dark:bg-slate-950/50 py-3">
+        <Card className="backdrop-blur-sm bg-white/50 dark:bg-slate-950/50 py-3 min-h-[468px]">
             <CardHeader>
                 <CardTitle>Recent Transactions</CardTitle>
                 <CardDescription>Latest financial activity across all accounts</CardDescription>

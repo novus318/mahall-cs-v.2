@@ -27,6 +27,7 @@ export default function PaymentsPage() {
 
     // Category Management State
     const [isCatDialogOpen, setIsCatDialogOpen] = useState(false);
+    const [editingCategory, setEditingCategory] = useState<any>(null); // New State
     const [newCatName, setNewCatName] = useState('');
     const [newCatDesc, setNewCatDesc] = useState('');
 
@@ -64,16 +65,46 @@ export default function PaymentsPage() {
         }
     };
 
-    const handleCreateCategory = async () => {
+    const handleOpenCatDialog = (category: any = null) => {
+        if (category) {
+            setEditingCategory(category);
+            setNewCatName(category.name);
+            setNewCatDesc(category.description || '');
+        } else {
+            setEditingCategory(null);
+            setNewCatName('');
+            setNewCatDesc('');
+        }
+        setIsCatDialogOpen(true);
+    };
+
+    const handleSaveCategory = async () => {
+        if (!newCatName.trim()) {
+            toast.error("Category name is required");
+            return;
+        }
+
         try {
-            await api.post('/payments/categories', { name: newCatName, description: newCatDesc });
-            toast.success("Category created");
+            if (editingCategory) {
+                // Update
+                const { data } = await api.put(`/payments/categories/${editingCategory._id}`, {
+                    name: newCatName,
+                    description: newCatDesc
+                });
+                toast.success("Category updated");
+                setCategories(categories.map(cat => cat._id === editingCategory._id ? data.data : cat));
+            } else {
+                // Create
+                const { data } = await api.post('/payments/categories', { name: newCatName, description: newCatDesc });
+                toast.success("Category created");
+                setCategories([...categories, data.data]);
+            }
             setIsCatDialogOpen(false);
             setNewCatName('');
             setNewCatDesc('');
-            fetchCategories();
+            setEditingCategory(null);
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to create category");
+            toast.error(error.response?.data?.message || "Failed to save category");
         }
     };
 
@@ -82,7 +113,7 @@ export default function PaymentsPage() {
         try {
             await api.delete(`/payments/categories/${id}`);
             toast.success("Category removed");
-            fetchCategories();
+            setCategories(categories.filter(c => c._id !== id));
         } catch (error) {
             toast.error("Failed to delete category");
         }
@@ -167,7 +198,7 @@ export default function PaymentsPage() {
                                 <CardTitle className="text-base font-semibold">Categories</CardTitle>
                                 <p className="text-xs text-muted-foreground mt-1">Manage payment classification types.</p>
                             </div>
-                            <Button size="sm" onClick={() => setIsCatDialogOpen(true)}>
+                            <Button size="sm" onClick={() => handleOpenCatDialog()}>
                                 <Plus className="mr-2 h-3.5 w-3.5" /> Add Category
                             </Button>
                         </CardHeader>
@@ -177,7 +208,7 @@ export default function PaymentsPage() {
                                     <TableRow>
                                         <TableHead className="w-[200px] font-semibold text-xs uppercase tracking-wider">Name</TableHead>
                                         <TableHead className="font-semibold text-xs uppercase tracking-wider">Description</TableHead>
-                                        <TableHead className="w-[100px] text-right font-semibold text-xs uppercase tracking-wider">Action</TableHead>
+                                        <TableHead className="w-[150px] text-right font-semibold text-xs uppercase tracking-wider">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -186,9 +217,15 @@ export default function PaymentsPage() {
                                             <TableCell className="font-medium">{cat.name}</TableCell>
                                             <TableCell className="text-muted-foreground">{cat.description || '-'}</TableCell>
                                             <TableCell className="text-right">
-                                                <Button variant="ghost" size="sm" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteCategory(cat._id)}>
-                                                    Remove
-                                                </Button>
+                                                <div className="flex justify-end gap-2">
+                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleOpenCatDialog(cat)}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                                                        <span className="sr-only">Edit</span>
+                                                    </Button>
+                                                    <Button variant="ghost" size="sm" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteCategory(cat._id)}>
+                                                        Remove
+                                                    </Button>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -202,7 +239,7 @@ export default function PaymentsPage() {
             <Dialog open={isCatDialogOpen} onOpenChange={setIsCatDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add Payment Category</DialogTitle>
+                        <DialogTitle>{editingCategory ? "Edit Payment Category" : "Add Payment Category"}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
@@ -215,7 +252,7 @@ export default function PaymentsPage() {
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button onClick={handleCreateCategory}>Create Category</Button>
+                        <Button onClick={handleSaveCategory}>{editingCategory ? "Update Category" : "Create Category"}</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

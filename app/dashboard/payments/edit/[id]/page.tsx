@@ -15,6 +15,8 @@ import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+
 export default function EditPaymentPage() {
     const router = useRouter();
     const params = useParams();
@@ -23,6 +25,11 @@ export default function EditPaymentPage() {
 
     const [accounts, setAccounts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
+
+    // Category Creation State
+    const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [creatingCategory, setCreatingCategory] = useState(false);
 
     // Form State
     const [date, setDate] = useState<Date>();
@@ -72,12 +79,33 @@ export default function EditPaymentPage() {
         loadData();
     }, [params.id, router]);
 
+    const handleCreateCategory = async () => {
+        if (!newCategoryName.trim()) {
+            toast.error("Category name is required");
+            return;
+        }
+        setCreatingCategory(true);
+        try {
+            const res = await api.post('/payments/categories', { name: newCategoryName });
+            const newCategory = res.data.data;
+            setCategories([...categories, newCategory]);
+            setCategoryId(newCategory._id);
+            setIsCategoryDialogOpen(false);
+            setNewCategoryName('');
+            toast.success("Category created");
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to create category");
+        } finally {
+            setCreatingCategory(false);
+        }
+    };
+
     // ... (rest of UI similar to create)
     // I will write the FULL file assuming `api.get('/payments/' + params.id)` works.
     // I will add that route immediately.
 
     return (
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0 max-w-5xl mx-auto w-full">
+        <div className="flex flex-1 flex-col gap-6 p-6 pt-0 max-w-5xl  w-full">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
@@ -144,7 +172,37 @@ export default function EditPaymentPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
+                                <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-5 w-5 -mr-1 text-primary hover:text-primary hover:bg-primary/10">
+                                            <Plus className="h-3 w-3" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Create New Category</DialogTitle>
+                                            <DialogDescription>Add a new expense category to the list.</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="py-4">
+                                            <Label htmlFor="catName" className="mb-2 block">Category Name</Label>
+                                            <Input
+                                                id="catName"
+                                                value={newCategoryName}
+                                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                                placeholder="e.g. Office Supplies"
+                                            />
+                                        </div>
+                                        <DialogFooter>
+                                            <Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>Cancel</Button>
+                                            <Button onClick={handleCreateCategory} disabled={creatingCategory}>
+                                                {creatingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create'}
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
                             <Select value={categoryId} onValueChange={setCategoryId}>
                                 <SelectTrigger className="w-full bg-background border-input h-9">
                                     <SelectValue placeholder="Expense Category" />
