@@ -205,7 +205,8 @@ export default function HouseDetailPage() {
                         dateOfBirth: member.dateOfBirth,
                         isHead: isHead,
                         isResident: isResident,
-                        isSpouse: isSpouse
+                        isSpouse: isSpouse,
+                        status: member.status // Pass status for visual indication
                     },
                     position: { x: 0, y: 0 },
                     // Inline style removed - handled by component
@@ -469,17 +470,22 @@ export default function HouseDetailPage() {
                     ) : (
                         members.map(member => {
                             const isHead = house?.head === member._id || house?.head?._id === member._id;
-
+                            const isMovedOut = member.status === 'Moved Out';
                             return (
-                                <div key={member._id} className="flex items-center gap-2 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-xs group">
-                                    <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isHead ? "bg-yellow-100 text-yellow-700" : "bg-blue-100 text-blue-600"
+                                <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-neutral-50 dark:bg-neutral-900/50' : ''}`}>
+                                    <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isHead ? "bg-yellow-100 text-yellow-700" :
+                                        isMovedOut ? "bg-slate-100 text-slate-500" : "bg-blue-100 text-blue-600"
                                         }`}>
                                         {isHead ? <Crown className="h-3 w-3" /> : member.name.charAt(0)}
                                     </div>
-                                    <span className="truncate flex-1">{member.name}</span>
+                                    <span className={`truncate flex-1 ${isMovedOut ? 'line-through text-muted-foreground' : ''}`}>{member.name}</span>
+
+                                    {isMovedOut && (
+                                        <span className="text-[10px] bg-red-100 text-red-700 px-1.5 rounded border border-red-200">Moved Out</span>
+                                    )}
 
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
-                                        {!isHead && (
+                                        {!isHead && !isMovedOut && (
                                             <Button size="icon" variant="ghost" className="h-5 w-5" title="Make Head of House"
                                                 onClick={() => handleSetHead(member._id)}>
                                                 <Crown className="h-3 w-3 text-slate-400 hover:text-yellow-600" />

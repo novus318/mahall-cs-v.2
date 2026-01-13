@@ -2,16 +2,26 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { getMember } from "@/lib/api"
+import { getMember, moveOutMember } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { HouseCollectionTab } from "@/components/dashboard/HouseCollectionTab"
-import { ArrowLeft, Loader2, LayoutGrid, Coins, User, Calendar, Phone, Heart, Briefcase, GraduationCap, Building, MapPin, Crown, Pencil } from "lucide-react"
+import { ArrowLeft, Loader2, LayoutGrid, Coins, User, Calendar, Phone, Heart, Briefcase, GraduationCap, Building, MapPin, Crown, Pencil, Ban } from "lucide-react"
 import { toast } from "sonner"
 import { MemberDialog } from "@/components/dashboard/MemberDialog"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function MemberDetailPage() {
     const { id } = useParams()
@@ -19,6 +29,7 @@ export default function MemberDetailPage() {
     const [member, setMember] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [isEditOpen, setIsEditOpen] = useState(false)
+    const [isMoveOutOpen, setIsMoveOutOpen] = useState(false)
 
     const fetchMember = useCallback(async () => {
         setLoading(true)
@@ -32,6 +43,17 @@ export default function MemberDetailPage() {
             setLoading(false)
         }
     }, [id, router])
+
+    const handleMoveOut = async () => {
+        try {
+            await moveOutMember(id as string)
+            toast.success("Member marked as Moved Out")
+            fetchMember()
+            setIsMoveOutOpen(false)
+        } catch (error: any) {
+            toast.error(error.message || "Failed to move out member")
+        }
+    }
 
     useEffect(() => {
         if (id) {
@@ -90,6 +112,9 @@ export default function MemberDetailPage() {
                             <h1 className="text-sm font-bold flex items-center gap-2 leading-none">
                                 {member.name}
                                 <span className="text-xs font-normal text-muted-foreground">({member.customId})</span>
+                                {member.status === 'Moved Out' && (
+                                    <Badge variant="destructive" className="ml-2 text-[10px] px-1.5 py-0 h-5">Moved Out</Badge>
+                                )}
                             </h1>
                             <div className="flex items-center gap-1 text-[10px] text-muted-foreground leading-none mt-1">
                                 <span className="capitalize">Resident</span> of {" "}
@@ -102,7 +127,22 @@ export default function MemberDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="h-7 text-xs gap-2" onClick={() => setIsEditOpen(true)}>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs gap-2 text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setIsMoveOutOpen(true)}
+                        disabled={member.status === 'Moved Out'}
+                    >
+                        <Ban className="h-3 w-3" /> Move Out
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs gap-2"
+                        onClick={() => setIsEditOpen(true)}
+                        disabled={member.status === 'Moved Out'}
+                    >
                         <Pencil className="h-3 w-3" /> Edit
                     </Button>
                 </div>
@@ -195,6 +235,7 @@ export default function MemberDetailPage() {
                                 entityName={member.name}
                                 currentSubscription={member.subscription}
                                 onUpdate={fetchMember}
+                                entityStatus={member.status} // Pass status for disabling actions
                             />
                         </div>
                     </TabsContent>
@@ -213,6 +254,30 @@ export default function MemberDetailPage() {
                     setIsEditOpen(false)
                 }}
             />
+
+            {/* Move Out Confirmation Dialog */}
+            <AlertDialog open={isMoveOutOpen} onOpenChange={setIsMoveOutOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Move Out</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to mark <strong>{member.name}</strong> as Moved Out?
+                            <br /><br />
+                            This will:
+                            <ul className="list-disc pl-5 mt-2">
+                                <li>Set their status to "Moved Out"</li>
+                                <li>Stop any active subscriptions (set to None)</li>
+                            </ul>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleMoveOut} className="bg-orange-600 hover:bg-orange-700">
+                            Confirm Move Out
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

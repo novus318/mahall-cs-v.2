@@ -22,9 +22,10 @@ interface CollectionTabProps {
         amount: number;
     } | undefined;
     onUpdate: () => void;
+    entityStatus?: string; // Optional status prop
 }
 
-export function HouseCollectionTab({ type, entityId, entityName, currentSubscription, onUpdate }: CollectionTabProps) {
+export function HouseCollectionTab({ type, entityId, entityName, currentSubscription, onUpdate, entityStatus }: CollectionTabProps) {
     const [loadingDues, setLoadingDues] = useState(true)
     const [dues, setDues] = useState<any[]>([])
     const [generating, setGenerating] = useState(false)
@@ -53,6 +54,9 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
     const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1)
     const [isGenerateOpen, setIsGenerateOpen] = useState(false)
+
+    // Check if disabled
+    const isDisabled = entityStatus === 'Moved Out';
 
     const fetchDues = async () => {
         setLoadingDues(true)
@@ -208,6 +212,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
             {/* Header / Stats Strip */}
             <div className="px-6 py-4 border-b bg-white dark:bg-neutral-900 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-6">
+                    {/* ... (Frequency/Amount display logic) ... */}
                     <div className="flex flex-col">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">Frequency</span>
                         {isEditingSub ? (
@@ -254,7 +259,13 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                             </Button>
                         </>
                     ) : (
-                        <Button variant="outline" size="sm" className="h-7 text-xs gap-2" onClick={() => setIsEditingSub(true)}>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-xs gap-2"
+                            onClick={() => setIsEditingSub(true)}
+                            disabled={isDisabled}
+                        >
                             <Settings2 className="h-3 w-3 text-muted-foreground" /> Configure
                         </Button>
                     )}
@@ -270,7 +281,11 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
 
                     <Popover open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
                         <PopoverTrigger asChild>
-                            <Button size="sm" className="h-8 text-xs gap-2 shadow-sm" disabled={currentSubscription?.frequency === 'None'}>
+                            <Button
+                                size="sm"
+                                className="h-8 text-xs gap-2 shadow-sm"
+                                disabled={currentSubscription?.frequency === 'None' || isDisabled}
+                            >
                                 <Plus className="h-3.5 w-3.5" /> Generate Due
                             </Button>
                         </PopoverTrigger>

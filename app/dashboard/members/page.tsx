@@ -33,6 +33,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils"
 // Ensure updateSubscription is imported
 import { getMembers, deleteMember, importMembers, updateSubscription } from "@/lib/api"
+import { Badge } from "@/components/ui/badge"
 
 interface Member {
     _id: string;
@@ -43,6 +44,7 @@ interface Member {
     house?: { name: string; customId: string };
     family?: { name: string; customId: string };
     mobile: string;
+    status?: string;
 }
 
 interface ImportResult {
@@ -479,84 +481,107 @@ export default function MembersPage() {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                members.map((member) => (
-                                    <TableRow key={member._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                                        <TableCell className="py-2 text-sm font-mono font-medium">{member.customId || "-"}</TableCell>
-                                        <TableCell className="py-2">
-                                            <div className="flex flex-col">
-                                                <Link href={`/dashboard/members/${member._id}`} className="text-sm font-medium hover:underline hover:text-blue-600 transition-colors">
-                                                    {member.name}
-                                                </Link>
-                                                <span className="text-[10px] text-muted-foreground">
-                                                    {member.gender}, {new Date(member.dateOfBirth).getFullYear()}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell className="py-2 text-sm text-muted-foreground">
-                                            {member.house ? (
-                                                <Link href={`/dashboard/houses/${(member.house as any)._id}`} className="hover:underline hover:text-blue-600 transition-colors">
-                                                    {member.house.name}
-                                                </Link>
-                                            ) : (
-                                                "-"
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="py-2 text-sm text-muted-foreground">
-                                            {member.family?.name || "Independent"}
-                                        </TableCell>
-                                        <TableCell className="py-2 text-sm text-muted-foreground font-mono">
-                                            {member.mobile || "-"}
-                                        </TableCell>
-                                        <TableCell className="py-2 text-sm">
-                                            {(member as any).subscription?.frequency && (member as any).subscription?.frequency !== 'None' ? (
+                                members.map((member) => {
+                                    const isMovedOut = member.status === 'Moved Out';
+
+                                    return (
+                                        <TableRow key={member._id} className={cn(
+                                            "hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors",
+                                            isMovedOut && "opacity-60 grayscale-[0.5] bg-slate-50 dark:bg-neutral-900/30"
+                                        )}>
+                                            <TableCell className="py-2 text-sm font-mono font-medium">{member.customId || "-"}</TableCell>
+                                            <TableCell className="py-2">
                                                 <div className="flex flex-col">
-                                                    <span className={cn(
-                                                        "text-xs font-medium px-1.5 py-0.5 rounded w-fit",
-                                                        (member as any).subscription.frequency === 'Monthly' ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                                                    )}>
-                                                        {(member as any).subscription.frequency}
-                                                    </span>
-                                                    <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                                                        ₹{(member as any).subscription.amount}
+                                                    <div className="flex items-center gap-2">
+                                                        <Link href={`/dashboard/members/${member._id}`} className={cn("text-sm font-medium hover:underline hover:text-blue-600 transition-colors", isMovedOut && "line-through text-muted-foreground")}>
+                                                            {member.name}
+                                                        </Link>
+                                                        {isMovedOut && (
+                                                            <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 uppercase">Moved Out</Badge>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-[10px] text-muted-foreground">
+                                                        {member.gender}, {new Date(member.dateOfBirth).getFullYear()}
                                                     </span>
                                                 </div>
-                                            ) : (
-                                                <span className="text-xs text-muted-foreground italic">None</span>
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="py-2 text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openSubscriptionDialog(member)}>
-                                                    <Settings2 className="h-3.5 w-3.5 text-slate-500" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-7 w-7"
-                                                    onClick={() => {
-                                                        setEditingMember(member)
-                                                        setIsAddMemberOpen(true)
-                                                    }}
-                                                >
-                                                    <Pencil className="h-3.5 w-3.5 text-amber-500" />
-                                                </Button>
-                                                <Link href={`/dashboard/members/${member._id}`}>
-                                                    <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500 hover:text-blue-700">
-                                                        <Eye className="h-3.5 w-3.5" />
+                                            </TableCell>
+                                            <TableCell className="py-2 text-sm text-muted-foreground">
+                                                {member.house ? (
+                                                    <Link href={`/dashboard/houses/${(member.house as any)._id}`} className="hover:underline hover:text-blue-600 transition-colors">
+                                                        {member.house.name}
+                                                    </Link>
+                                                ) : (
+                                                    "-"
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="py-2 text-sm text-muted-foreground">
+                                                {member.family?.name || "Independent"}
+                                            </TableCell>
+                                            <TableCell className="py-2 text-sm text-muted-foreground font-mono">
+                                                {member.mobile || "-"}
+                                            </TableCell>
+                                            <TableCell className="py-2 text-sm">
+                                                {(member as any).subscription?.frequency && (member as any).subscription?.frequency !== 'None' ? (
+                                                    <div className="flex flex-col">
+                                                        <span className={cn(
+                                                            "text-xs font-medium px-1.5 py-0.5 rounded w-fit",
+                                                            (member as any).subscription.frequency === 'Monthly' ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                                                        )}>
+                                                            {(member as any).subscription.frequency}
+                                                        </span>
+                                                        <span className="text-[10px] text-muted-foreground font-mono mt-0.5">
+                                                            ₹{(member as any).subscription.amount}
+                                                        </span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs text-muted-foreground italic">None</span>
+                                                )}
+                                            </TableCell>
+                                            <TableCell className="py-2 text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-7 w-7"
+                                                        onClick={() => openSubscriptionDialog(member)}
+                                                        disabled={isMovedOut}
+                                                        title="Configure Subscription"
+                                                    >
+                                                        <Settings2 className="h-3.5 w-3.5 text-slate-500" />
                                                     </Button>
-                                                </Link>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-7 w-7 text-red-500 hover:text-red-700"
-                                                    onClick={() => confirmDelete(member._id)}
-                                                >
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-7 w-7"
+                                                        onClick={() => {
+                                                            setEditingMember(member)
+                                                            setIsAddMemberOpen(true)
+                                                        }}
+                                                        disabled={isMovedOut}
+                                                        title="Edit Member"
+                                                    >
+                                                        <Pencil className="h-3.5 w-3.5 text-amber-500" />
+                                                    </Button>
+                                                    <Link href={`/dashboard/members/${member._id}`}>
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500 hover:text-blue-700">
+                                                            <Eye className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </Link>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-7 w-7 text-red-500 hover:text-red-700"
+                                                        onClick={() => confirmDelete(member._id)}
+                                                        disabled={isMovedOut}
+                                                        title="Delete Member"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    )
+                                })
                             )}
                         </TableBody>
                     </Table>
