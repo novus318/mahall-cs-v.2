@@ -385,7 +385,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                                 const recId = lastTx.collectionReceipt || lastTx.receiptId;
 
                                                                 if (recId) {
-                                                                    window.location.href = `/dashboard/collection-receipts/${recId}`;
+                                                                    window.open(`${API_URL}/collections/receipts/${recId}/pdf`, '_blank');
                                                                 }
                                                             }}
                                                         >
