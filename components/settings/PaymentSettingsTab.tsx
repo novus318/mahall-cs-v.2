@@ -62,8 +62,8 @@ export default function PaymentSettingsTab() {
     if (loading) return <div className="p-4"><Loader2 className="h-6 w-6 animate-spin" /></div>;
 
     return (
-        <div className="space-y-6">
-            <Card>
+        <div className="space-y-4">
+            <Card className='py-3'>
                 <CardHeader>
                     <CardTitle>Payment (Expense) Settings</CardTitle>
                     <CardDescription>
@@ -104,7 +104,7 @@ export default function PaymentSettingsTab() {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className='py-3'>
                 <CardHeader>
                     <CardTitle>Receipt (Income) Settings</CardTitle>
                     <CardDescription>
