@@ -125,3 +125,57 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes rotate-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.animate-rotate-slow {
+  animation: rotate-slow 20s linear infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.pattern-dots {
+  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.pattern-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    currentColor 0,
+    currentColor 1px,
+    transparent 0,
+    transparent 50%
+  );
+  background-size: 10px 10px;
+}
+
+.shadow-soft {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-soft-lg {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
