@@ -8,6 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { toast } from "sonner";
+import api from "@/lib/axios";
+
+declare global {
+    interface Window {
+        Razorpay: any;
+    }
+}
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -70,18 +78,81 @@ export default function Donation() {
         setSelectedAmount(null);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const amount = selectedAmount || parseInt(customAmount) || 0;
+        if (amount <= 0) {
+            toast.error("Please enter a valid amount");
+            return;
+        }
+
         setIsSubmitting(true);
 
-        setTimeout(() => {
+        try {
+            // 1. Create Order
+            const { data } = await api.post('/payment-gateway/create-order', {
+                amount: amount,
+                currency: "INR",
+                receipt_note: `Donation from ${donorName}`
+            });
+
+            if (!data.success) {
+                throw new Error("Failed to create order");
+            }
+
+            const options = {
+                key: data.key, // Key from backend
+                amount: data.order.amount,
+                currency: data.order.currency,
+                name: "Mahall Management System", // Or Organization Name
+                description: "Donation",
+                image: "/logo.png", // Ensure logo exists or remove
+                order_id: data.order.id,
+                handler: function (response: any) {
+                    // Payment Success
+                    // Webhook handles backend record creation
+                    // We just show success info
+                    // console.log(response.razorpay_payment_id);
+                    // console.log(response.razorpay_order_id);
+                    // console.log(response.razorpay_signature);
+
+                    setIsSubmitting(false);
+                    setShowDialog(true);
+                    setDonorName("");
+                    setDonorPhone("");
+                    setSelectedAmount(1000);
+                    setCustomAmount("");
+                    toast.success("Payment Successful!");
+                },
+                prefill: {
+                    name: donorName,
+                    email: "", // Can collect email if needed
+                    contact: donorPhone
+                },
+                notes: {
+                    donor_name: donorName,
+                    donor_phone: donorPhone,
+                    category: "Donation",
+                    description: `Donation of ₹${amount}`
+                },
+                theme: {
+                    color: "#16a34a" // Primary Green
+                }
+            };
+
+            const rzp1 = new window.Razorpay(options);
+            rzp1.on('payment.failed', function (response: any) {
+                toast.error(response.error.description || "Payment Failed");
+                setIsSubmitting(false);
+            });
+            rzp1.open();
+
+        } catch (error: any) {
+            console.error("Payment Error:", error);
+            toast.error("Something went wrong. Please try again.");
             setIsSubmitting(false);
-            setShowDialog(true);
-            setDonorName("");
-            setDonorPhone("");
-            setSelectedAmount(1000);
-            setCustomAmount("");
-        }, 1500);
+        }
     };
 
     const finalAmount = selectedAmount || parseInt(customAmount) || 0;
