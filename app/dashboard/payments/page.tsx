@@ -46,7 +46,8 @@ export default function PaymentsPage() {
     const fetchPayments = async () => {
         setLoading(true);
         try {
-            const { data } = await api.get(`/payments?page=${page}&limit=20&search=${search}`);
+            // Filter out DELETED payments by default
+            const { data } = await api.get(`/payments?page=${page}&limit=20&search=${search}&status=PENDING&status=COMPLETED`);
             setPayments(data.data);
             setTotalPages(data.totalPages);
         } catch (error) {
@@ -159,14 +160,15 @@ export default function PaymentsPage() {
                                         <TableHead className="font-semibold text-xs uppercase tracking-wider">Category</TableHead>
                                         <TableHead className="font-semibold text-xs uppercase tracking-wider">Account</TableHead>
                                         <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Amount</TableHead>
+                                        <TableHead className="text-center font-semibold text-xs uppercase tracking-wider">Status</TableHead>
                                         <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {loading ? (
-                                        <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="animate-spin h-6 w-6 mx-auto" /></TableCell></TableRow>
+                                        <TableRow><TableCell colSpan={8} className="h-24 text-center"><Loader2 className="animate-spin h-6 w-6 mx-auto" /></TableCell></TableRow>
                                     ) : payments.length === 0 ? (
-                                        <TableRow><TableCell colSpan={7} className="h-24 text-center text-muted-foreground">No payments found.</TableCell></TableRow>
+                                        <TableRow><TableCell colSpan={8} className="h-24 text-center text-muted-foreground">No payments found.</TableCell></TableRow>
                                     ) : (
                                         payments.map((payment) => (
                                             <TableRow key={payment._id} className="hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/payments/edit/${payment._id}`)}>
@@ -183,6 +185,18 @@ export default function PaymentsPage() {
                                                 </TableCell>
                                                 <TableCell className="text-sm text-muted-foreground">{payment.account?.name || '-'}</TableCell>
                                                 <TableCell className="text-right font-medium">₹{payment.amount.toLocaleString()}</TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge 
+                                                        variant={payment.status === 'COMPLETED' ? 'default' : payment.status === 'PENDING' ? 'outline' : 'destructive'}
+                                                        className={`font-normal text-xs ${
+                                                            payment.status === 'COMPLETED' ? 'bg-green-100 text-green-700 hover:bg-green-100' : 
+                                                            payment.status === 'PENDING' ? 'bg-amber-100 text-amber-700 hover:bg-amber-100' : 
+                                                            'bg-red-100 text-red-700 hover:bg-red-100'
+                                                        }`}
+                                                    >
+                                                        {payment.status === 'COMPLETED' ? 'Completed' : payment.status === 'PENDING' ? 'Pending' : 'Deleted'}
+                                                    </Badge>
+                                                </TableCell>
                                                 <TableCell className="text-right">
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/payments/edit/${payment._id}`); }}>
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>

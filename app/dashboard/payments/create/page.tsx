@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
@@ -36,6 +37,7 @@ export default function CreatePaymentPage() {
     const [payee, setPayee] = useState('');
     const [payeeContact, setPayeeContact] = useState(''); // Added
     const [description, setDescription] = useState(''); // Narration
+    const [isPaid, setIsPaid] = useState<boolean>(true); // Default: payment is completed immediately
     const [items, setItems] = useState<{ description: string, amount: string }[]>([
         { description: '', amount: '' },
         { description: '', amount: '' },
@@ -130,11 +132,12 @@ export default function CreatePaymentPage() {
                 accountId,
                 categoryId,
                 payee,
-                payeeContact, // Added
+                payeeContact,
                 description,
+                isPaid,
                 items: validItems.map(i => ({ description: i.description, amount: Number(i.amount) }))
             });
-            toast.success("Payment Voucher Saved");
+            toast.success(isPaid ? "Payment completed successfully" : "Payment created as pending");
             router.push('/dashboard/payments');
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to create payment");
@@ -367,10 +370,29 @@ export default function CreatePaymentPage() {
                         />
                     </div>
 
+                    {/* Payment Status Toggle */}
+                    <div className="flex items-center justify-between p-3 bg-background rounded-md border border-input">
+                        <div className="space-y-0.5">
+                            <Label className="text-sm font-medium">Payment Status</Label>
+                            <p className="text-xs text-muted-foreground">
+                                {isPaid ? "Payment will be completed immediately" : "Payment will be saved as pending"}
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <span className={`text-xs font-medium ${!isPaid ? 'text-amber-600' : 'text-muted-foreground'}`}>Pending</span>
+                            <Switch
+                                checked={isPaid}
+                                onCheckedChange={setIsPaid}
+                                className="data-[state=checked]:bg-green-500"
+                            />
+                            <span className={`text-xs font-medium ${isPaid ? 'text-green-600' : 'text-muted-foreground'}`}>Completed</span>
+                        </div>
+                    </div>
+
                     <div className="flex justify-end pt-2">
                         <Button size="lg" className="min-w-37.5 shadow-sm bg-rose-600 hover:bg-rose-700" onClick={handleSubmit} disabled={loading}>
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                            Save Voucher
+                            {isPaid ? 'Complete Payment' : 'Save as Pending'}
                         </Button>
                     </div>
                 </div>

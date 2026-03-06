@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card} from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { CalendarIcon, Loader2, Save, Trash2, Plus, ArrowLeft } from 'lucide-react';
+import { CalendarIcon, Loader2, Save, Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import api from '@/lib/axios';
@@ -16,12 +16,16 @@ import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog,AlertDialogDescription, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { CheckCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function EditPaymentPage() {
     const router = useRouter();
     const params = useParams();
     const [loading, setLoading] = useState(false);
-    const [fetching, setFetching] = useState(true);
+    const [dataLoading, setDataLoading] = useState(true);
 
     const [accounts, setAccounts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
@@ -39,12 +43,18 @@ export default function EditPaymentPage() {
     const [payeeContact, setPayeeContact] = useState(''); // Added
     const [description, setDescription] = useState('');
     const [receiptNo, setReceiptNo] = useState(''); // Just for display
+    const [paymentStatus, setPaymentStatus] = useState('PENDING');
     const [items, setItems] = useState<{ description: string, amount: string }[]>([
         { description: '', amount: '' }
     ]);
 
+    // Action states
+    const [actionLoading, setActionLoading] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
     useEffect(() => {
         const loadData = async () => {
+            setDataLoading(true);
             try {
                 const [accRes, catRes, payRes] = await Promise.all([
                     api.get('/accounts'),
@@ -64,6 +74,7 @@ export default function EditPaymentPage() {
                 setPayeeContact(payment.payeeContact || ''); // Added
                 setDescription(payment.description || '');
                 setReceiptNo(payment.receiptNo);
+                setPaymentStatus(payment.status || 'PENDING');
 
                 if (payment.items && payment.items.length > 0) {
                     setItems(payment.items.map((i: any) => ({
@@ -74,6 +85,8 @@ export default function EditPaymentPage() {
             } catch (error) {
                 toast.error("Failed to load payment details");
                 router.push('/dashboard/payments');
+            } finally {
+                setDataLoading(false);
             }
         };
         loadData();
@@ -104,6 +117,93 @@ export default function EditPaymentPage() {
     // I will write the FULL file assuming `api.get('/payments/' + params.id)` works.
     // I will add that route immediately.
 
+    const handleMarkAsPaid = async () => {
+        setActionLoading(true);
+        try {
+            await api.put(`/payments/${params.id}/mark-paid`, {});
+            toast.success("Payment marked as completed");
+            setPaymentStatus('COMPLETED');
+            router.push('/dashboard/payments');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to mark payment as paid");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleDeletePayment = async () => {
+        setActionLoading(true);
+        try {
+            await api.delete(`/payments/${params.id}`);
+            toast.success("Payment deleted successfully");
+            setIsDeleteDialogOpen(false);
+            router.push('/dashboard/payments');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to delete payment");
+            setActionLoading(false);
+        }
+    };
+
+    // Show skeleton loading while data is loading
+    if (dataLoading) {
+        return (
+            <div className="flex flex-1 flex-col gap-6 p-6 pt-0 max-w-5xl w-full">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-10 w-10" />
+                        <div className="space-y-2">
+                            <Skeleton className="h-5 w-32" />
+                            <Skeleton className="h-4 w-48" />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Skeleton className="h-7 w-24" />
+                        <Skeleton className="h-8 w-32" />
+                    </div>
+                </div>
+
+                <Skeleton className="h-10 w-48" />
+
+                <Card className="border-rose-100 shadow-sm bg-rose-50/30">
+                    <div className="bg-muted/30 p-6 border-b border-border space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-28" />
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-6 space-y-4">
+                        <Skeleton className="h-6 w-full" />
+                        <Skeleton className="h-6 w-full" />
+                        <Skeleton className="h-6 w-2/3" />
+                    </div>
+                    <div className="bg-muted/30 p-6 border-t border-border">
+                        <Skeleton className="h-10 w-32" />
+                    </div>
+                </Card>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-1 flex-col gap-6 p-6 pt-0 max-w-5xl  w-full">
             <div className="flex items-center justify-between">
@@ -116,11 +216,38 @@ export default function EditPaymentPage() {
                         <p className="text-muted-foreground text-sm">Modify payment details.</p>
                     </div>
                 </div>
-                <div className="flex flex-col items-end px-4">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest border-b border-dashed border-border mb-0.5">Voucher No</span>
-                    <span className="text-xl font-mono font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-sm border border-rose-200">{receiptNo || 'Loading...'}</span>
+                <div className="flex items-center gap-4">
+                    {/* Status Badge */}
+                    <Badge 
+                        variant={paymentStatus === 'COMPLETED' ? 'default' : paymentStatus === 'PENDING' ? 'outline' : 'destructive'}
+                        className={`px-3 py-1 text-sm ${
+                            paymentStatus === 'COMPLETED' ? 'bg-green-100 text-green-700 hover:bg-green-100' : 
+                            paymentStatus === 'PENDING' ? 'bg-amber-100 text-amber-700 hover:bg-amber-100' : 
+                            'bg-red-100 text-red-700 hover:bg-red-100'
+                        }`}
+                    >
+                        {paymentStatus === 'COMPLETED' ? '✓ Completed' : paymentStatus === 'PENDING' ? '⏳ Pending' : '🗑️ Deleted'}
+                    </Badge>
+                    <div className="flex flex-col items-end px-4">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest border-b border-dashed border-border mb-0.5">Voucher No</span>
+                        <span className="text-xl font-mono font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-sm border border-rose-200">{receiptNo || 'Loading...'}</span>
+                    </div>
                 </div>
             </div>
+
+            {/* Action Buttons for Pending/Completed Payments - Hide for DELETED */}
+            {paymentStatus !== 'DELETED' && (
+                <div className="flex gap-2">
+                    {paymentStatus === 'PENDING' && (
+                        <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700" onClick={handleMarkAsPaid} disabled={actionLoading}>
+                            <CheckCircle className="h-4 w-4 mr-1" /> Mark as Paid
+                        </Button>
+                    )}
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-red-600" onClick={() => setIsDeleteDialogOpen(true)} disabled={actionLoading}>
+                        <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    </Button>
+                </div>
+            )}
 
             <Card className="border-rose-100 shadow-sm bg-rose-50/30">
                 {/* Header Section: Voucher Details */}
@@ -376,6 +503,29 @@ export default function EditPaymentPage() {
                     </div>
                 </div>
             </Card>
+
+            {/* Delete Payment Confirmation Dialog */}
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Payment</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete this payment? This action cannot be undone and will reverse the account balance if the payment was completed.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={handleDeletePayment} 
+                            disabled={actionLoading}
+                            className="bg-red-600 hover:bg-red-700"
+                        >
+                            {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                            Yes, Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
