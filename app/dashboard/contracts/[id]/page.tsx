@@ -30,6 +30,8 @@ type Contract = {
     endDate: string;
     rentAmount: number;
     depositAmount: number;
+    depositCollected?: number;
+    depositReturned?: number;
     status: 'ACTIVE' | 'EXPIRED' | 'TERMINATED';
 };
 
@@ -75,8 +77,16 @@ const collectRentSchema = z.object({
     notes: z.string().optional()
 });
 
+const collectDepositSchema = z.object({
+    amount: z.coerce.number().min(1),
+    accountId: z.string().min(1, "Select an account"),
+    date: z.string(),
+    notes: z.string().optional()
+});
+
 const terminateSchema = z.object({
     returnAmount: z.coerce.number().min(0),
+    accountId: z.string().min(1, "Select an account"),
     confirm: z.boolean().refine(v => v === true, "Confirm termination"),
 });
 
@@ -156,6 +166,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     const [isRentGenOpen, setIsRentGenOpen] = useState(false);
     const [isCollectRentOpen, setIsCollectRentOpen] = useState(false);
     const [selectedRentId, setSelectedRentId] = useState<string | null>(null);
+    const [isCollectDepositOpen, setIsCollectDepositOpen] = useState(false);
     const [isTerminateOpen, setIsTerminateOpen] = useState(false);
 
     // Forms
@@ -168,7 +179,11 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
         resolver: zodResolver(collectRentSchema),
         defaultValues: { amount: 0, accountId: '', date: new Date().toISOString().split('T')[0], notes: '' }
     });
-    const terminateForm = useForm({ resolver: zodResolver(terminateSchema), defaultValues: { returnAmount: 0, confirm: false } });
+    const collectDepositForm = useForm({
+        resolver: zodResolver(collectDepositSchema),
+        defaultValues: { amount: 0, accountId: '', date: new Date().toISOString().split('T')[0], notes: '' }
+    });
+    const terminateForm = useForm({ resolver: zodResolver(terminateSchema), defaultValues: { returnAmount: 0, accountId: '', confirm: false } });
 
     useEffect(() => {
         if (resolvedParams.id) fetchData();
@@ -180,6 +195,14 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
             rentGenForm.setValue('amount', contract.rentAmount);
         }
     }, [isRentGenOpen, contract, rentGenForm]);
+
+    useEffect(() => {
+        // Set default deposit amount when opening collect deposit dialog
+        if (isCollectDepositOpen && contract) {
+            const remaining = contract.depositAmount - (contract.depositCollected || 0);
+            collectDepositForm.setValue('amount', remaining > 0 ? remaining : contract.depositAmount);
+        }
+    }, [isCollectDepositOpen, contract, collectDepositForm]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -250,18 +273,22 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
         } catch (error: any) { toast.error(error.response?.data?.message || "Collection failed"); }
     };
 
-    const handleCollectDeposit = async () => {
+    const handleCollectDeposit = async (values: any) => {
         try {
-            await api.post(`/contracts/${resolvedParams.id}/deposit/collect`, {});
+            await api.post(`/contracts/${resolvedParams.id}/deposit/collect`, values);
             toast.success("Deposit collected successfully");
+            setIsCollectDepositOpen(false);
             fetchData();
-        } catch (error: any) { toast.error(error.response?.data?.message || "Action failed"); }
+        } catch (error: any) { toast.error(error.response?.data?.message || "Collection failed"); }
     };
 
     const handleTerminate = async (values: any) => {
         try {
             await api.put(`/contracts/${resolvedParams.id}/terminate`, {
-                returnAmount: values.returnAmount
+                returnAmount: values.returnAmount,
+                accountId: values.accountId,
+                notes: values.notes,
+                date: values.date
             });
             toast.success("Contract terminated");
             setIsTerminateOpen(false);
@@ -361,7 +388,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                                         {isDepositSettled ? (
                                                             <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200 gap-1"><CheckCircle2 className="h-3 w-3" /> Collected</Badge>
                                                         ) : (
-                                                            <Button size="sm" variant="outline" className="h-6 text-[10px] border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 p-2" onClick={handleCollectDeposit} disabled={!isActive}>Collect Now</Button>
+                                                            <Button type="button" size="sm" variant="outline" className="h-6 text-[10px] border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 p-2" onClick={() => setIsCollectDepositOpen(true)} disabled={!isActive}>Collect Now</Button>
                                                         )}
                                                     </div>
                                                 </div>
@@ -505,6 +532,79 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                 </DialogContent>
             </Dialog>
 
+            {/* Collect Deposit */}
+            <Dialog open={isCollectDepositOpen} onOpenChange={setIsCollectDepositOpen}>
+                <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle>Collect Security Deposit</DialogTitle>
+                        {contract && (
+                            <DialogDescription className="text-xs">
+                                Total Deposit: <span className="font-bold text-foreground">₹{contract.depositAmount}</span>
+                                {contract.depositCollected && contract.depositCollected > 0 && (
+                                    <> • Remaining: <span className="font-bold text-orange-600">₹{contract.depositAmount - contract.depositCollected}</span></>
+                                )}
+                            </DialogDescription>
+                        )}
+                    </DialogHeader>
+                    <Form {...collectDepositForm}>
+                        <form onSubmit={collectDepositForm.handleSubmit(handleCollectDeposit)} className="space-y-4">
+                            <FormField control={collectDepositForm.control} name="amount" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs">Amount Collected</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" className="h-8 text-xs font-bold" {...field} value={(field.value as number) ?? ''} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+
+                            <FormField control={collectDepositForm.control} name="accountId" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs">Deposit To Account</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="h-8 text-xs w-full">
+                                                <SelectValue placeholder="Select Account" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {accounts.map(acc => (
+                                                <SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+
+                            <FormField control={collectDepositForm.control} name="date" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs">Date</FormLabel>
+                                    <FormControl>
+                                        <Input type="date" className="h-8 text-xs" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+
+                            <FormField control={collectDepositForm.control} name="notes" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs">Notes</FormLabel>
+                                    <FormControl>
+                                        <Input className="h-8 text-xs" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+
+                            <DialogFooter>
+                                <Button type="submit" size="sm">Record Deposit Collection</Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
+                </DialogContent>
+            </Dialog>
+
             {/* Termination */}
             <Dialog open={isTerminateOpen} onOpenChange={setIsTerminateOpen}>
                 <DialogContent className="sm:max-w-[500px]">
@@ -538,6 +638,27 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                     <FormMessage />
                                 </FormItem>
                             )} />
+
+                            {terminateForm.watch('returnAmount') > 0 && (
+                                <FormField control={terminateForm.control} name="accountId" render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs">Refund From Account</FormLabel>
+                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="h-8 text-xs w-full">
+                                                    <SelectValue placeholder="Select Account" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {accounts.map(acc => (
+                                                    <SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type}) - ₹{acc.balance?.toLocaleString()}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                            )}
 
                             <FormField control={terminateForm.control} name="confirm" render={({ field }) => (
                                 <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
