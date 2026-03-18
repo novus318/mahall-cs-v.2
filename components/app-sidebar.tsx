@@ -19,7 +19,8 @@ import {
   Wallet,
   IndianRupee,
   Landmark,
-  MessageCircle
+  MessageCircle,
+  HandCoins
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -73,6 +74,10 @@ const data = {
         {
           title: "Transactions",
           url: "/dashboard/transactions",
+        },
+        {
+          title: "Payables (Loans)",
+          url: "/dashboard/payables",
         }
       ]
     },

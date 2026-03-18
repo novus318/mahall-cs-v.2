@@ -6,7 +6,7 @@ import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, Wallet } from "lucide-reac
 
 interface Transaction {
     _id: string;
-    type: 'OPENING_BALANCE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'INCOME' | 'EXPENSE';
+    type: 'OPENING_BALANCE' | 'TRANSFER_IN' | 'TRANSFER_OUT' | 'INCOME' | 'EXPENSE' | 'LOAN_RECEIVED' | 'LOAN_REPAYMENT';
     amount: number;
     description: string;
     date: string;
@@ -27,9 +27,11 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
         switch (type) {
             case 'INCOME':
             case 'TRANSFER_IN':
+            case 'LOAN_RECEIVED':
                 return { icon: ArrowDownLeft, color: "text-green-600", bg: "bg-green-100 dark:bg-green-900/20" };
             case 'EXPENSE':
             case 'TRANSFER_OUT':
+            case 'LOAN_REPAYMENT':
                 return { icon: ArrowUpRight, color: "text-red-600", bg: "bg-red-100 dark:bg-red-900/20" };
             case 'OPENING_BALANCE':
                 return { icon: Wallet, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/20" };
@@ -43,6 +45,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
         if (transaction.receipt?._id) return `/dashboard/receipts/edit/${transaction.receipt._id}`;
         if (transaction.staff?._id) return `/dashboard/staff/${transaction.staff._id}`;
         if (transaction.contract?._id) return `/dashboard/contracts/${transaction.contract._id}`;
+        if (transaction.payable?._id) return `/dashboard/payables`;
         if (transaction.account?._id) return `/dashboard/accounts/${transaction.account._id}`;
         return '#';
     };
@@ -83,7 +86,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                                             </div>
                                         </div>
                                         <div className={`font-medium ${color}`}>
-                                            {(transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'OPENING_BALANCE') ? '+' : '-'}
+                                            {(transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'OPENING_BALANCE' || transaction.type === 'LOAN_RECEIVED') ? '+' : '-'}
                                             ₹{transaction.amount.toLocaleString()}
                                         </div>
                                     </div>

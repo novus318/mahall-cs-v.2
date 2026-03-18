@@ -98,7 +98,7 @@ export default function AccountDetailPage() {
                                 <TableRow><TableCell colSpan={6} className="h-24 text-center text-muted-foreground">No transactions found.</TableCell></TableRow>
                             ) : (
                                 transactions.map((tx) => {
-                                    const isCredit = ['OPENING_BALANCE', 'TRANSFER_IN', 'INCOME'].includes(tx.type);
+                                    const isCredit = ['OPENING_BALANCE', 'TRANSFER_IN', 'INCOME', 'LOAN_RECEIVED'].includes(tx.type);
 
                                     return (
                                         <TableRow key={tx._id}>

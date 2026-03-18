@@ -242,7 +242,7 @@ export default function TransactionsPage() {
                                 <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground">No transactions match your filters.</TableCell></TableRow>
                             ) : (
                                 transactions.map((tx) => {
-                                    const isCredit = ['OPENING_BALANCE', 'TRANSFER_IN', 'INCOME'].includes(tx.type);
+                                    const isCredit = ['OPENING_BALANCE', 'TRANSFER_IN', 'INCOME', 'LOAN_RECEIVED'].includes(tx.type);
 
                                     return (
                                         <TableRow key={tx._id} className="group hover:bg-slate-50/50">

@@ -6,7 +6,7 @@ import { OverviewChart } from '@/components/dashboard/OverviewChart';
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions';
 import { FinancialOverviewCard } from '@/components/dashboard/FinancialOverviewCard';
 import { FinancialBreakdownChart } from '@/components/dashboard/FinancialBreakdownChart';
-import { Users, Home, Wallet, LayoutDashboard, Building2, UserCircle, Banknote, FileText, CircleDollarSign } from "lucide-react";
+import { Users, Home, Wallet, LayoutDashboard, Building2, UserCircle, Banknote, FileText, CircleDollarSign, HandCoins } from "lucide-react";
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -113,6 +113,14 @@ export default function DashboardPage() {
       count: payables.deposits?.count || 0,
       href: "/dashboard/contracts",
       icon: <CircleDollarSign className="h-4 w-4" />
+    },
+    {
+      label: "Loans & Credit",
+      pending: payables.loans?.pending || 0,
+      completed: payables.loans?.repaid || 0,
+      count: payables.loans?.count || 0,
+      href: "/dashboard/payables",
+      icon: <HandCoins className="h-4 w-4" />
     }
   ];
 
@@ -126,7 +134,8 @@ export default function DashboardPage() {
   const payablesBreakdown = [
     { name: "Salaries", value: payables.salaries?.pending || 0, color: "#f59e0b" },
     { name: "Payments", value: payables.payments?.pending || 0, color: "#ef4444" },
-    { name: "Deposits", value: payables.deposits?.held || 0, color: "#ec4899" }
+    { name: "Deposits", value: payables.deposits?.held || 0, color: "#ec4899" },
+    { name: "Loans", value: payables.loans?.pending || 0, color: "#8b5cf6" }
   ].filter(item => item.value > 0);
 
   return (
