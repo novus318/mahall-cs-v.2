@@ -98,6 +98,10 @@ const data = {
           title: "Members",
           url: "/dashboard/members",
         },
+        {
+          title: "Nikah Certificates",
+          url: "/dashboard/certificates",
+        },
       ],
     },
     {

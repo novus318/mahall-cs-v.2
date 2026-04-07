@@ -145,4 +145,10 @@ export const downloadCollectionReceipt = async (id: string) => {
     });
 };
 
+// --- Certificates ---
+export const getCertificates = async () => (await api.get('/certificates')).data;
+export const getCertificateById = async (id: string) => (await api.get(`/certificates/${id}`)).data;
+export const createCertificate = async (data: any) => (await api.post('/certificates', data)).data;
+export const updateCertificate = async (id: string, data: any) => (await api.put(`/certificates/${id}`, data)).data;
+
 export default api;
