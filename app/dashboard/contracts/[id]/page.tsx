@@ -639,7 +639,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                 </FormItem>
                             )} />
 
-                            {terminateForm.watch('returnAmount') > 0 && (
+                            {(terminateForm.watch('returnAmount') as number) > 0 && (
                                 <FormField control={terminateForm.control} name="accountId" render={({ field }) => (
                                     <FormItem>
                                         <FormLabel className="text-xs">Refund From Account</FormLabel>

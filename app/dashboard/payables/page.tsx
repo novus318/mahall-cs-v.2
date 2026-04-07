@@ -519,7 +519,7 @@ export default function PayablesPage() {
                                             <FormControl>
                                                 <div className="relative">
                                                     <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                                    <Input type="number" className="pl-9" {...field} />
+                                                    <Input type="number" className="pl-9" onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} value={field.value as string | number} />
                                                 </div>
                                             </FormControl>
                                         </FormItem>
@@ -532,7 +532,7 @@ export default function PayablesPage() {
                                         <FormItem>
                                             <FormLabel>Interest Rate (%)</FormLabel>
                                             <FormControl>
-                                                <Input type="number" step="0.01" {...field} />
+                                                <Input type="number" step="0.01" onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} value={field.value as string | number} />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -663,7 +663,7 @@ export default function PayablesPage() {
                                         <FormControl>
                                             <div className="relative">
                                                 <IndianRupee className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                                <Input type="number" className="pl-9" {...field} />
+                                                <Input type="number" className="pl-9" onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} value={field.value as string | number} />
                                             </div>
                                         </FormControl>
                                     </FormItem>

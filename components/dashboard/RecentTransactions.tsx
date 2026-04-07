@@ -16,6 +16,7 @@ interface Transaction {
     receipt?: { _id: string };
     staff?: { _id: string };
     contract?: { _id: string };
+    payable?: { _id: string };
 }
 
 interface RecentTransactionsProps {
