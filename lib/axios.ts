@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:5000/api',
+    baseURL: 'https://api.tmj.org.in/api',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -67,7 +67,7 @@ api.interceptors.response.use(
                     throw new Error('No refresh token');
                 }
 
-                const { data } = await axios.post('http://localhost:5000/api/auth/refresh', {
+                const { data } = await axios.post('https://api.tmj.org.in/api/auth/refresh', {
                     refreshToken,
                 });
 
