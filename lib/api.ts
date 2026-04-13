@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_URL = 'https://api.tmj.org.in/api';
+export const API_URL = 'https://mahall-bk-v2-production.up.railway.app/api';
 
 // export const API_URL = 'http://localhost:5000/api';
 
