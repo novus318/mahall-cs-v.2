@@ -21,7 +21,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
-import { Plus, Trash2, UserPlus, Loader2, Search, ChevronLeft, ChevronRight, Pencil, Download, Upload, FileDown, Eye, Settings2 } from "lucide-react"
+import { Plus, Trash2, UserPlus, Loader2, Search, ChevronLeft, ChevronRight, Pencil, Download, Upload, FileDown, Eye, Settings2, Filter, X } from "lucide-react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -80,13 +80,53 @@ export default function MembersPage() {
     const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false)
     const [subscriptionMember, setSubscriptionMember] = useState<any>(null) // using any to bypass type strictness for now
     const [subscriptionData, setSubscriptionData] = useState({ frequency: "None", amount: 0 })
+
+    // Filters
     const [frequencyFilter, setFrequencyFilter] = useState("ALL")
+    const [educationFilter, setEducationFilter] = useState("ALL")
+    const [bloodGroupFilter, setBloodGroupFilter] = useState("ALL")
+    const [genderFilter, setGenderFilter] = useState("ALL")
+    const [maritalStatusFilter, setMaritalStatusFilter] = useState("ALL")
+    const [ageMinFilter, setAgeMinFilter] = useState<string>("")
+    const [ageMaxFilter, setAgeMaxFilter] = useState<string>("")
+
+    // Clear all filters
+    const clearFilters = () => {
+        setFrequencyFilter("ALL")
+        setEducationFilter("ALL")
+        setBloodGroupFilter("ALL")
+        setGenderFilter("ALL")
+        setMaritalStatusFilter("ALL")
+        setAgeMinFilter("")
+        setAgeMaxFilter("")
+        setSearch("")
+    }
+
+    // Check if any filter is active
+    const hasActiveFilters = frequencyFilter !== "ALL" ||
+        educationFilter !== "ALL" ||
+        bloodGroupFilter !== "ALL" ||
+        genderFilter !== "ALL" ||
+        maritalStatusFilter !== "ALL" ||
+        ageMinFilter !== "" ||
+        ageMaxFilter !== ""
 
     const fetchMembers = async () => {
         setLoading(true)
         try {
-            // Updated to pass pagination params
-            const data = await getMembers({ page, limit, search, frequency: frequencyFilter })
+            // Updated to pass pagination params and all filters
+            const data = await getMembers({
+                page,
+                limit,
+                search,
+                frequency: frequencyFilter,
+                education: educationFilter,
+                bloodGroup: bloodGroupFilter,
+                gender: genderFilter,
+                maritalStatus: maritalStatusFilter,
+                ageMin: ageMinFilter,
+                ageMax: ageMaxFilter
+            })
             if (Array.isArray(data)) {
                 // Handle legacy response if backend ignores params or returns plain array
                 setMembers(data as Member[])
@@ -111,7 +151,7 @@ export default function MembersPage() {
             fetchMembers()
         }, 300)
         return () => clearTimeout(delayDebounceFn)
-    }, [page, search, limit, frequencyFilter])
+    }, [page, search, limit, frequencyFilter, educationFilter, bloodGroupFilter, genderFilter, maritalStatusFilter, ageMinFilter, ageMaxFilter])
 
     const confirmDelete = (id: string) => {
         setDeletingMemberId(id)
@@ -418,14 +458,15 @@ export default function MembersPage() {
 
             <Card className="border shadow-sm">
                 <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div>
-                            <CardTitle className="text-base font-semibold">All Members</CardTitle>
-                            <CardDescription className="text-xs">
-                                Showing {members.length} of {total} records
-                            </CardDescription>
-                        </div>
-                        <div className="flex gap-2 w-full sm:w-auto">
+                    <div className="flex flex-col gap-4">
+                        {/* Top row: Title and Search */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-base font-semibold">All Members</CardTitle>
+                                <CardDescription className="text-xs">
+                                    Showing {members.length} of {total} records
+                                </CardDescription>
+                            </div>
                             <div className="relative w-full sm:w-64">
                                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -435,22 +476,106 @@ export default function MembersPage() {
                                     className="pl-8 h-9 text-sm"
                                 />
                             </div>
-                            <div className="w-full sm:w-48">
-                                <Select
-                                    value={frequencyFilter}
-                                    onValueChange={(val) => setFrequencyFilter(val)}
-                                >
-                                    <SelectTrigger className="h-9 w-full">
-                                        <SelectValue placeholder="Filter Subscription" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="ALL">All Subscriptions</SelectItem>
-                                        <SelectItem value="Monthly">Monthly</SelectItem>
-                                        <SelectItem value="Yearly">Yearly</SelectItem>
-                                        <SelectItem value="None">None</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                        </div>
+
+                        {/* Filters Row */}
+                        <div className="flex flex-wrap gap-2 items-center">
+                            {/* Gender Filter */}
+                            <Select value={genderFilter} onValueChange={setGenderFilter}>
+                                <SelectTrigger className="h-8 w-[100px] text-xs">
+                                    <SelectValue placeholder="Gender" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Genders</SelectItem>
+                                    <SelectItem value="Male">Male</SelectItem>
+                                    <SelectItem value="Female">Female</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* Blood Group Filter */}
+                            <Select value={bloodGroupFilter} onValueChange={setBloodGroupFilter}>
+                                <SelectTrigger className="h-8 w-[110px] text-xs">
+                                    <SelectValue placeholder="Blood Group" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Blood Groups</SelectItem>
+                                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
+                                        <SelectItem key={bg} value={bg}>{bg}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Education Filter */}
+                            <Select value={educationFilter} onValueChange={setEducationFilter}>
+                                <SelectTrigger className="h-8 w-[110px] text-xs">
+                                    <SelectValue placeholder="Education" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Education</SelectItem>
+                                    {["Below 10", "SSLC", "Pre-Degree", "Bachelors", "Diploma", "Masters", "Other"].map(edu => (
+                                        <SelectItem key={edu} value={edu}>{edu}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Marital Status Filter */}
+                            <Select value={maritalStatusFilter} onValueChange={setMaritalStatusFilter}>
+                                <SelectTrigger className="h-8 w-[110px] text-xs">
+                                    <SelectValue placeholder="Marital Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Status</SelectItem>
+                                    {["Single", "Married", "Divorced", "Widowed"].map(status => (
+                                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            {/* Age Filter */}
+                            <div className="flex items-center gap-1">
+                                <Input
+                                    type="number"
+                                    placeholder="Min Age"
+                                    value={ageMinFilter}
+                                    onChange={(e) => setAgeMinFilter(e.target.value)}
+                                    className="h-8 w-[70px] text-xs"
+                                    min="0"
+                                />
+                                <span className="text-muted-foreground text-xs">-</span>
+                                <Input
+                                    type="number"
+                                    placeholder="Max Age"
+                                    value={ageMaxFilter}
+                                    onChange={(e) => setAgeMaxFilter(e.target.value)}
+                                    className="h-8 w-[70px] text-xs"
+                                    min="0"
+                                />
                             </div>
+
+                            {/* Subscription Filter */}
+                            <Select value={frequencyFilter} onValueChange={setFrequencyFilter}>
+                                <SelectTrigger className="h-8 w-[120px] text-xs">
+                                    <SelectValue placeholder="Subscription" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Subscriptions</SelectItem>
+                                    <SelectItem value="Monthly">Monthly</SelectItem>
+                                    <SelectItem value="Yearly">Yearly</SelectItem>
+                                    <SelectItem value="None">None</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            {/* Clear Filters Button */}
+                            {hasActiveFilters && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={clearFilters}
+                                    className="h-8 text-xs"
+                                >
+                                    <X className="h-3 w-3 mr-1" /> Clear
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </CardHeader>

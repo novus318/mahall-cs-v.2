@@ -223,8 +223,8 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
     const handleNextStep1 = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!formData.name || !formData.dateOfBirth || !formData.bloodGroup) {
-            toast.error("Name, Date of Birth, and Blood Group are required")
+        if (!formData.name || !formData.dateOfBirth) {
+            toast.error("Name and Date of Birth are required")
             return
         }
 
@@ -358,7 +358,7 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Blood Group <span className="text-red-500">*</span></Label>
+                                    <Label>Blood Group</Label>
                                     <Select value={formData.bloodGroup} onValueChange={(val) => setFormData({ ...formData, bloodGroup: val })}>
                                         <SelectTrigger className="w-full"><SelectValue placeholder="Select..." /></SelectTrigger>
                                         <SelectContent>
