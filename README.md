@@ -13,4 +13,4 @@ pnpm dev
 bun dev
 ```
 
-Deployment=v.01
+Deployment=v.02
