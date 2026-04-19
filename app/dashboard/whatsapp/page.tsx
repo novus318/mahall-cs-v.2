@@ -34,7 +34,8 @@ import {
     FileIcon,
     VideoIcon,
     MicIcon,
-    Trash2
+    Trash2,
+    Loader2
 } from 'lucide-react';
 import {
     DropdownMenu,
@@ -142,8 +143,6 @@ export default function WhatsAppPage() {
                 }
             };
 
-            // ... (rest of configuration moved to onstop in handleSendVoice)
-
             mediaRecorder.start();
             setIsRecording(true);
             setRecordingDuration(0);
@@ -168,36 +167,29 @@ export default function WhatsAppPage() {
     const handleSendVoice = () => {
         if (!mediaRecorderRef.current) return;
 
-        // Listener for the final blob availability
         mediaRecorderRef.current.onstop = async () => {
-            // Clean up tracks
             mediaRecorderRef.current?.stream.getTracks().forEach(track => track.stop());
 
-            const audioBlob = new Blob(audioChunksRef.current, { type: mimeType }); // mimeType is determined in startRecording
+            const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
 
-            // Upload
             setSending(true);
             const formData = new FormData();
-            formData.append('file', audioBlob, 'recording.webm'); // Name doesn't matter much as backend renames it
+            formData.append('file', audioBlob, 'recording.webm');
 
             try {
-                // 1. Upload
                 const uploadRes = await api.post('/whatsapp/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
                 const mediaId = uploadRes.data.mediaId;
 
-                // 2. Send Message
                 const res = await api.post('/whatsapp/send', {
                     contactId: selectedContact?._id,
                     messageType: 'audio',
                     content: mediaId
                 });
 
-                // Append message locally
                 setMessages(prev => [...prev, res.data.data]);
 
-                // Update contact last message
                 if (selectedContact) {
                     setContacts(prev => prev.map(c =>
                         c._id === selectedContact._id ? {
@@ -228,7 +220,6 @@ export default function WhatsAppPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Reset input so same file can be selected again if needed
         e.target.value = '';
 
         setSending(true);
@@ -236,30 +227,25 @@ export default function WhatsAppPage() {
         formData.append('file', file);
 
         try {
-            // 1. Upload
             const uploadRes = await api.post('/whatsapp/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             const mediaId = uploadRes.data.mediaId;
 
-            // 2. Determine Message Type
-            let messageType = 'document'; // Default
+            let messageType = 'document';
             if (file.type.startsWith('image/')) messageType = 'image';
-            else if (file.type.startsWith('video/')) messageType = 'video'; // Not strictly supported by our simplified `sendMessage` yet but good to have
+            else if (file.type.startsWith('video/')) messageType = 'video';
             else if (file.type.startsWith('audio/')) messageType = 'audio';
 
-            // 3. Send Message
             const res = await api.post('/whatsapp/send', {
                 contactId: selectedContact?._id,
                 messageType: messageType,
                 content: mediaId,
-                caption: file.name // Send filename as caption for docs/images if supported
+                caption: file.name
             });
 
-            // Append message locally
             setMessages(prev => [...prev, res.data.data]);
 
-            // Update contact last message
             if (selectedContact) {
                 setContacts(prev => prev.map(c =>
                     c._id === selectedContact._id ? {
@@ -281,7 +267,7 @@ export default function WhatsAppPage() {
     // Cancel Recording
     const cancelRecording = () => {
         if (mediaRecorderRef.current) {
-            mediaRecorderRef.current.onstop = null; // Remove listener to prevent send
+            mediaRecorderRef.current.onstop = null;
             mediaRecorderRef.current.stop();
             mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
         }
@@ -304,7 +290,6 @@ export default function WhatsAppPage() {
 
     useEffect(() => {
         fetchContacts();
-        // Optional: Poll for new contacts every 30s
         const interval = setInterval(fetchContacts, 30000);
         return () => clearInterval(interval);
     }, []);
@@ -317,7 +302,6 @@ export default function WhatsAppPage() {
                 try {
                     const res = await api.get(`/whatsapp/messages/${selectedContact._id}`);
                     setMessages(res.data.data);
-                    // Update contact unread count locally
                     setContacts(prev => prev.map(c =>
                         c._id === selectedContact._id ? { ...c, unreadCount: 0 } : c
                     ));
@@ -348,11 +332,9 @@ export default function WhatsAppPage() {
                 content: inputText
             });
 
-            // Append message locally
             setMessages([...messages, res.data.data]);
             setInputText('');
 
-            // Update last message in contact list
             setContacts(prev => prev.map(c =>
                 c._id === selectedContact._id ? {
                     ...c,
@@ -375,7 +357,7 @@ export default function WhatsAppPage() {
             const res = await api.post(`/whatsapp/refresh/${selectedContact._id}`);
             if (res.data.success) {
                 toast.success(res.data.message);
-                setSelectedContact(res.data.data); // Update selected
+                setSelectedContact(res.data.data);
                 setContacts(prev => prev.map(c => c._id === selectedContact._id ? res.data.data : c));
             } else {
                 toast.info("No matching entity found");
@@ -404,7 +386,6 @@ export default function WhatsAppPage() {
         const element = document.getElementById(`msg-${messageId}`);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            // specific highlight logic can be added here if needed
             element.classList.add('ring-1', 'ring-primary', 'ring-offset-1', 'bg-primary/10');
             setTimeout(() => element.classList.remove('ring-1', 'ring-primary', 'ring-offset-1', 'bg-primary/10'), 2000);
         } else {
@@ -478,34 +459,34 @@ export default function WhatsAppPage() {
 
             {/* MIDDLE PANE: Chat Window */}
             <div className={cn(
-                "flex-1 flex-col min-w-0 bg-muted relative h-[calc(100vh-1rem)] md:h-[calc(100vh-4.5rem)]",
-                selectedContact ? "flex fixed inset-0 z-50 md:static md:z-auto" : "hidden md:flex"
+                "flex-1 flex flex-col min-w-0 bg-muted relative",
+                selectedContact ? "flex" : "hidden md:flex"
             )}>
-                {/* Chat Wallpaper Pattern (CSS-based dot pattern or similar) */}
+                {/* Chat Wallpaper Pattern */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
                 }} />
 
                 {selectedContact ? (
-                    <div className='md:h-[calc(100vh-5rem)] h-[calc(100vh-1rem)] flex flex-col'>
+                    <>
                         {/* Header */}
-                        <div className="h-12 border-b border-border bg-background/80 backdrop-blur-md flex items-center justify-between px-3 shrink-0 z-10">
-                            <div className="flex items-center gap-2">
-                                <Button variant="ghost" size="icon" className="md:hidden -ml-2 h-8 w-8" onClick={() => setSelectedContact(null)}>
+                        <div className="h-14 md:h-14 lg:h-16 border-b border-border bg-background/95 backdrop-blur-md flex items-center justify-between px-3 md:px-5 lg:px-6 shrink-0 z-10">
+                            <div className="flex items-center gap-2 md:gap-3 lg:gap-4 min-w-0 flex-1">
+                                <Button variant="ghost" size="icon" className="md:hidden -ml-2 h-9 w-9 shrink-0" onClick={() => setSelectedContact(null)}>
                                     <ArrowLeft className="h-5 w-5" />
                                 </Button>
-                                <Avatar className="h-7 w-7 ring-1 ring-border">
-                                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary">{selectedContact.displayName?.substring(0, 2)}</AvatarFallback>
+                                <Avatar className="h-9 w-9 md:h-10 md:w-10 lg:h-11 lg:w-11 ring-2 ring-border shrink-0">
+                                    <AvatarFallback className="text-xs md:text-sm lg:text-base bg-primary/10 text-primary font-medium">{selectedContact.displayName?.substring(0, 2)}</AvatarFallback>
                                 </Avatar>
-                                <div>
-                                    <h3 className="font-semibold text-sm leading-none tracking-tight">{selectedContact.displayName}</h3>
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                        {selectedContact.type !== 'UNKNOWN' && <Badge variant="secondary" className="h-3.5 px-1 text-[9px] rounded-sm font-normal text-muted-foreground">{selectedContact.type}</Badge>}
-                                        <span className="text-[10px] text-muted-foreground font-mono">{selectedContact.phoneNumber}</span>
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="font-semibold text-sm md:text-base lg:text-lg leading-none tracking-tight truncate">{selectedContact.displayName}</h3>
+                                    <div className="flex items-center gap-1.5 md:gap-2 mt-1 md:mt-1.5">
+                                        {selectedContact.type !== 'UNKNOWN' && <Badge variant="secondary" className="h-4 md:h-5 px-1.5 md:px-2 text-[9px] md:text-[10px] rounded-sm font-normal text-muted-foreground">{selectedContact.type}</Badge>}
+                                        <span className="text-[10px] md:text-xs text-muted-foreground font-mono truncate">{selectedContact.phoneNumber}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 md:gap-2 shrink-0">
                                 <TooltipProvider>
                                     <Tooltip>
                                         <TooltipTrigger asChild>
@@ -518,10 +499,6 @@ export default function WhatsAppPage() {
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
-
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-                                    <Phone className="h-4 w-4" />
-                                </Button>
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -546,18 +523,20 @@ export default function WhatsAppPage() {
                         </div>
 
                         {/* Messages Area */}
-                        <ScrollArea className="flex-1 px-2 h-[calc(100vh-11rem)]" ref={scrollRef}>
-                            <div className="space-y-2 pb-3 pt-2">
+                        <ScrollArea className="flex-1 px-2 md:px-6 lg:px-8" ref={scrollRef}>
+                            <div className="space-y-2 pb-3 pt-2 md:pt-4 min-h-full max-w-350 mx-auto">
                                 {loadingMessages ? (
-                                    <div className="flex justify-center items-center h-full">
-                                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                    <div className="flex justify-center items-center h-full min-h-[200px]">
+                                        <Loader2 className="animate-spin h-8 w-8 text-primary" />
+                                    </div>
+                                ) : messages.length === 0 ? (
+                                    <div className="flex justify-center items-center h-full min-h-[200px]">
+                                        <p className="text-sm text-muted-foreground">No messages yet</p>
                                     </div>
                                 ) : (
                                     <>
                                         {messages.map((msg, index) => {
                                             const isOutbound = msg.direction === 'OUTBOUND';
-                                            // Check if next message is same sender to group bubbles
-                                            const isSameSender = index < messages.length - 1 && messages[index + 1].direction === msg.direction;
 
                                             return (
                                                 <div key={msg._id} id={`msg-${msg._id}`} className={cn(
@@ -565,11 +544,11 @@ export default function WhatsAppPage() {
                                                     isOutbound ? "justify-end" : "justify-start"
                                                 )}>
                                                     <div className={cn(
-                                                        "max-w-[75%] shadow-sm relative group mb-0.5 text-sm min-w-[8%]",
+                                                        "max-w-[85%] md:max-w-[70%] lg:max-w-[60%] shadow-sm relative group mb-0.5 text-sm md:text-base min-w-[8%]",
                                                         isOutbound
                                                             ? "bg-primary text-primary-foreground rounded-xl rounded-tr-sm"
-                                                            : "bg-card text-card-foreground border border-border rounded-xl rounded-tl-xs",
-                                                        (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker' || msg.type === 'audio' || msg.type === 'document') ? "p-1 bg-black-[1%] border-none shadow-none" : "px-2 py-1"
+                                                            : "bg-card text-card-foreground border border-border rounded-xl rounded-tl-sm",
+                                                        (msg.type === 'image' || msg.type === 'video' || msg.type === 'sticker' || msg.type === 'audio' || msg.type === 'document') ? "p-1 md:p-1.5 bg-black/1 border-none shadow-none" : "px-3 py-2 md:px-4 md:py-2.5"
                                                     )}>
 
                                                         {/* Reply Quote */}
@@ -580,7 +559,7 @@ export default function WhatsAppPage() {
                                                                     if (msg.replyTo) handleScrollToMessage(msg.replyTo._id);
                                                                 }}
                                                                 className={cn(
-                                                                    "mb-1 rounded-lg p-1 text-xs border-l-4 opacity-90 cursor-pointer overflow-hidden hover:opacity-100 transition-opacity",
+                                                                    "mb-1 rounded-lg p-1.5 text-xs border-l-4 opacity-90 cursor-pointer overflow-hidden hover:opacity-100 transition-opacity",
                                                                     isOutbound
                                                                         ? "bg-primary-foreground/10 border-primary-foreground/50 text-primary-foreground"
                                                                         : "bg-muted/50 border-primary/50 text-muted-foreground"
@@ -593,30 +572,31 @@ export default function WhatsAppPage() {
                                                                         : msg.replyTo.type === 'video' ? '🎥 Video'
                                                                             : msg.replyTo.type === 'audio' ? '🎤 Audio'
                                                                                 : msg.replyTo.type === 'sticker' ? '💟 Sticker'
-                                                                                    : msg.replyTo.type === 'document' ? '📄 Document' // Added document handling here 
+                                                                                    : msg.replyTo.type === 'document' ? '📄 Document'
                                                                                         : msg.replyTo.body}
                                                                 </p>
                                                             </div>
                                                         )}
 
                                                         {msg.type === 'text' ? (
-                                                            <p className="whitespace-pre-wrap text-xs leading-relaxed">{msg.body}</p>
+                                                            <p className="whitespace-pre-wrap text-xs md:text-sm leading-relaxed break-words">{msg.body}</p>
                                                         ) : msg.type === 'image' ? (
                                                             <div className="flex flex-col">
                                                                 {msg.mediaId ? (
                                                                     <img
                                                                         src={`${API_BASE_URL}/whatsapp/media/${msg.mediaId}`}
                                                                         alt="Image"
-                                                                        className="rounded-xl w-full max-w-[260px] max-h-[260px] object-cover cursor-pointer hover:opacity-95 transition-opacity bg-black/5"
+                                                                        className="rounded-xl w-full max-w-[240px] md:max-w-[260px] max-h-[240px] md:max-h-[260px] object-cover cursor-pointer hover:opacity-95 transition-opacity bg-black/5"
                                                                         onClick={() => window.open(`${API_BASE_URL}/whatsapp/media/${msg.mediaId}`, '_blank')}
+                                                                        loading="lazy"
                                                                     />
                                                                 ) : msg.mediaUrl ? (
-                                                                    <img src={msg.mediaUrl} alt="Image" className="rounded-xl w-full max-w-[260px] object-cover" />
+                                                                    <img src={msg.mediaUrl} alt="Image" className="rounded-xl w-full max-w-[240px] md:max-w-[260px] object-cover" loading="lazy" />
                                                                 ) : (
                                                                     <div className="bg-muted rounded-xl p-4 text-xs italic text-center w-[200px] h-[150px] flex items-center justify-center">Image Unavailable</div>
                                                                 )}
                                                                 {msg.body && msg.body !== 'Image' && (
-                                                                    <p className="text-[12px] mt-1 px-1 pb-1">{msg.body}</p>
+                                                                    <p className="text-xs md:text-sm mt-1 px-1 pb-1">{msg.body}</p>
                                                                 )}
                                                             </div>
                                                         ) : msg.type === 'audio' ? (
@@ -636,7 +616,7 @@ export default function WhatsAppPage() {
                                                             </div>
                                                         ) : msg.type === 'video' ? (
                                                             <div className="flex flex-col">
-                                                                <div className="bg-black/90 rounded-xl relative overflow-hidden aspect-video w-60 flex items-center justify-center group/video cursor-pointer">
+                                                                <div className="bg-black/90 rounded-xl relative overflow-hidden aspect-video w-52 md:w-60 flex items-center justify-center group/video cursor-pointer">
                                                                     {msg.mediaId ? (
                                                                         <video
                                                                             src={`${API_BASE_URL}/whatsapp/media/${msg.mediaId}`}
@@ -650,7 +630,7 @@ export default function WhatsAppPage() {
                                                                         </>
                                                                     )}
                                                                 </div>
-                                                                {msg.body && msg.body !== 'Video Message' && <p className="text-[12px] mt-1 px-1 pb-1">{msg.body}</p>}
+                                                                {msg.body && msg.body !== 'Video Message' && <p className="text-xs md:text-sm mt-1 px-1 pb-1">{msg.body}</p>}
                                                             </div>
                                                         ) : msg.type === 'sticker' ? (
                                                             <div className="p-1">
@@ -658,7 +638,7 @@ export default function WhatsAppPage() {
                                                                     <img
                                                                         src={`${API_BASE_URL}/whatsapp/media/${msg.mediaId}`}
                                                                         alt="Sticker"
-                                                                        className="h-24 w-24 object-contain"
+                                                                        className="h-20 w-20 md:h-24 md:w-24 object-contain"
                                                                     />
                                                                 ) : (
                                                                     <Sticker className={cn("h-12 w-12", isOutbound ? "text-primary-foreground/80" : "text-foreground/50")} />
@@ -685,23 +665,23 @@ export default function WhatsAppPage() {
                                                         ) : msg.type === 'document' ? (
                                                             <div className="bg-background border rounded-lg flex items-center gap-3 p-2 min-w-[200px] cursor-pointer mb-1" onClick={() => msg.mediaId && window.open(`${API_BASE_URL}/whatsapp/media/${msg.mediaId}`, '_blank')}>
                                                                 <div className="bg-red-100 p-2 rounded-lg text-red-600 shrink-0">
-                                                                    <FileText className="h-6 w-6" />
+                                                                    <FileText className="h-5 w-5 md:h-6 md:w-6" />
                                                                 </div>
                                                                 <div className="flex flex-col overflow-hidden">
-                                                                    <span className="text-sm font-medium truncate leading-tight max-w-[160px]">{msg.body}</span>
-                                                                    <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Size Unknown • PDF</span>
+                                                                    <span className="text-xs md:text-sm font-medium truncate leading-tight max-w-[140px] md:max-w-[160px]">{msg.body}</span>
+                                                                    <span className="text-[9px] md:text-[10px] text-muted-foreground uppercase mt-0.5">Document</span>
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <div className="italic opacity-90 text-[13px] flex items-center gap-2">
+                                                            <div className="italic opacity-90 text-xs md:text-sm flex items-center gap-2">
                                                                 <FileIcon className="h-3.5 w-3.5" />
                                                                 [{msg.type.toUpperCase()}] {msg.body || 'Media'}
                                                             </div>
                                                         )}
 
                                                         <div className={cn(
-                                                            "text-[8px] flex items-center justify-end gap-0.5 select-none opacity-90",
-                                                            (msg.type === 'image' || msg.type === 'video') ? "absolute bottom-1.5 right-1.5 text-white drop-shadow-md bg-black/20 px-1 rounded-full" : "-mt-1",
+                                                            "text-[8px] flex items-center justify-end gap-0.5 select-none opacity-90 mt-0.5",
+                                                            (msg.type === 'image' || msg.type === 'video') ? "absolute bottom-1.5 right-1.5 text-white drop-shadow-md bg-black/20 px-1 rounded-full" : "",
                                                             isOutbound && !((msg.type === 'image' || msg.type === 'video')) ? "text-primary-foreground" : "text-muted-foreground"
                                                         )}>
                                                             {formatTime(msg.timestamp)}
@@ -722,26 +702,26 @@ export default function WhatsAppPage() {
                             </div>
                         </ScrollArea>
 
-                        {/* Input Area */}
-                        <div className="p-3 bg-background border-t border-border z-10 shrink-0">
-                            <div className="flex w-full items-end gap-2 bg-background p-1">
+                        {/* Input Area - Fixed at bottom */}
+                        <div className="p-2 md:p-4 lg:p-5 bg-background border-t border-border shrink-0 safe-bottom">
+                            <div className="flex w-full items-end gap-2 md:gap-3 max-w-350 mx-auto">
                                 {isRecording ? (
-                                    <div className="flex-1 flex items-center gap-2 h-11 px-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <div className="flex-1 bg-red-50 border border-red-100 rounded-[22px] flex items-center px-4 py-2 gap-3 text-red-500 relative overflow-hidden">
-                                            <div className="animate-pulse rounded-full bg-red-500 h-2.5 w-2.5 shrink-0"></div>
-                                            <span className="font-mono font-medium text-sm tabular-nums text-red-600 min-w-12.5">
+                                    <div className="flex-1 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                        <div className="flex-1 bg-red-50 border border-red-100 rounded-full md:rounded-[22px] flex items-center px-3 md:px-4 py-2 gap-2 md:gap-3 text-red-500 relative overflow-hidden min-h-[44px]">
+                                            <div className="animate-pulse rounded-full bg-red-500 h-2 w-2 md:h-2.5 md:w-2.5 shrink-0"></div>
+                                            <span className="font-mono font-medium text-xs md:text-sm tabular-nums text-red-600 min-w-[40px] md:min-w-[50px]">
                                                 {formatDuration(recordingDuration)}
                                             </span>
-                                            <span className="text-xs text-red-400 font-medium">Recording...</span>
+                                            <span className="text-[10px] md:text-xs text-red-400 font-medium">Recording...</span>
 
                                             <div className="ml-auto flex items-center gap-1">
-                                                <Button variant="ghost" size="icon" onClick={cancelRecording} className="h-8 w-8 hover:bg-red-100 hover:text-red-600 text-red-400 rounded-full" title="Cancel">
-                                                    <Trash2 className="h-4 w-4" />
+                                                <Button variant="ghost" size="icon" onClick={cancelRecording} className="h-7 w-7 md:h-8 md:w-8 hover:bg-red-100 hover:text-red-600 text-red-400 rounded-full" title="Cancel">
+                                                    <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
                                                 </Button>
                                             </div>
                                         </div>
-                                        <Button size="icon" className="h-10 w-10 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md animate-pulse" onClick={handleSendVoice} disabled={sending}>
-                                            <Send className="h-5 w-5 pl-0.5" />
+                                        <Button size="icon" className="h-11 w-11 md:h-10 md:w-10 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md animate-pulse shrink-0" onClick={handleSendVoice} disabled={sending}>
+                                            {sending ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : <Send className="h-4 w-4 md:h-5 md:w-5 pl-0.5" />}
                                         </Button>
                                     </div>
                                 ) : (
@@ -751,22 +731,23 @@ export default function WhatsAppPage() {
                                             ref={fileInputRef}
                                             className="hidden"
                                             onChange={handleFileSelect}
-                                            // Accept common WhatsApp types
                                             accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
                                         />
-                                        <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground shrink-0" title="Attach File">
-                                            <Paperclip className="h-5 w-5" />
+                                        <Button variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()} className="h-10 w-10 md:h-10 md:w-10 lg:h-11 lg:w-11 rounded-full text-muted-foreground hover:text-foreground shrink-0" title="Attach File" disabled={sending}>
+                                            <Paperclip className="h-5 w-5 md:h-5 md:w-5 lg:h-5.5 lg:w-5.5" />
                                         </Button>
-                                        <div className="flex-1 bg-muted/30 border border-input focus-within:ring-1 focus-within:ring-primary/20 rounded-[22px] flex items-end px-3 py-2 min-h-[44px]">
+                                        <div className="flex-1 bg-muted/30 border border-input focus-within:ring-1 focus-within:ring-primary/20 rounded-full md:rounded-[24px] lg:rounded-[26px] flex items-end px-3 md:px-4 lg:px-5 py-2 md:py-2.5 lg:py-3 min-h-[44px] max-h-[120px] md:max-h-[140px]">
                                             <Textarea
-                                                className="flex-1 bg-transparent border-0 shadow-none focus-visible:ring-0 p-0 text-sm resize-none max-h-32 min-h-[24px] placeholder:text-muted-foreground/70 leading-relaxed"
+                                                className="flex-1 bg-transparent border-0 shadow-none focus-visible:ring-0 p-0 text-sm md:text-base resize-none max-h-[80px] md:max-h-[100px] min-h-[24px] placeholder:text-muted-foreground/70 leading-relaxed"
                                                 placeholder="Type a message..."
                                                 rows={1}
                                                 value={inputText}
                                                 onChange={(e) => {
                                                     setInputText(e.target.value);
                                                     e.target.style.height = 'auto';
-                                                    e.target.style.height = e.target.scrollHeight + 'px';
+                                                    const maxHeight = window.innerWidth >= 768 ? 100 : 80;
+                                                    const newHeight = Math.min(e.target.scrollHeight, maxHeight);
+                                                    e.target.style.height = newHeight + 'px';
                                                 }}
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter' && !e.shiftKey) {
@@ -774,11 +755,12 @@ export default function WhatsAppPage() {
                                                         handleSend();
                                                     }
                                                 }}
+                                                disabled={sending}
                                             />
                                             <Popover>
                                                 <PopoverTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full text-muted-foreground hover:text-foreground shrink-0 ml-2 -mb-0.5">
-                                                        <Smile className="h-4 w-4" />
+                                                    <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 rounded-full text-muted-foreground hover:text-foreground shrink-0 ml-2 -mb-0.5" disabled={sending}>
+                                                        <Smile className="h-4 w-4 md:h-4.5 md:w-4.5" />
                                                     </Button>
                                                 </PopoverTrigger>
                                                 <PopoverContent side="top" className="w-full p-0 border-none shadow-none bg-transparent" align="end">
@@ -791,12 +773,12 @@ export default function WhatsAppPage() {
                                         </div>
                                         <div className="flex items-center gap-1 shrink-0">
                                             {inputText.trim() ? (
-                                                <Button size="icon" className="h-9 w-9 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-sm" onClick={handleSend} disabled={sending}>
-                                                    <Send className="h-4.5 w-4.5 pl-0.5" />
+                                                <Button size="icon" className="h-11 w-11 md:h-11 md:w-11 lg:h-12 lg:w-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-sm" onClick={handleSend} disabled={sending}>
+                                                    {sending ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : <Send className="h-4 w-4 md:h-5 md:w-5 pl-0.5" />}
                                                 </Button>
                                             ) : (
-                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full text-muted-foreground hover:text-foreground" onClick={startRecording}>
-                                                    <Mic className="h-5 w-5" />
+                                                <Button variant="ghost" size="icon" className="h-11 w-11 md:h-11 md:w-11 lg:h-12 lg:w-12 rounded-full text-muted-foreground hover:text-foreground" onClick={startRecording} disabled={sending}>
+                                                    <Mic className="h-5 w-5 md:h-5.5 md:w-5.5" />
                                                 </Button>
                                             )}
                                         </div>
@@ -804,69 +786,69 @@ export default function WhatsAppPage() {
                                 )}
                             </div>
                         </div>
-                    </div>
+                    </>
                 ) : (
-
-                    <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground/50">
-                        <div className="bg-slate-100 p-6 rounded-full mb-4">
-                            <MessageIcon className="h-12 w-12 text-slate-300" />
+                    <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground/50 p-4 md:p-8">
+                        <div className="bg-slate-100 dark:bg-slate-800 p-8 md:p-10 lg:p-12 rounded-full mb-6">
+                            <MessageIcon className="h-16 w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 text-slate-300 dark:text-slate-600" />
                         </div>
-                        <p className="text-lg font-medium text-slate-400">Select a chat to start messaging</p>
+                        <p className="text-base md:text-lg lg:text-xl font-medium text-slate-400 dark:text-slate-500 text-center">Select a chat to start messaging</p>
+                        <p className="text-xs md:text-sm text-muted-foreground mt-2 text-center max-w-md">Choose a conversation from the list to view messages and send replies</p>
                     </div>
                 )}
             </div>
 
-            {/* RIGHT PANE: Info Panel (Only if contact selected) */}
+            {/* RIGHT PANE: Info Panel (Only on large screens) */}
             {selectedContact && (
-                <div className="w-72 border-l border-border bg-background p-0 hidden xl:flex flex-col overflow-hidden">
-                    <ScrollArea className="flex-1 p-6">
+                <div className="w-80 lg:w-[340px] xl:w-[360px] border-l border-border bg-background p-0 hidden xl:flex flex-col overflow-hidden">
+                    <ScrollArea className="flex-1 p-6 lg:p-8">
                         <div className="flex flex-col items-center mb-8">
-                            <Avatar className="h-20 w-20 mb-3 border-4 border-slate-50">
-                                <AvatarFallback className="text-2xl bg-slate-100">{selectedContact.displayName?.substring(0, 2)}</AvatarFallback>
+                            <Avatar className="h-24 w-24 lg:h-28 lg:w-28 mb-4 border-4 border-slate-50 dark:border-slate-800">
+                                <AvatarFallback className="text-2xl lg:text-3xl bg-slate-100 dark:bg-slate-800">{selectedContact.displayName?.substring(0, 2)}</AvatarFallback>
                             </Avatar>
-                            <h2 className="font-bold text-lg text-center leading-tight">{selectedContact.displayName}</h2>
-                            <p className="text-sm text-muted-foreground mt-1">{selectedContact.phoneNumber}</p>
-                            <Badge variant="secondary" className="mt-2">{selectedContact.type}</Badge>
+                            <h2 className="font-bold text-lg lg:text-xl text-center leading-tight">{selectedContact.displayName}</h2>
+                            <p className="text-sm lg:text-base text-muted-foreground mt-1.5">{selectedContact.phoneNumber}</p>
+                            <Badge variant="secondary" className="mt-2.5 lg:mt-3 text-xs lg:text-sm">{selectedContact.type}</Badge>
                         </div>
 
-                        <div className="space-y-6">
+                        <div className="space-y-6 lg:space-y-7">
                             {selectedContact.type !== 'UNKNOWN' && selectedContact.linkedEntityId ? (
-                                <Card className="p-4 border shadow-sm bg-blue-50/50 border-blue-100">
-                                    <div className="flex items-center gap-2 mb-3 text-blue-700 font-medium text-sm">
-                                        <User className="h-4 w-4" />
+                                <Card className="p-4 lg:p-5 border shadow-sm bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900">
+                                    <div className="flex items-center gap-2 mb-3 text-blue-700 dark:text-blue-400 font-medium text-sm lg:text-base">
+                                        <User className="h-4 w-4 lg:h-5 lg:w-5" />
                                         Linked Entity
                                     </div>
-                                    <div className="space-y-2 text-sm text-slate-600">
+                                    <div className="space-y-2.5 text-sm lg:text-base text-slate-600 dark:text-slate-400">
                                         <div className="flex justify-between">
                                             <span>Type</span>
-                                            <span className="font-medium text-slate-900">{selectedContact.linkedEntityModel}</span>
+                                            <span className="font-medium text-slate-900 dark:text-slate-100">{selectedContact.linkedEntityModel}</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span>Status</span>
-                                            <span className="text-green-600 font-medium">Active</span>
+                                            <span className="text-green-600 dark:text-green-400 font-medium">Active</span>
                                         </div>
-                                        <Button variant="outline" size="sm" className="w-full mt-2 h-8 text-xs bg-white">
+                                        <Button variant="outline" size="sm" className="w-full mt-3 h-9 lg:h-10 text-xs lg:text-sm bg-white dark:bg-slate-950">
                                             View Profile
                                         </Button>
                                     </div>
                                 </Card>
                             ) : (
-                                <Card className="p-4 border-dashed border-2 flex flex-col items-center justify-center text-center space-y-2">
-                                    <span className="text-xs text-muted-foreground">Not Linked to System</span>
-                                    <Button variant="secondary" size="sm" className="h-7 text-xs" onClick={handleRefreshLink}>Type check again</Button>
+                                <Card className="p-4 lg:p-5 border-dashed border-2 flex flex-col items-center justify-center text-center space-y-2.5">
+                                    <span className="text-xs lg:text-sm text-muted-foreground">Not Linked to System</span>
+                                    <Button variant="secondary" size="sm" className="h-8 lg:h-9 text-xs lg:text-sm" onClick={handleRefreshLink}>Check again</Button>
                                 </Card>
                             )}
 
                             <div>
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Quick Actions</h4>
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Button variant="outline" size="sm" className="h-20 flex flex-col gap-2 hover:bg-slate-50">
-                                        <FileText className="h-5 w-5 text-slate-500" />
-                                        <span className="text-xs font-normal">Create Receipt</span>
+                                <h4 className="text-xs lg:text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3 lg:mb-4">Quick Actions</h4>
+                                <div className="grid grid-cols-2 gap-2.5 lg:gap-3">
+                                    <Button variant="outline" size="sm" className="h-24 lg:h-28 flex flex-col gap-2.5 lg:gap-3 hover:bg-slate-50 dark:hover:bg-slate-900">
+                                        <FileText className="h-5 w-5 lg:h-6 lg:w-6 text-slate-500 dark:text-slate-400" />
+                                        <span className="text-xs lg:text-sm font-normal">Create Receipt</span>
                                     </Button>
-                                    <Button variant="outline" size="sm" className="h-20 flex flex-col gap-2 hover:bg-slate-50">
-                                        <Phone className="h-5 w-5 text-slate-500" />
-                                        <span className="text-xs font-normal">Call</span>
+                                    <Button variant="outline" size="sm" className="h-24 lg:h-28 flex flex-col gap-2.5 lg:gap-3 hover:bg-slate-50 dark:hover:bg-slate-900">
+                                        <Phone className="h-5 w-5 lg:h-6 lg:w-6 text-slate-500 dark:text-slate-400" />
+                                        <span className="text-xs lg:text-sm font-normal">Call</span>
                                     </Button>
                                 </div>
                             </div>
