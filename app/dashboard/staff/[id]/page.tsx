@@ -241,8 +241,55 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Phone</span><span className="font-medium text-slate-700">{staff.phone}</span></div>
                             <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Email</span><span className="font-medium text-slate-700">{staff.email || '-'}</span></div>
                             <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">DOB</span><span className="font-medium text-slate-700">{format(new Date(staff.dob), 'dd MMM yyyy')} <span className="text-muted-foreground text-xs">({age} yrs)</span></span></div>
+                            {staff.religion && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Religion</span><span className="font-medium text-slate-700">{staff.religion}</span></div>}
+                            {staff.qualifications && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Qualifications</span><span className="font-medium text-slate-700">{staff.qualifications}</span></div>}
+                            {staff.otherAllowance > 0 && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Other Allowance</span><span className="font-medium text-slate-700">₹{staff.otherAllowance.toLocaleString()}</span></div>}
                         </CardContent>
                     </Card>
+
+                    {(staff.address?.fullAddress || staff.address?.city) && (
+                        <Card className="shadow-sm border-slate-200 py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Address</CardTitle></CardHeader>
+                            <CardContent className="text-sm space-y-2">
+                                {staff.address?.fullAddress && <p className="text-slate-700 leading-relaxed">{staff.address.fullAddress}</p>}
+                                <div className="flex gap-4 text-xs text-muted-foreground">
+                                    {staff.address?.city && <span>{staff.address.city}</span>}
+                                    {staff.address?.state && <span>{staff.address.state}</span>}
+                                    {staff.address?.pincode && <span>{staff.address.pincode}</span>}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {staff.emergencyContact?.name && (
+                        <Card className="shadow-sm border-slate-200 py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Emergency Contact</CardTitle></CardHeader>
+                            <CardContent className="text-sm space-y-2">
+                                <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Name</span><span className="font-medium text-slate-700">{staff.emergencyContact.name}</span></div>
+                                {staff.emergencyContact.relationship && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Relationship</span><span className="font-medium text-slate-700">{staff.emergencyContact.relationship}</span></div>}
+                                {staff.emergencyContact.phone && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Phone</span><span className="font-medium text-slate-700">{staff.emergencyContact.phone}</span></div>}
+                                {staff.emergencyContact.alternatePhone && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Alt. Phone</span><span className="font-medium text-slate-700">{staff.emergencyContact.alternatePhone}</span></div>}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {staff.jobDescription && (
+                        <Card className="shadow-sm border-slate-200 py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Job Description</CardTitle></CardHeader>
+                            <CardContent className="text-sm">
+                                <p className="text-slate-700 leading-relaxed whitespace-pre-line">{staff.jobDescription}</p>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {staff.additionalInfo && (
+                        <Card className="shadow-sm border-slate-200 py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Additional Information</CardTitle></CardHeader>
+                            <CardContent className="text-sm">
+                                <p className="text-slate-700 leading-relaxed whitespace-pre-line">{staff.additionalInfo}</p>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
                 {/* Right Column: Payroll & History */}

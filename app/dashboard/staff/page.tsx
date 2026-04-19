@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { User, Plus, Search, Loader2, ArrowRight, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +27,26 @@ const staffSchema = z.object({
     baseSalary: z.coerce.number().min(0, "Salary required"),
     phone: z.string().min(10, "Valid phone required"),
     email: z.string().email().optional().or(z.literal('')),
-    joinDate: z.string().min(1, "Join Date required")
+    joinDate: z.string().min(1, "Join Date required"),
+    // New fields
+    address: z.object({
+        fullAddress: z.string().optional(),
+        street: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        pincode: z.string().optional()
+    }).optional(),
+    emergencyContact: z.object({
+        name: z.string().optional(),
+        relationship: z.string().optional(),
+        phone: z.string().optional(),
+        alternatePhone: z.string().optional()
+    }).optional(),
+    qualifications: z.string().optional(),
+    religion: z.string().optional(),
+    otherAllowance: z.coerce.number().min(0).optional(),
+    jobDescription: z.string().optional(),
+    additionalInfo: z.string().optional()
 });
 
 export default function StaffPage() {
@@ -53,7 +74,25 @@ export default function StaffPage() {
             baseSalary: 0,
             phone: '',
             email: '',
-            joinDate: new Date().toISOString().split('T')[0]
+            joinDate: new Date().toISOString().split('T')[0],
+            address: {
+                fullAddress: '',
+                street: '',
+                city: '',
+                state: '',
+                pincode: ''
+            },
+            emergencyContact: {
+                name: '',
+                relationship: '',
+                phone: '',
+                alternatePhone: ''
+            },
+            qualifications: '',
+            religion: '',
+            otherAllowance: 0,
+            jobDescription: '',
+            additionalInfo: ''
         }
     });
 
@@ -224,30 +263,85 @@ export default function StaffPage() {
             </Card>
 
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                <DialogContent className="sm:max-w-[600px]">
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Add New Staff Member</DialogTitle>
                         <DialogDescription>Enter employee details below.</DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(handleCreate)} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="employeeId" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Employee ID</FormLabel><FormControl><Input placeholder="EMP001" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="joinDate" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Join Date</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Name</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="dob" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Date of Birth</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="department" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Department</FormLabel><FormControl><Input placeholder="Cleaning, Security..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="position" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Position</FormLabel><FormControl><Input placeholder="Supervisor..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField control={form.control} name="phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Phone</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={form.control} name="baseSalary" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Monthly Salary</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6 font-bold" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
-                            </div>
-                            <FormField control={form.control} name="email" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Email (Optional)</FormLabel><FormControl><Input type="email" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                            <Tabs defaultValue="basic" className="w-full">
+                                <TabsList className="grid w-full grid-cols-4">
+                                    <TabsTrigger value="basic">Basic</TabsTrigger>
+                                    <TabsTrigger value="contact">Contact</TabsTrigger>
+                                    <TabsTrigger value="job">Job Details</TabsTrigger>
+                                    <TabsTrigger value="additional">Additional</TabsTrigger>
+                                </TabsList>
+
+                                {/* Basic Information Tab */}
+                                <TabsContent value="basic" className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={form.control} name="employeeId" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Employee ID *</FormLabel><FormControl><Input placeholder="EMP001" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="joinDate" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Join Date *</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={form.control} name="name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="dob" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Date of Birth *</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={form.control} name="religion" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religion</FormLabel><FormControl><Input placeholder="Optional" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="qualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Qualifications</FormLabel><FormControl><Input placeholder="e.g., High School, Diploma..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                </TabsContent>
+
+                                {/* Contact Details Tab */}
+                                <TabsContent value="contact" className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={form.control} name="phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Phone *</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="email" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-medium">Address</h4>
+                                        <FormField control={form.control} name="address.fullAddress" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Address</FormLabel><FormControl><Textarea placeholder="Complete address" {...fieldProps} value={String(value || '')} rows={2} /></FormControl><FormMessage /></FormItem>)} />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={form.control} name="address.city" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={form.control} name="address.state" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                        <FormField control={form.control} name="address.pincode" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Pincode</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-medium">Emergency Contact</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={form.control} name="emergencyContact.name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Contact Name</FormLabel><FormControl><Input placeholder="Full name" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={form.control} name="emergencyContact.relationship" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Relationship</FormLabel><FormControl><Input placeholder="e.g., Spouse, Parent" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={form.control} name="emergencyContact.phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Primary Phone</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={form.control} name="emergencyContact.alternatePhone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Alternate Phone</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                {/* Job Details Tab */}
+                                <TabsContent value="job" className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={form.control} name="department" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Department *</FormLabel><FormControl><Input placeholder="Cleaning, Security..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="position" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Position *</FormLabel><FormControl><Input placeholder="Supervisor..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={form.control} name="baseSalary" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Monthly Salary *</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="otherAllowance" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Other Allowance</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <FormField control={form.control} name="jobDescription" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Job Description / Duties & Responsibilities</FormLabel><FormControl><Textarea placeholder="Describe the role and responsibilities..." {...fieldProps} value={String(value || '')} rows={4} /></FormControl><FormMessage /></FormItem>)} />
+                                </TabsContent>
+
+                                {/* Additional Info Tab */}
+                                <TabsContent value="additional" className="space-y-4">
+                                    <FormField control={form.control} name="additionalInfo" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Additional Information</FormLabel><FormControl><Textarea placeholder="Any other relevant information..." {...fieldProps} value={String(value || '')} rows={6} /></FormControl><FormMessage /></FormItem>)} />
+                                </TabsContent>
+                            </Tabs>
 
                             <DialogFooter>
                                 <Button type="submit">Create Staff Member</Button>
