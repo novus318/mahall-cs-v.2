@@ -15,46 +15,41 @@ import { Button } from '@/components/ui/button';
 export default function DashboardPage() {
   const [stats, setStats] = useState<any>(null);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [recentLoading, setRecentLoading] = useState(true);
 
   const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const statsRes = await api.get('/dashboard/stats');
-      const recentRes = await api.get('/dashboard/recent');
+    // Reset loading states
+    setStatsLoading(true);
+    setRecentLoading(true);
 
-      setStats(statsRes.data);
-      setRecentActivity(recentRes.data.transactions || []);
+    // Fetch both APIs in parallel and update UI independently as each completes
+    api.get('/dashboard/stats')
+      .then((statsRes) => {
+        setStats(statsRes.data);
+        setStatsLoading(false);
+      })
+      .catch((error) => {
+        console.error('Stats error:', error);
+        toast.error("Failed to load dashboard stats");
+        setStatsLoading(false);
+      });
 
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load dashboard data");
-    } finally {
-      setLoading(false);
-    }
+    api.get('/dashboard/recent')
+      .then((recentRes) => {
+        setRecentActivity(recentRes.data.transactions || []);
+        setRecentLoading(false);
+      })
+      .catch((error) => {
+        console.error('Recent activity error:', error);
+        toast.error("Failed to load recent activity");
+        setRecentLoading(false);
+      });
   };
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
-
-  if (loading) {
-    return (
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-[400px] rounded-xl" />
-          <Skeleton className="h-[400px] rounded-xl" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Skeleton className="col-span-4 h-[350px] rounded-xl" />
-          <Skeleton className="col-span-3 h-[350px] rounded-xl" />
-        </div>
-      </div>
-    );
-  }
 
   const chartData = stats?.financials?.trends || [];
   const receivables = stats?.financials?.receivables || {};
@@ -151,63 +146,84 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatsCard
-          title="Total Balance"
-          value={`₹${stats?.financials?.balance?.toLocaleString() || 0}`}
-          icon={Wallet}
-          description="Across all accounts"
-          className="border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-900/10"
-          href="/dashboard/accounts"
-        />
-        <StatsCard
-          title="Total Members"
-          value={stats?.counts?.members || 0}
-          icon={Users}
-          description="Registered members"
-          href="/dashboard/members"
-        />
-        <StatsCard
-          title="Total Houses"
-          value={stats?.counts?.houses || 0}
-          icon={Home}
-          description="Total properties managed"
-          href="/dashboard/houses"
-        />
-        <StatsCard
-          title="Active Tenants"
-          value={stats?.counts?.tenants || 0}
-          icon={Building2}
-          description="Currently renting"
-          href="/dashboard/contracts"
-        />
-      </div>
+      {statsLoading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <StatsCard
+            title="Total Balance"
+            value={`₹${stats?.financials?.balance?.toLocaleString() || 0}`}
+            icon={Wallet}
+            description="Across all accounts"
+            className="border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-900/10"
+            href="/dashboard/accounts"
+          />
+          <StatsCard
+            title="Total Members"
+            value={stats?.counts?.members || 0}
+            icon={Users}
+            description="Registered members"
+            href="/dashboard/members"
+          />
+          <StatsCard
+            title="Total Houses"
+            value={stats?.counts?.houses || 0}
+            icon={Home}
+            description="Total properties managed"
+            href="/dashboard/houses"
+          />
+          <StatsCard
+            title="Active Tenants"
+            value={stats?.counts?.tenants || 0}
+            icon={Building2}
+            description="Currently renting"
+            href="/dashboard/contracts"
+          />
+        </div>
+      )}
 
       {/* Financial Overview - Receivables & Payables */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <FinancialOverviewCard
-          title="Receivables"
-          type="receivables"
-          totalPending={receivables.total?.pending || 0}
-          totalCompleted={receivables.total?.collected || 0}
-          items={receivablesItems}
-        />
-        <FinancialOverviewCard
-          title="Payables"
-          type="payables"
-          totalPending={payables.total?.pending || 0}
-          totalCompleted={payables.total?.paid || 0}
-          items={payablesItems}
-        />
-      </div>
+      {statsLoading ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-[400px] rounded-xl" />
+          <Skeleton className="h-[400px] rounded-xl" />
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          <FinancialOverviewCard
+            title="Receivables"
+            type="receivables"
+            totalPending={receivables.total?.pending || 0}
+            totalCompleted={receivables.total?.collected || 0}
+            items={receivablesItems}
+          />
+          <FinancialOverviewCard
+            title="Payables"
+            type="payables"
+            totalPending={payables.total?.pending || 0}
+            totalCompleted={payables.total?.paid || 0}
+            items={payablesItems}
+          />
+        </div>
+      )}
 
       {/* Income vs Expenses Trend & Recent Activity */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-1 md:col-span-2 lg:col-span-4">
-          <OverviewChart data={chartData} />
+          {statsLoading ? (
+            <Skeleton className="h-[350px] rounded-xl" />
+          ) : (
+            <OverviewChart data={chartData} />
+          )}
         </div>
         <div className="col-span-1 md:col-span-2 lg:col-span-3">
-          <RecentTransactions transactions={recentActivity} />
+          {recentLoading ? (
+            <Skeleton className="h-[350px] rounded-xl" />
+          ) : (
+            <RecentTransactions transactions={recentActivity} />
+          )}
         </div>
       </div>
     </div>
