@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { ArrowLeft, User, Phone, Mail, Building2, Briefcase, Calendar, Plus, Wallet, FileText, Download, CheckCircle2, Loader2, Landmark, ShieldAlert, LockKeyhole } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, Building2, Briefcase, Calendar, Plus, Wallet, FileText, Download, CheckCircle2, Loader2, Landmark, ShieldAlert, LockKeyhole, Edit } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -37,6 +38,38 @@ const paymentSchema = z.object({
     advanceDeduction: z.coerce.number().min(0).default(0)
 });
 
+// Edit Staff Schema
+const editStaffSchema = z.object({
+    name: z.string().min(2, "Name required"),
+    dob: z.string().min(1, "Date of Birth required"),
+    employeeId: z.string().min(1, "ID required"),
+    department: z.string().min(1, "Department required"),
+    position: z.string().min(1, "Position required"),
+    baseSalary: z.coerce.number().min(0, "Salary required"),
+    phone: z.string().min(10, "Valid phone required"),
+    email: z.string().email().optional().or(z.literal('')),
+    joinDate: z.string().min(1, "Join Date required"),
+    address: z.object({
+        fullAddress: z.string().optional(),
+        street: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        pincode: z.string().optional()
+    }).optional(),
+    emergencyContact: z.object({
+        name: z.string().optional(),
+        relationship: z.string().optional(),
+        phone: z.string().optional(),
+        alternatePhone: z.string().optional()
+    }).optional(),
+    qualifications: z.string().optional(),
+    religion: z.string().optional(),
+    otherAllowance: z.coerce.number().min(0).optional(),
+    jobDescription: z.string().optional(),
+    additionalInfo: z.string().optional(),
+    status: z.enum(['ACTIVE', 'INACTIVE'])
+});
+
 export default function StaffDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const resolvedParams = use(params);
     const router = useRouter();
@@ -47,6 +80,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
 
     const [isAdvanceOpen, setIsAdvanceOpen] = useState(false);
     const [isPayslipOpen, setIsPayslipOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     // Payment Dialog State
     const [isPayOpen, setIsPayOpen] = useState(false);
@@ -76,6 +110,40 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     const paymentForm = useForm({
         resolver: zodResolver(paymentSchema),
         defaultValues: { leaveDays: 0, advanceDeduction: 0 }
+    });
+
+    const editForm = useForm({
+        resolver: zodResolver(editStaffSchema),
+        defaultValues: {
+            name: '',
+            dob: '',
+            employeeId: '',
+            department: '',
+            position: '',
+            baseSalary: 0,
+            phone: '',
+            email: '',
+            joinDate: '',
+            address: {
+                fullAddress: '',
+                street: '',
+                city: '',
+                state: '',
+                pincode: ''
+            },
+            emergencyContact: {
+                name: '',
+                relationship: '',
+                phone: '',
+                alternatePhone: ''
+            },
+            qualifications: '',
+            religion: '',
+            otherAllowance: 0,
+            jobDescription: '',
+            additionalInfo: '',
+            status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE'
+        }
     });
 
     useEffect(() => {
@@ -180,6 +248,52 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
         }
     };
 
+    const openEditDialog = () => {
+        if (!staff) return;
+        editForm.reset({
+            name: staff.name || '',
+            dob: staff.dob ? new Date(staff.dob).toISOString().split('T')[0] : '',
+            employeeId: staff.employeeId || '',
+            department: staff.department || '',
+            position: staff.position || '',
+            baseSalary: staff.baseSalary || 0,
+            phone: staff.phone || '',
+            email: staff.email || '',
+            joinDate: staff.joinDate ? new Date(staff.joinDate).toISOString().split('T')[0] : '',
+            address: {
+                fullAddress: staff.address?.fullAddress || '',
+                street: staff.address?.street || '',
+                city: staff.address?.city || '',
+                state: staff.address?.state || '',
+                pincode: staff.address?.pincode || ''
+            },
+            emergencyContact: {
+                name: staff.emergencyContact?.name || '',
+                relationship: staff.emergencyContact?.relationship || '',
+                phone: staff.emergencyContact?.phone || '',
+                alternatePhone: staff.emergencyContact?.alternatePhone || ''
+            },
+            qualifications: staff.qualifications || '',
+            religion: staff.religion || '',
+            otherAllowance: staff.otherAllowance || 0,
+            jobDescription: staff.jobDescription || '',
+            additionalInfo: staff.additionalInfo || '',
+            status: staff.status || 'ACTIVE'
+        });
+        setIsEditOpen(true);
+    };
+
+    const handleUpdateStaff = async (values: z.infer<typeof editStaffSchema>) => {
+        try {
+            await api.put(`/staff/${resolvedParams.id}`, values);
+            toast.success("Staff updated successfully");
+            setIsEditOpen(false);
+            fetchData();
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to update staff");
+        }
+    };
+
     if (loading) return <div className="p-8 flex justify-center"><Loader2 className="animate-spin h-8 w-8" /></div>;
     if (!staff) return <div className="p-8 text-center text-muted-foreground">Staff not found</div>;
 
@@ -196,19 +310,24 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     return (
         <div className="flex flex-1 flex-col gap-4 p-4 overflow-hidden h-full">
             {/* Header */}
-            <div className="flex items-center gap-4 shrink-0">
-                <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-5 w-5" /></Button>
-                <div>
-                    <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
-                        {staff.name}
-                        <Badge variant={staff.status === 'ACTIVE' ? 'default' : 'secondary'} className={staff.status === 'ACTIVE' ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}>{staff.status}</Badge>
-                    </h2>
-                    <div className="text-muted-foreground text-sm flex items-center gap-4 mt-1">
-                        <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {staff.position}</span>
-                        <span className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> {staff.department}</span>
-                        <span className="font-mono text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#{staff.employeeId}</span>
+            <div className="flex items-center justify-between gap-4 shrink-0">
+                <div className="flex items-center gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-5 w-5" /></Button>
+                    <div>
+                        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+                            {staff.name}
+                            <Badge variant={staff.status === 'ACTIVE' ? 'default' : 'secondary'} className={staff.status === 'ACTIVE' ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}>{staff.status}</Badge>
+                        </h2>
+                        <div className="text-muted-foreground text-sm flex items-center gap-4 mt-1">
+                            <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {staff.position}</span>
+                            <span className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> {staff.department}</span>
+                            <span className="font-mono text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#{staff.employeeId}</span>
+                        </div>
                     </div>
                 </div>
+                <Button variant="outline" size="sm" onClick={openEditDialog}>
+                    <Edit className="mr-2 h-4 w-4" /> Edit Details
+                </Button>
             </div>
 
             <div className="grid lg:grid-cols-3 gap-3 h-full overflow-hidden">
@@ -523,6 +642,98 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             Confirm Rejection
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Staff Dialog */}
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Edit Staff Member</DialogTitle>
+                        <DialogDescription>Update employee details below.</DialogDescription>
+                    </DialogHeader>
+                    <Form {...editForm}>
+                        <form onSubmit={editForm.handleSubmit(handleUpdateStaff)} className="space-y-4">
+                            <Tabs defaultValue="basic" className="w-full">
+                                <TabsList className="grid w-full grid-cols-4">
+                                    <TabsTrigger value="basic">Basic</TabsTrigger>
+                                    <TabsTrigger value="contact">Contact</TabsTrigger>
+                                    <TabsTrigger value="job">Job Details</TabsTrigger>
+                                    <TabsTrigger value="additional">Additional</TabsTrigger>
+                                </TabsList>
+
+                                {/* Basic Information Tab */}
+                                <TabsContent value="basic" className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="employeeId" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Employee ID *</FormLabel><FormControl><Input placeholder="EMP001" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="joinDate" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Join Date *</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="dob" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Date of Birth *</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="religion" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religion</FormLabel><FormControl><Input placeholder="Optional" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="qualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Qualifications</FormLabel><FormControl><Input placeholder="e.g., High School, Diploma..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <FormField control={editForm.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="ACTIVE">Active</SelectItem><SelectItem value="INACTIVE">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                </TabsContent>
+
+                                {/* Contact Details Tab */}
+                                <TabsContent value="contact" className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Phone *</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="email" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-medium">Address</h4>
+                                        <FormField control={editForm.control} name="address.fullAddress" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Address</FormLabel><FormControl><Textarea placeholder="Complete address" {...fieldProps} value={String(value || '')} rows={2} /></FormControl><FormMessage /></FormItem>)} />
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="address.city" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="address.state" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                        <FormField control={editForm.control} name="address.pincode" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Pincode</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-medium">Emergency Contact</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="emergencyContact.name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Contact Name</FormLabel><FormControl><Input placeholder="Full name" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="emergencyContact.relationship" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Relationship</FormLabel><FormControl><Input placeholder="e.g., Spouse, Parent" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="emergencyContact.phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Primary Phone</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="emergencyContact.alternatePhone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Alternate Phone</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                {/* Job Details Tab */}
+                                <TabsContent value="job" className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="department" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Department *</FormLabel><FormControl><Input placeholder="Cleaning, Security..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="position" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Position *</FormLabel><FormControl><Input placeholder="Supervisor..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="baseSalary" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Monthly Salary *</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="otherAllowance" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Other Allowance</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <FormField control={editForm.control} name="jobDescription" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Job Description / Duties & Responsibilities</FormLabel><FormControl><Textarea placeholder="Describe the role and responsibilities..." {...fieldProps} value={String(value || '')} rows={4} /></FormControl><FormMessage /></FormItem>)} />
+                                </TabsContent>
+
+                                {/* Additional Info Tab */}
+                                <TabsContent value="additional" className="space-y-4">
+                                    <FormField control={editForm.control} name="additionalInfo" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Additional Information</FormLabel><FormControl><Textarea placeholder="Any other relevant information..." {...fieldProps} value={String(value || '')} rows={6} /></FormControl><FormMessage /></FormItem>)} />
+                                </TabsContent>
+                            </Tabs>
+
+                            <DialogFooter>
+                                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+                                <Button type="submit">Update Staff Member</Button>
+                            </DialogFooter>
+                        </form>
+                    </Form>
                 </DialogContent>
             </Dialog>
         </div>
