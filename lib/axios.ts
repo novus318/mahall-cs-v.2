@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://mahall-bk-v2-production.up.railway.app/api',
+    baseURL: 'http://localhost:5000/api',
     headers: {
         'Content-Type': 'application/json',
     },
@@ -67,7 +67,7 @@ api.interceptors.response.use(
                     throw new Error('No refresh token');
                 }
 
-                const { data } = await axios.post('https://mahall-bk-v2-production.up.railway.app/api/auth/refresh', {
+                const { data } = await axios.post('http://localhost:5000api/auth/refresh', {
                     refreshToken,
                 });
 

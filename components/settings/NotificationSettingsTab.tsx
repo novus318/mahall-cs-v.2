@@ -67,6 +67,14 @@ export default function NotificationSettingsTab() {
         try {
             await api.put('/settings/alert-contacts', { contacts: values.contacts });
             toast.success("Notification contacts updated");
+
+            // If we were in setup mode (adding first contacts), clear the access
+            // so that OTP will be required on next visit
+            if (sessionStorage.getItem('settingsSetupMode') === 'true') {
+                sessionStorage.removeItem('settingsSetupMode');
+                sessionStorage.removeItem('settingsAccess');
+                toast.info("OTP verification will be required on your next visit");
+            }
         } catch (error: any) {
             toast.error("Failed to save contacts");
         } finally {

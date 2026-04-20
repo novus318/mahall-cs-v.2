@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import ProfileTab from '@/components/settings/ProfileTab';
@@ -8,19 +9,65 @@ import UserManagementTab from '@/components/settings/UserManagementTab';
 import NotificationSettingsTab from '@/components/settings/NotificationSettingsTab';
 import PaymentSettingsTab from '@/components/settings/PaymentSettingsTab';
 import CollectionSettingsTab from '@/components/settings/CollectionSettingsTab';
+import OTPVerificationDialog from '@/components/settings/OTPVerificationDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
+const SETTINGS_ACCESS_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
+const SETTINGS_SETUP_DURATION = 10 * 60 * 1000; // 10 minutes for setup mode
+
 export default function SettingsPage() {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('profile');
     const { user, loading } = useAuth();
+    const [isVerified, setIsVerified] = useState(false);
+    const [checkingAccess, setCheckingAccess] = useState(true);
 
-    if (loading) return <div className="flex min-h-screen items-center justify-center bg-background">
+    useEffect(() => {
+        // Check if user has valid session access
+        const checkAccess = () => {
+            if (user?.role === 'admin') {
+                const accessTime = sessionStorage.getItem('settingsAccess');
+                if (accessTime) {
+                    const elapsed = Date.now() - parseInt(accessTime);
+                    const isSetupMode = sessionStorage.getItem('settingsSetupMode') === 'true';
+                    const duration = isSetupMode ? SETTINGS_SETUP_DURATION : SETTINGS_ACCESS_DURATION;
+
+                    if (elapsed < duration) {
+                        setIsVerified(true);
+                    }
+                }
+            } else {
+                // Non-admin users don't need OTP
+                setIsVerified(true);
+            }
+            setCheckingAccess(false);
+        };
+
+        if (!loading) {
+            checkAccess();
+        }
+    }, [user, loading]);
+
+    const handleVerified = () => {
+        setIsVerified(true);
+    };
+
+    const handleOTPDialogClose = () => {
+        router.push('/dashboard');
+    };
+
+    if (loading || checkingAccess) return <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin" />
         </div>
     </div>;
     if (!user) return <div className="p-8 text-center text-red-500">Failed to load user profile.</div>;
+
+    // Show OTP dialog for admin users who haven't verified
+    if (user.role === 'admin' && !isVerified) {
+        return <OTPVerificationDialog open={!isVerified} onVerified={handleVerified} onClose={handleOTPDialogClose} />;
+    }
 
     return (
         <div className="container max-w-screen-2xl mx-auto py-6 px-4 sm:px-6">
