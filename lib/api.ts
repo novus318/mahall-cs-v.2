@@ -139,6 +139,10 @@ export const getAccounts = async () => (await api.get('/accounts')).data;
 export const initiateRejection = async (dueId: string) => (await api.post('/collections/reject/initiate', { dueId })).data;
 export const confirmRejection = async (dueId: string, otp: string) => (await api.post('/collections/reject/confirm', { dueId, otp })).data;
 
+export const getArrearsSummary = async (params: any) => (await api.get('/collections/arrears', { params })).data;
+export const sendArrearsReminder = async (data: { entityId: string, entityType: string }) =>
+    (await api.post('/collections/remind/summary', data)).data;
+
 export const downloadCollectionReceipt = async (id: string) => {
     return api.get(`/collections/receipts/${id}/pdf`, {
         responseType: 'blob'

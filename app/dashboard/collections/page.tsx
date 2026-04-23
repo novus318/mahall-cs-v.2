@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getDues, getAccounts, payDue, initiateRejection, confirmRejection, API_URL } from "@/lib/api"
-import { Loader2, Search, Filter, ExternalLink, Calendar, Building2, User, Coins, Wallet, Landmark, ShieldAlert, LockKeyhole, ChevronDown, ChevronUp, History } from "lucide-react"
+import { getDues, getAccounts, payDue, initiateRejection, confirmRejection, API_URL, getArrearsSummary, sendArrearsReminder } from "@/lib/api"
+import { Loader2, Search, Filter, ExternalLink, Calendar, Building2, User, Coins, Wallet, Landmark, ShieldAlert, LockKeyhole, ChevronDown, ChevronUp, History, Bell, Send } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -28,6 +28,7 @@ export default function CollectionsPage() {
                 <TabsList>
                     <TabsTrigger value="house" className="gap-2"><Building2 className="h-4 w-4" /> House Collections</TabsTrigger>
                     <TabsTrigger value="member" className="gap-2"><User className="h-4 w-4" /> Member Collections</TabsTrigger>
+                    <TabsTrigger value="arrears" className="gap-2 text-red-600 dark:text-red-400"><Bell className="h-4 w-4" /> Arrears Summary</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="house" className="space-y-4">
@@ -36,6 +37,10 @@ export default function CollectionsPage() {
 
                 <TabsContent value="member" className="space-y-4">
                     <CollectionTable type="Member" />
+                </TabsContent>
+
+                <TabsContent value="arrears" className="space-y-4">
+                    <ArrearsTable />
                 </TabsContent>
             </Tabs>
         </div>
@@ -570,5 +575,137 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                 </DialogContent>
             </Dialog>
         </>
+    )
+}
+
+function ArrearsTable() {
+    const [arrears, setArrears] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+    const [typeFilter, setTypeFilter] = useState("All")
+    const [remindingId, setRemindingId] = useState<string | null>(null)
+
+    useEffect(() => {
+        fetchArrears()
+    }, [typeFilter])
+
+    const fetchArrears = async () => {
+        setLoading(true)
+        try {
+            const data = await getArrearsSummary({ entityType: typeFilter })
+            setArrears(Array.isArray(data) ? data : [])
+        } catch (error) {
+            console.error(error)
+            toast.error("Failed to fetch arrears summary")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleSendReminder = async (item: any) => {
+        setRemindingId(item.entityId)
+        try {
+            await sendArrearsReminder({
+                entityId: item.entityId,
+                entityType: item.entityType
+            })
+            toast.success("Summary reminder sent via WhatsApp")
+        } catch (error: any) {
+            toast.error(error.message || "Failed to send reminder")
+        } finally {
+            setRemindingId(null)
+        }
+    }
+
+    return (
+        <Card className="border-red-100 dark:border-red-900/30">
+            <CardHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0 bg-red-50/50 dark:bg-red-950/10">
+                <div>
+                    <CardTitle className="text-lg flex items-center gap-2 text-red-700 dark:text-red-400">
+                        <ShieldAlert className="h-5 w-5" /> Pending Arrears Summary
+                    </CardTitle>
+                    <CardDescription>
+                        Overview of total outstanding balances across all periods.
+                    </CardDescription>
+                </div>
+                <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className="h-9 w-[150px]">
+                        <SelectValue placeholder="All Entities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Entities</SelectItem>
+                        <SelectItem value="House">Houses Only</SelectItem>
+                        <SelectItem value="Member">Members Only</SelectItem>
+                    </SelectContent>
+                </Select>
+            </CardHeader>
+            <CardContent className="p-0">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Entity</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead className="text-center">Pending Months</TableHead>
+                            <TableHead className="text-right">Total Outstanding</TableHead>
+                            <TableHead className="w-[150px]"></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {loading ? (
+                            <TableRow>
+                                <TableCell colSpan={5} className="h-24 text-center">
+                                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                                </TableCell>
+                            </TableRow>
+                        ) : arrears.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                    No arrears found.
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            arrears.map((item) => (
+                                <TableRow key={item.entityId}>
+                                    <TableCell>
+                                        <div className="flex flex-col">
+                                            <span className="font-medium text-sm">{item.entity?.name || 'Unknown'}</span>
+                                            <span className="text-[10px] text-muted-foreground font-mono">{item.entity?.customId || '-'}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className="text-[10px]">
+                                            {item.entityType}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <Badge variant="secondary" className="font-bold">
+                                            {item.pendingCount}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono font-bold text-red-600">
+                                        ₹{item.totalAmount}
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-8 gap-2 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-900/30 dark:text-green-400 dark:hover:bg-green-950/20"
+                                            onClick={() => handleSendReminder(item)}
+                                            disabled={remindingId === item.entityId}
+                                        >
+                                            {remindingId === item.entityId ? (
+                                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                            ) : (
+                                                <Send className="h-3.5 w-3.5" />
+                                            )}
+                                            Remind
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
     )
 }
