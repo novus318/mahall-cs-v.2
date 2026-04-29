@@ -63,7 +63,15 @@ const editStaffSchema = z.object({
         alternatePhone: z.string().optional()
     }).optional(),
     qualifications: z.string().optional(),
-    religion: z.string().optional(),
+    religiousQualifications: z.string().optional(),
+    aadhaarNumber: z.string().optional(),
+    bankAccount: z.object({
+        accountNumber: z.string().optional(),
+        ifscCode: z.string().optional(),
+        bankName: z.string().optional(),
+        branchName: z.string().optional(),
+        accountHolderName: z.string().optional()
+    }).optional(),
     otherAllowance: z.coerce.number().min(0).optional(),
     jobDescription: z.string().optional(),
     additionalInfo: z.string().optional(),
@@ -138,7 +146,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                 alternatePhone: ''
             },
             qualifications: '',
-            religion: '',
+            religiousQualifications: '',
+            aadhaarNumber: '',
+            bankAccount: {
+                accountNumber: '',
+                ifscCode: '',
+                bankName: '',
+                branchName: '',
+                accountHolderName: ''
+            },
             otherAllowance: 0,
             jobDescription: '',
             additionalInfo: '',
@@ -274,7 +290,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                 alternatePhone: staff.emergencyContact?.alternatePhone || ''
             },
             qualifications: staff.qualifications || '',
-            religion: staff.religion || '',
+            religiousQualifications: staff.religiousQualifications || '',
+            aadhaarNumber: staff.aadhaarNumber || '',
+            bankAccount: {
+                accountNumber: staff.bankAccount?.accountNumber || '',
+                ifscCode: staff.bankAccount?.ifscCode || '',
+                bankName: staff.bankAccount?.bankName || '',
+                branchName: staff.bankAccount?.branchName || '',
+                accountHolderName: staff.bankAccount?.accountHolderName || ''
+            },
             otherAllowance: staff.otherAllowance || 0,
             jobDescription: staff.jobDescription || '',
             additionalInfo: staff.additionalInfo || '',
@@ -360,8 +384,9 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Phone</span><span className="font-medium text-slate-700">{staff.phone}</span></div>
                             <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Email</span><span className="font-medium text-slate-700">{staff.email || '-'}</span></div>
                             <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">DOB</span><span className="font-medium text-slate-700">{format(new Date(staff.dob), 'dd MMM yyyy')} <span className="text-muted-foreground text-xs">({age} yrs)</span></span></div>
-                            {staff.religion && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Religion</span><span className="font-medium text-slate-700">{staff.religion}</span></div>}
+                            {staff.aadhaarNumber && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Aadhaar / ID</span><span className="font-medium text-slate-700">{staff.aadhaarNumber}</span></div>}
                             {staff.qualifications && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Qualifications</span><span className="font-medium text-slate-700">{staff.qualifications}</span></div>}
+                            {staff.religiousQualifications && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Religious Qualifications</span><span className="font-medium text-slate-700">{staff.religiousQualifications}</span></div>}
                             {staff.otherAllowance > 0 && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Other Allowance</span><span className="font-medium text-slate-700">₹{staff.otherAllowance.toLocaleString()}</span></div>}
                         </CardContent>
                     </Card>
@@ -388,6 +413,19 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                 {staff.emergencyContact.relationship && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Relationship</span><span className="font-medium text-slate-700">{staff.emergencyContact.relationship}</span></div>}
                                 {staff.emergencyContact.phone && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Phone</span><span className="font-medium text-slate-700">{staff.emergencyContact.phone}</span></div>}
                                 {staff.emergencyContact.alternatePhone && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Alt. Phone</span><span className="font-medium text-slate-700">{staff.emergencyContact.alternatePhone}</span></div>}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {(staff.bankAccount?.accountNumber || staff.bankAccount?.bankName) && (
+                        <Card className="shadow-sm border-slate-200 py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Bank Account Details</CardTitle></CardHeader>
+                            <CardContent className="text-sm space-y-2">
+                                {staff.bankAccount?.accountHolderName && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Account Holder</span><span className="font-medium text-slate-700">{staff.bankAccount.accountHolderName}</span></div>}
+                                {staff.bankAccount?.accountNumber && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Account Number</span><span className="font-medium text-slate-700 font-mono">{staff.bankAccount.accountNumber}</span></div>}
+                                {staff.bankAccount?.ifscCode && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">IFSC Code</span><span className="font-medium text-slate-700 font-mono">{staff.bankAccount.ifscCode}</span></div>}
+                                {staff.bankAccount?.bankName && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Bank Name</span><span className="font-medium text-slate-700">{staff.bankAccount.bankName}</span></div>}
+                                {staff.bankAccount?.branchName && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Branch</span><span className="font-medium text-slate-700">{staff.bankAccount.branchName}</span></div>}
                             </CardContent>
                         </Card>
                     )}
@@ -673,10 +711,13 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                         <FormField control={editForm.control} name="dob" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Date of Birth *</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={editForm.control} name="religion" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religion</FormLabel><FormControl><Input placeholder="Optional" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                         <FormField control={editForm.control} name="qualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Qualifications</FormLabel><FormControl><Input placeholder="e.g., High School, Diploma..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="aadhaarNumber" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Aadhaar / Identity Number</FormLabel><FormControl><Input placeholder="Optional" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
-                                    <FormField control={editForm.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="ACTIVE">Active</SelectItem><SelectItem value="INACTIVE">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="religiousQualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religious Qualifications</FormLabel><FormControl><Input placeholder="e.g., Hafiz, Alim, Certificates..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="ACTIVE">Active</SelectItem><SelectItem value="INACTIVE">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                    </div>
                                 </TabsContent>
 
                                 {/* Contact Details Tab */}
@@ -724,7 +765,19 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
 
                                 {/* Additional Info Tab */}
                                 <TabsContent value="additional" className="space-y-4">
-                                    <FormField control={editForm.control} name="additionalInfo" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Additional Information</FormLabel><FormControl><Textarea placeholder="Any other relevant information..." {...fieldProps} value={String(value || '')} rows={6} /></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-medium">Bank Account Details</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="bankAccount.accountHolderName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Account Holder Name</FormLabel><FormControl><Input placeholder="As per bank records" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="bankAccount.accountNumber" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Account Number</FormLabel><FormControl><Input placeholder="Account number" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="bankAccount.ifscCode" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>IFSC Code</FormLabel><FormControl><Input placeholder="e.g., SBIN0001234" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="bankAccount.bankName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input placeholder="e.g., State Bank of India" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                        <FormField control={editForm.control} name="bankAccount.branchName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Branch Name</FormLabel><FormControl><Input placeholder="Branch location" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <FormField control={editForm.control} name="additionalInfo" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Additional Information</FormLabel><FormControl><Textarea placeholder="Any other relevant information..." {...fieldProps} value={String(value || '')} rows={4} /></FormControl><FormMessage /></FormItem>)} />
                                 </TabsContent>
                             </Tabs>
 

@@ -43,7 +43,15 @@ const staffSchema = z.object({
         alternatePhone: z.string().optional()
     }).optional(),
     qualifications: z.string().optional(),
-    religion: z.string().optional(),
+    religiousQualifications: z.string().optional(),
+    aadhaarNumber: z.string().optional(),
+    bankAccount: z.object({
+        accountNumber: z.string().optional(),
+        ifscCode: z.string().optional(),
+        bankName: z.string().optional(),
+        branchName: z.string().optional(),
+        accountHolderName: z.string().optional()
+    }).optional(),
     otherAllowance: z.coerce.number().min(0).optional(),
     jobDescription: z.string().optional(),
     additionalInfo: z.string().optional()
@@ -89,7 +97,15 @@ export default function StaffPage() {
                 alternatePhone: ''
             },
             qualifications: '',
-            religion: '',
+            religiousQualifications: '',
+            aadhaarNumber: '',
+            bankAccount: {
+                accountNumber: '',
+                ifscCode: '',
+                bankName: '',
+                branchName: '',
+                accountHolderName: ''
+            },
             otherAllowance: 0,
             jobDescription: '',
             additionalInfo: ''
@@ -289,8 +305,11 @@ export default function StaffPage() {
                                         <FormField control={form.control} name="dob" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Date of Birth *</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={form.control} name="religion" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religion</FormLabel><FormControl><Input placeholder="Optional" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                         <FormField control={form.control} name="qualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Qualifications</FormLabel><FormControl><Input placeholder="e.g., High School, Diploma..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={form.control} name="aadhaarNumber" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Aadhaar / Identity Number</FormLabel><FormControl><Input placeholder="Optional" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <FormField control={form.control} name="religiousQualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religious Qualifications</FormLabel><FormControl><Input placeholder="e.g., Hafiz, Alim, Certificates..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
                                 </TabsContent>
 
@@ -339,7 +358,19 @@ export default function StaffPage() {
 
                                 {/* Additional Info Tab */}
                                 <TabsContent value="additional" className="space-y-4">
-                                    <FormField control={form.control} name="additionalInfo" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Additional Information</FormLabel><FormControl><Textarea placeholder="Any other relevant information..." {...fieldProps} value={String(value || '')} rows={6} /></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="space-y-2">
+                                        <h4 className="text-sm font-medium">Bank Account Details</h4>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={form.control} name="bankAccount.accountHolderName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Account Holder Name</FormLabel><FormControl><Input placeholder="As per bank records" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={form.control} name="bankAccount.accountNumber" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Account Number</FormLabel><FormControl><Input placeholder="Account number" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <FormField control={form.control} name="bankAccount.ifscCode" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>IFSC Code</FormLabel><FormControl><Input placeholder="e.g., SBIN0001234" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={form.control} name="bankAccount.bankName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input placeholder="e.g., State Bank of India" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        </div>
+                                        <FormField control={form.control} name="bankAccount.branchName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Branch Name</FormLabel><FormControl><Input placeholder="Branch location" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    </div>
+                                    <FormField control={form.control} name="additionalInfo" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Additional Information</FormLabel><FormControl><Textarea placeholder="Any other relevant information..." {...fieldProps} value={String(value || '')} rows={4} /></FormControl><FormMessage /></FormItem>)} />
                                 </TabsContent>
                             </Tabs>
 
