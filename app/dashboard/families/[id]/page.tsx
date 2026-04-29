@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react"
 import { ReactFlow, Controls, Background, useNodesState, useEdgesState, BackgroundVariant, MarkerType, Position } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
-import { getFamily, getHouses, getMembers, createHouse, createMember, updateHouse } from "@/lib/api"
+import { getFamily, getAllHouses, getAllMembers, createHouse, createMember, updateHouse } from "@/lib/api"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Plus, ArrowLeft, Home, Users, AlignJustify, Network, Pencil, Crown, Loader2 } from "lucide-react"
@@ -148,8 +148,8 @@ export default function FamilyDetailDashboard() {
         try {
             const [famData, housesData, membersData] = await Promise.all([
                 getFamily(id as string),
-                getHouses({ family: id }),
-                getMembers({ family: id })
+                getAllHouses({ family: id }),
+                getAllMembers({ family: id })
             ])
             setFamily(famData)
 

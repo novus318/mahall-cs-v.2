@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState, useCallback } from "react"
-import { getHouse, getMembers, deleteMember, createMember, updateMember, updateHouse } from "@/lib/api"
+import { getHouse, getAllMembers, deleteMember, createMember, updateMember, updateHouse } from "@/lib/api"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Loader2, ArrowLeft, Trash2, Home, User, AlignJustify, Network, MapPin, Plus, Pencil, Crown, Coins } from "lucide-react"
@@ -151,7 +151,7 @@ export default function HouseDetailPage() {
         try {
             const [houseData, membersData] = await Promise.all([
                 getHouse(id as string),
-                getMembers({ house: id })
+                getAllMembers({ house: id })
             ])
             if (!houseData) {
                 throw new Error("House not found");

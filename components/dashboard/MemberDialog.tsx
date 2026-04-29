@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ArrowLeft, ArrowRight, User, Users, Heart, Baby, Briefcase, Loader2, Check, XCircle } from "lucide-react"
 import { toast } from "sonner"
-import { createMember, updateMember, getMembers, getHouses } from "@/lib/api"
+import { createMember, updateMember, getAllMembers, getAllHouses } from "@/lib/api"
 import { useParams } from "next/navigation"
 import { Checkbox } from "@/components/ui/checkbox"
 
@@ -79,7 +79,7 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
 
         setHouseValidationStatus('validating')
         try {
-            const res: any = await getHouses({ search: code, limit: 10 })
+            const res: any = await getAllHouses({ search: code })
             const list = Array.isArray(res) ? res : (res.houses || [])
             // Find Exact Match on Custom ID
             const match = list.find((h: any) => h.customId.toLowerCase() === code.toLowerCase())
@@ -193,7 +193,7 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
 
             // Fetch houses
             // Fetch houses
-            getHouses({ family: familyId, limit: 1000 }).then((res: any) => {
+            getAllHouses({ family: familyId }).then((res: any) => {
                 const list = Array.isArray(res) ? res : (res.houses || [])
                 setHouses(list)
             }).catch(console.error)

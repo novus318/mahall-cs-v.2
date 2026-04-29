@@ -91,6 +91,7 @@ export const deleteFamily = async (id: string) => (await api.delete(`/families/$
 
 // --- Houses ---
 export const getHouses = async (params?: any) => (await api.get('/houses', { params })).data;
+export const getAllHouses = async (params?: any) => (await api.get('/houses/all', { params })).data;
 export const importHouses = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
@@ -107,6 +108,7 @@ export const deleteHouse = async (id: string) => (await api.delete(`/houses/${id
 
 // --- Members ---
 export const getMembers = async (params?: any) => (await api.get('/members', { params })).data;
+export const getAllMembers = async (params?: any) => (await api.get('/members/all', { params })).data;
 export const getMember = async (id: string) => (await api.get(`/members/${id}`)).data;
 export const createMember = async (data: any) => (await api.post('/members', data)).data;
 export const updateMember = async (id: string, data: any) => (await api.put(`/members/${id}`, data)).data;
