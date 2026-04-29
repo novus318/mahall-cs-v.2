@@ -70,6 +70,7 @@ export default function StaffPage() {
     const [total, setTotal] = useState(0);
 
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm({
         resolver: zodResolver(staffSchema),
@@ -144,6 +145,8 @@ export default function StaffPage() {
     };
 
     const handleCreate = async (values: z.infer<typeof staffSchema>) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             await api.post('/staff', values);
             toast.success("Staff member added");
@@ -152,6 +155,8 @@ export default function StaffPage() {
             fetchStaff();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to add staff");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -278,7 +283,7 @@ export default function StaffPage() {
                 </div>
             </Card>
 
-            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+            <Dialog open={isAddOpen} onOpenChange={(open) => !isSubmitting && setIsAddOpen(open)}>
                 <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Add New Staff Member</DialogTitle>
@@ -375,7 +380,10 @@ export default function StaffPage() {
                             </Tabs>
 
                             <DialogFooter>
-                                <Button type="submit">Create Staff Member</Button>
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isSubmitting ? "Creating..." : "Create Staff Member"}
+                                </Button>
                             </DialogFooter>
                         </form>
                     </Form>

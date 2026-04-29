@@ -89,6 +89,10 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     const [isAdvanceOpen, setIsAdvanceOpen] = useState(false);
     const [isPayslipOpen, setIsPayslipOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isGivingAdvance, setIsGivingAdvance] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
     // Payment Dialog State
     const [isPayOpen, setIsPayOpen] = useState(false);
@@ -181,6 +185,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     };
 
     const handleGiveAdvance = async (values: any) => {
+        if (isGivingAdvance) return;
+        setIsGivingAdvance(true);
         try {
             await api.post(`/staff/${resolvedParams.id}/advance`, values);
             toast.success("Advance given successfully");
@@ -189,10 +195,14 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             fetchData();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to give advance");
+        } finally {
+            setIsGivingAdvance(false);
         }
     };
 
     const handleGeneratePayslip = async (values: any) => {
+        if (isGenerating) return;
+        setIsGenerating(true);
         try {
             await api.post(`/staff/${resolvedParams.id}/payslips`, { ...values, leaveDays: 0, advanceDeduction: 0 }); // Send initial values
             toast.success("Payslip generated (Pending)");
@@ -201,6 +211,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             fetchData();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Generation failed");
+        } finally {
+            setIsGenerating(false);
         }
     };
 
@@ -222,7 +234,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     };
 
     const handleConfirmPayment = async (values: any) => {
-        if (!selectedPayslip || !selectedAccount) return;
+        if (!selectedPayslip || !selectedAccount || isProcessingPayment) return;
+        setIsProcessingPayment(true);
         try {
             await api.put(`/staff/${resolvedParams.id}/payslips/${selectedPayslip._id}/pay`, { ...values, accountId: selectedAccount });
             toast.success("Payment successful");
@@ -230,6 +243,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             fetchData();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Payment failed");
+        } finally {
+            setIsProcessingPayment(false);
         }
     };
 
@@ -308,6 +323,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     };
 
     const handleUpdateStaff = async (values: z.infer<typeof editStaffSchema>) => {
+        if (isUpdating) return;
+        setIsUpdating(true);
         try {
             await api.put(`/staff/${resolvedParams.id}`, values);
             toast.success("Staff updated successfully");
@@ -315,6 +332,8 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             fetchData();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to update staff");
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -540,21 +559,26 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             </div>
 
             {/* Give Advance Dialog */}
-            <Dialog open={isAdvanceOpen} onOpenChange={setIsAdvanceOpen}>
+            <Dialog open={isAdvanceOpen} onOpenChange={(open) => !isGivingAdvance && setIsAdvanceOpen(open)}>
                 <DialogContent>
                     <DialogHeader><DialogTitle>Give Salary Advance</DialogTitle><DialogDescription>Valid only if funds are disbursed.</DialogDescription></DialogHeader>
                     <Form {...advanceForm}>
                         <form onSubmit={advanceForm.handleSubmit(handleGiveAdvance)} className="space-y-4">
                             <FormField control={advanceForm.control} name="amount" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" className="font-bold" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /></FormControl><FormMessage /></FormItem>)} />
                             <FormField control={advanceForm.control} name="notes" render={({ field }) => (<FormItem><FormLabel>Notes</FormLabel><FormControl><Input placeholder="Reason..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <DialogFooter><Button type="submit">Confirm Advance</Button></DialogFooter>
+                            <DialogFooter>
+                                <Button type="submit" disabled={isGivingAdvance}>
+                                    {isGivingAdvance && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isGivingAdvance ? "Processing..." : "Confirm Advance"}
+                                </Button>
+                            </DialogFooter>
                         </form>
                     </Form>
                 </DialogContent>
             </Dialog>
 
             {/* Generate Payslip Dialog (Simplified) */}
-            <Dialog open={isPayslipOpen} onOpenChange={setIsPayslipOpen}>
+            <Dialog open={isPayslipOpen} onOpenChange={(open) => !isGenerating && setIsPayslipOpen(open)}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader><DialogTitle>Generate Payslip</DialogTitle><DialogDescription>Create a pending payslip for {staff.name}.</DialogDescription></DialogHeader>
                     <Form {...generateForm}>
@@ -563,14 +587,19 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                 <FormField control={generateForm.control} name="month" render={({ field }) => (<FormItem><FormLabel>Month</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className='w-full'><SelectValue /></SelectTrigger></FormControl><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                 <FormField control={generateForm.control} name="year" render={({ field }) => (<FormItem><FormLabel>Year</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
-                            <DialogFooter><Button type="submit">Generate Draft</Button></DialogFooter>
+                            <DialogFooter>
+                                <Button type="submit" disabled={isGenerating}>
+                                    {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isGenerating ? "Generating..." : "Generate Draft"}
+                                </Button>
+                            </DialogFooter>
                         </form>
                     </Form>
                 </DialogContent>
             </Dialog>
 
             {/* Payment Dialog (New) */}
-            <Dialog open={isPayOpen} onOpenChange={setIsPayOpen}>
+            <Dialog open={isPayOpen} onOpenChange={(open) => !isProcessingPayment && setIsPayOpen(open)}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>Process Salary Payment</DialogTitle>
@@ -626,12 +655,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             </div>
 
                             <DialogFooter className="flex justify-between sm:justify-between">
-                                <Button type="button" variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleInitiateRejection} disabled={sendingOtp}>
+                                <Button type="button" variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleInitiateRejection} disabled={sendingOtp || isProcessingPayment}>
                                     {sendingOtp ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reject Payslip"}
                                 </Button>
                                 <div className="flex gap-2">
-                                    <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)}>Cancel</Button>
-                                    <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={!selectedAccount}>Confirm Payment</Button>
+                                    <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)} disabled={isProcessingPayment}>Cancel</Button>
+                                    <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={!selectedAccount || isProcessingPayment}>
+                                        {isProcessingPayment && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        {isProcessingPayment ? "Processing..." : "Confirm Payment"}
+                                    </Button>
                                 </div>
                             </DialogFooter>
                         </form>
@@ -684,7 +716,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             </Dialog>
 
             {/* Edit Staff Dialog */}
-            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+            <Dialog open={isEditOpen} onOpenChange={(open) => !isUpdating && setIsEditOpen(open)}>
                 <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Edit Staff Member</DialogTitle>
@@ -782,8 +814,11 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             </Tabs>
 
                             <DialogFooter>
-                                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
-                                <Button type="submit">Update Staff Member</Button>
+                                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} disabled={isUpdating}>Cancel</Button>
+                                <Button type="submit" disabled={isUpdating}>
+                                    {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isUpdating ? "Updating..." : "Update Staff Member"}
+                                </Button>
                             </DialogFooter>
                         </form>
                     </Form>
