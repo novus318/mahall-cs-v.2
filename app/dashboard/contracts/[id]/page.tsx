@@ -2,9 +2,6 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { ArrowLeft, Edit2, CreditCard, User, Building2, Trash2, Plus, Loader2, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
@@ -52,43 +48,6 @@ type DepositTx = {
     type: 'DEPOSIT' | 'REFUND';
     paymentDate: string;
 };
-
-// --- Schemas ---
-const updateSchema = z.object({
-    'tenant.name': z.string().min(2),
-    'tenant.phone': z.string().min(10),
-    'tenant.adhaar': z.string().min(12),
-    'tenant.place': z.string().min(2),
-    'tenant.shopName': z.string().optional(),
-    endDate: z.string().min(1),
-    rentAmount: z.coerce.number().min(1),
-});
-
-const generateRentSchema = z.object({
-    month: z.string(),
-    year: z.string(),
-    amount: z.coerce.number().min(1)
-});
-
-const collectRentSchema = z.object({
-    amount: z.coerce.number().min(1),
-    accountId: z.string().min(1, "Select an account"),
-    date: z.string(),
-    notes: z.string().optional()
-});
-
-const collectDepositSchema = z.object({
-    amount: z.coerce.number().min(1),
-    accountId: z.string().min(1, "Select an account"),
-    date: z.string(),
-    notes: z.string().optional()
-});
-
-const terminateSchema = z.object({
-    returnAmount: z.coerce.number().min(0),
-    accountId: z.string().min(1, "Select an account"),
-    confirm: z.boolean().refine(v => v === true, "Confirm termination"),
-});
 
 const RentRow = ({ rent, isActive, onCollect }: { rent: RentDue, isActive: boolean, onCollect: (id: string, due: number) => void }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -158,9 +117,14 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     const [contract, setContract] = useState<Contract | null>(null);
     const [rents, setRents] = useState<RentDue[]>([]);
     const [deposits, setDeposits] = useState<DepositTx[]>([]);
-    const [accounts, setAccounts] = useState<any[]>([]); // Added accounts state
+    const [accounts, setAccounts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [isTerminating, setIsTerminating] = useState(false);
+    const [isGeneratingRent, setIsGeneratingRent] = useState(false);
+    const [isCollectingRent, setIsCollectingRent] = useState(false);
+    const [isCollectingDeposit, setIsCollectingDeposit] = useState(false);
 
     // Dialog States
     const [isRentGenOpen, setIsRentGenOpen] = useState(false);
@@ -169,40 +133,63 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     const [isCollectDepositOpen, setIsCollectDepositOpen] = useState(false);
     const [isTerminateOpen, setIsTerminateOpen] = useState(false);
 
-    // Forms
-    const editForm = useForm({ resolver: zodResolver(updateSchema) });
-    const rentGenForm = useForm({
-        resolver: zodResolver(generateRentSchema),
-        defaultValues: { month: String(new Date().getMonth() + 1), year: String(new Date().getFullYear()), amount: 0 }
+    // Edit Form State
+    const [editForm, setEditForm] = useState({
+        'tenant.name': '',
+        'tenant.phone': '',
+        'tenant.adhaar': '',
+        'tenant.place': '',
+        'tenant.shopName': '',
+        endDate: '',
+        rentAmount: 0
     });
-    const collectRentForm = useForm({
-        resolver: zodResolver(collectRentSchema),
-        defaultValues: { amount: 0, accountId: '', date: new Date().toISOString().split('T')[0], notes: '' }
+
+    // Rent Gen Form State
+    const [rentGenForm, setRentGenForm] = useState({
+        month: String(new Date().getMonth() + 1),
+        year: String(new Date().getFullYear()),
+        amount: 0
     });
-    const collectDepositForm = useForm({
-        resolver: zodResolver(collectDepositSchema),
-        defaultValues: { amount: 0, accountId: '', date: new Date().toISOString().split('T')[0], notes: '' }
+
+    // Collect Rent Form State
+    const [collectRentForm, setCollectRentForm] = useState({
+        amount: 0,
+        accountId: '',
+        date: new Date().toISOString().split('T')[0],
+        notes: ''
     });
-    const terminateForm = useForm({ resolver: zodResolver(terminateSchema), defaultValues: { returnAmount: 0, accountId: '', confirm: false } });
+
+    // Collect Deposit Form State
+    const [collectDepositForm, setCollectDepositForm] = useState({
+        amount: 0,
+        accountId: '',
+        date: new Date().toISOString().split('T')[0],
+        notes: ''
+    });
+
+    // Terminate Form State
+    const [terminateForm, setTerminateForm] = useState({
+        returnAmount: 0,
+        accountId: '',
+        confirm: false
+    });
 
     useEffect(() => {
         if (resolvedParams.id) fetchData();
     }, [resolvedParams.id]);
 
     useEffect(() => {
-        // Set default rent amount when opening generator
         if (isRentGenOpen && contract) {
-            rentGenForm.setValue('amount', contract.rentAmount);
+            setRentGenForm(prev => ({ ...prev, amount: contract.rentAmount }));
         }
-    }, [isRentGenOpen, contract, rentGenForm]);
+    }, [isRentGenOpen, contract]);
 
     useEffect(() => {
-        // Set default deposit amount when opening collect deposit dialog
         if (isCollectDepositOpen && contract) {
             const remaining = contract.depositAmount - (contract.depositCollected || 0);
-            collectDepositForm.setValue('amount', remaining > 0 ? remaining : contract.depositAmount);
+            setCollectDepositForm(prev => ({ ...prev, amount: remaining > 0 ? remaining : contract.depositAmount }));
         }
-    }, [isCollectDepositOpen, contract, collectDepositForm]);
+    }, [isCollectDepositOpen, contract]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -215,11 +202,9 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
             setRents(financialsRes.data.rents);
             setDeposits(financialsRes.data.deposits);
 
-            // Fetch accounts for payment
             api.get('/accounts').then(res => setAccounts(res.data.data)).catch(console.error);
 
-            // Populate edit form
-            editForm.reset({
+            setEditForm({
                 'tenant.name': contractRes.data.tenant.name,
                 'tenant.phone': contractRes.data.tenant.phone,
                 'tenant.adhaar': contractRes.data.tenant.adhaar,
@@ -233,67 +218,111 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
         finally { setLoading(false); }
     };
 
-    // Actions
-    const handleUpdate = async (values: any) => {
+    const handleUpdate = async () => {
+        if (isUpdating) return;
+        setIsUpdating(true);
         const payload = {
             tenant: {
-                name: values['tenant.name'],
-                phone: values['tenant.phone'],
-                adhaar: values['tenant.adhaar'],
-                place: values['tenant.place'],
-                shopName: values['tenant.shopName'],
+                name: editForm['tenant.name'],
+                phone: editForm['tenant.phone'],
+                adhaar: editForm['tenant.adhaar'],
+                place: editForm['tenant.place'],
+                shopName: editForm['tenant.shopName'] || '',
             },
-            endDate: values.endDate,
-            rentAmount: values.rentAmount,
+            endDate: editForm.endDate,
+            rentAmount: editForm.rentAmount,
         };
         try {
-            await api.put(`/contracts/${resolvedParams.id}`, payload);
+            const response = await api.put(`/contracts/${resolvedParams.id}`, payload);
+            const updatedContract = response.data;
+
+            setContract(updatedContract);
+
+            setEditForm({
+                'tenant.name': updatedContract.tenant.name,
+                'tenant.phone': updatedContract.tenant.phone,
+                'tenant.adhaar': updatedContract.tenant.adhaar,
+                'tenant.place': updatedContract.tenant.place,
+                'tenant.shopName': updatedContract.tenant.shopName || '',
+                endDate: updatedContract.endDate.split('T')[0],
+                rentAmount: updatedContract.rentAmount,
+            });
+
             toast.success("Contract updated");
             setIsEditMode(false);
-            fetchData();
-        } catch (error) { toast.error("Update failed"); }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Update failed");
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
-    const handleGenerateRent = async (values: any) => {
+    const handleGenerateRent = async () => {
+        if (isGeneratingRent) return;
+        setIsGeneratingRent(true);
         try {
-            await api.post(`/contracts/${resolvedParams.id}/rents`, values);
+            await api.post(`/contracts/${resolvedParams.id}/rents`, rentGenForm);
             toast.success("Rent invoice generated");
             setIsRentGenOpen(false);
             fetchData();
-        } catch (error: any) { toast.error(error.response?.data?.message || "Generation failed"); }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Generation failed");
+        } finally {
+            setIsGeneratingRent(false);
+        }
     };
 
-    const handleCollectRent = async (values: any) => {
-        if (!selectedRentId) return;
+    const handleCollectRent = async () => {
+        if (!selectedRentId || isCollectingRent) return;
+        setIsCollectingRent(true);
         try {
-            await api.put(`/contracts/${resolvedParams.id}/rents/${selectedRentId}/pay`, values);
+            await api.put(`/contracts/${resolvedParams.id}/rents/${selectedRentId}/pay`, collectRentForm);
             toast.success("Payment collected");
             setIsCollectRentOpen(false);
             fetchData();
-        } catch (error: any) { toast.error(error.response?.data?.message || "Collection failed"); }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Collection failed");
+        } finally {
+            setIsCollectingRent(false);
+        }
     };
 
-    const handleCollectDeposit = async (values: any) => {
+    const handleCollectDeposit = async () => {
+        if (isCollectingDeposit) return;
+        setIsCollectingDeposit(true);
         try {
-            await api.post(`/contracts/${resolvedParams.id}/deposit/collect`, values);
+            await api.post(`/contracts/${resolvedParams.id}/deposit/collect`, collectDepositForm);
             toast.success("Deposit collected successfully");
             setIsCollectDepositOpen(false);
             fetchData();
-        } catch (error: any) { toast.error(error.response?.data?.message || "Collection failed"); }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Collection failed");
+        } finally {
+            setIsCollectingDeposit(false);
+        }
     };
 
-    const handleTerminate = async (values: any) => {
+    const handleTerminate = async () => {
+        if (isTerminating) return;
+        setIsTerminating(true);
         try {
-            await api.put(`/contracts/${resolvedParams.id}/terminate`, {
-                returnAmount: values.returnAmount,
-                accountId: values.accountId,
-                notes: values.notes,
-                date: values.date
-            });
+            const payload: any = {
+                returnAmount: terminateForm.returnAmount || 0,
+            };
+
+            if (Number(terminateForm.returnAmount) > 0 && terminateForm.accountId) {
+                payload.accountId = terminateForm.accountId;
+            }
+
+            await api.put(`/contracts/${resolvedParams.id}/terminate`, payload);
             toast.success("Contract terminated");
             setIsTerminateOpen(false);
             fetchData();
-        } catch (error) { toast.error("Failed to terminate"); }
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to terminate");
+        } finally {
+            setIsTerminating(false);
+        }
     };
 
     // Calculations
@@ -327,15 +356,44 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                         <>
                             {isEditMode ? (
                                 <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => setIsEditMode(false)}>Cancel</Button>
-                                    <Button size="sm" onClick={editForm.handleSubmit(handleUpdate)}>Save Changes</Button>
+                                    <Button variant="outline" size="sm" onClick={() => {
+                                        if (contract) {
+                                            setEditForm({
+                                                'tenant.name': contract.tenant.name,
+                                                'tenant.phone': contract.tenant.phone,
+                                                'tenant.adhaar': contract.tenant.adhaar,
+                                                'tenant.place': contract.tenant.place,
+                                                'tenant.shopName': contract.tenant.shopName || '',
+                                                endDate: contract.endDate.split('T')[0],
+                                                rentAmount: contract.rentAmount,
+                                            });
+                                        }
+                                        setIsEditMode(false);
+                                    }} disabled={isUpdating}>Cancel</Button>
+                                    <Button size="sm" onClick={handleUpdate} disabled={isUpdating}>
+                                        {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        {isUpdating ? "Saving..." : "Save Changes"}
+                                    </Button>
                                 </div>
                             ) : (
                                 <>
-                                    <Button variant="outline" size="sm" className="h-8" onClick={() => setIsEditMode(true)}>
+                                    <Button variant="outline" size="sm" className="h-8" onClick={() => {
+                                        if (contract) {
+                                            setEditForm({
+                                                'tenant.name': contract.tenant.name,
+                                                'tenant.phone': contract.tenant.phone,
+                                                'tenant.adhaar': contract.tenant.adhaar,
+                                                'tenant.place': contract.tenant.place,
+                                                'tenant.shopName': contract.tenant.shopName || '',
+                                                endDate: contract.endDate.split('T')[0],
+                                                rentAmount: contract.rentAmount,
+                                            });
+                                        }
+                                        setIsEditMode(true);
+                                    }}>
                                         <Edit2 className="mr-2 h-3.5 w-3.5" /> Edit
                                     </Button>
-                                    <Button variant="destructive" size="sm" className="h-8" onClick={() => { terminateForm.setValue('returnAmount', depositHeld > 0 ? depositHeld : 0); setIsTerminateOpen(true); }}>
+                                    <Button variant="destructive" size="sm" className="h-8" onClick={() => { setTerminateForm(prev => ({ ...prev, returnAmount: depositHeld > 0 ? depositHeld : 0 })); setIsTerminateOpen(true); }}>
                                         <Trash2 className="mr-2 h-3.5 w-3.5" /> Terminate
                                     </Button>
                                 </>
@@ -353,30 +411,45 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                 <div className="space-y-8 pb-10 max-w-6xl mx-auto">
 
                     {/* --- DETAILS SECTION --- */}
-                    <Form {...editForm}>
-                        <form className="space-y-6">
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <Card className="shadow-none border h-full">
-                                    <CardHeader className="py-3 px-4 bg-slate-50 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4" /> Tenant Details</CardTitle></CardHeader>
-                                    <CardContent className="p-4 grid grid-cols-1 gap-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField control={editForm.control} name="tenant.name" render={({ field }) => (<FormItem><FormLabel className="text-xs">Name</FormLabel><FormControl><Input disabled={!isEditMode} className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                            <FormField control={editForm.control} name="tenant.phone" render={({ field }) => (<FormItem><FormLabel className="text-xs">Phone</FormLabel><FormControl><Input disabled={!isEditMode} className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField control={editForm.control} name="tenant.adhaar" render={({ field }) => (<FormItem><FormLabel className="text-xs">Aadhaar</FormLabel><FormControl><Input disabled={!isEditMode} className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                            <FormField control={editForm.control} name="tenant.shopName" render={({ field }) => (<FormItem><FormLabel className="text-xs">Shop Name</FormLabel><FormControl><Input disabled={!isEditMode} className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                        </div>
-                                        <FormField control={editForm.control} name="tenant.place" render={({ field }) => (<FormItem><FormLabel className="text-xs">Address</FormLabel><FormControl><Input disabled={!isEditMode} className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                    </CardContent>
-                                </Card>
-                                <Card className="shadow-none border h-full">
-                                    <CardHeader className="py-3 px-4 bg-slate-50 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Contract Terms</CardTitle></CardHeader>
-                                    <CardContent className="p-4 space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField control={editForm.control} name="rentAmount" render={({ field }) => (<FormItem><FormLabel className="text-xs">Monthly Rent</FormLabel><FormControl><Input type="number" disabled={!isEditMode} className="h-8 text-xs font-bold" {...field} value={(field.value as number) ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-                                            <FormField control={editForm.control} name="endDate" render={({ field }) => (<FormItem><FormLabel className="text-xs">End Date</FormLabel><FormControl><Input type="date" disabled={!isEditMode} className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                        </div>
+                    <div className="space-y-6">
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <Card className="shadow-none border h-full">
+                                <CardHeader className="py-3 px-4 bg-slate-50 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4" /> Tenant Details</CardTitle></CardHeader>
+                                <CardContent className="p-4 grid grid-cols-1 gap-4">
+                                    {isEditMode ? (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div><div className="text-xs mb-1">Name</div><Input className="h-8 text-xs" value={editForm['tenant.name']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.name': e.target.value }))} /></div>
+                                                <div><div className="text-xs mb-1">Phone</div><Input className="h-8 text-xs" value={editForm['tenant.phone']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.phone': e.target.value }))} /></div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div><div className="text-xs mb-1">Aadhaar</div><Input className="h-8 text-xs" value={editForm['tenant.adhaar']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.adhaar': e.target.value }))} /></div>
+                                                <div><div className="text-xs mb-1">Shop Name</div><Input className="h-8 text-xs" value={editForm['tenant.shopName']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.shopName': e.target.value }))} /></div>
+                                            </div>
+                                            <div><div className="text-xs mb-1">Address</div><Input className="h-8 text-xs" value={editForm['tenant.place']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.place': e.target.value }))} /></div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div><div className="text-xs text-muted-foreground mb-1">Name</div><div className="text-xs font-medium">{contract.tenant.name}</div></div>
+                                                <div><div className="text-xs text-muted-foreground mb-1">Phone</div><div className="text-xs font-medium">{contract.tenant.phone}</div></div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div><div className="text-xs text-muted-foreground mb-1">Aadhaar</div><div className="text-xs font-medium">{contract.tenant.adhaar}</div></div>
+                                                <div><div className="text-xs text-muted-foreground mb-1">Shop Name</div><div className="text-xs font-medium">{contract.tenant.shopName || '-'}</div></div>
+                                            </div>
+                                            <div><div className="text-xs text-muted-foreground mb-1">Address</div><div className="text-xs font-medium">{contract.tenant.place}</div></div>
+                                        </>
+                                    )}
+                                </CardContent>
+                            </Card>
+                            <Card className="shadow-none border h-full">
+                                <CardHeader className="py-3 px-4 bg-slate-50 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Contract Terms</CardTitle></CardHeader>
+                                <CardContent className="p-4 space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div><div className="text-xs">Monthly Rent</div><Input type="number" disabled={!isEditMode} className="h-8 text-xs font-bold" value={editForm.rentAmount} onChange={e => setEditForm(prev => ({ ...prev, rentAmount: Number(e.target.value) }))} /></div>
+                                        <div><div className="text-xs">End Date</div><Input type="date" disabled={!isEditMode} className="h-8 text-xs" value={editForm.endDate} onChange={e => setEditForm(prev => ({ ...prev, endDate: e.target.value }))} /></div>
+                                    </div>
                                         <div className="text-xs space-y-2">
                                             <div className="flex justify-between"><span>Start Date:</span> <span className="font-mono">{format(new Date(contract.startDate), 'dd MMM yyyy')}</span></div>
 
@@ -418,8 +491,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                     </CardContent>
                                 </Card>
                             </div>
-                        </form>
-                    </Form>
+                        </div>
 
                     <Separator />
 
@@ -428,7 +500,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                         <div className="flex justify-between items-center">
                             <div>
                                 <h3 className="text-lg font-semibold tracking-tight">Monthly Rent</h3>
-                                <p className="text-sm text-muted-foreground">Generte and track monthly rent invoices</p>
+                                <p className="text-sm text-muted-foreground">Generate and track monthly rent invoices</p>
                             </div>
                             <Button size="sm" className="h-8 text-xs" onClick={() => setIsRentGenOpen(true)} disabled={!isActive}>
                                 <Plus className="mr-1 h-3 w-3" /> Generate Rent
@@ -457,7 +529,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                                 isActive={isActive}
                                                 onCollect={(id, due) => {
                                                     setSelectedRentId(id);
-                                                    collectRentForm.reset({ amount: due, date: new Date().toISOString().split('T')[0], notes: '' });
+                                                    setCollectRentForm({ amount: due, accountId: '', date: new Date().toISOString().split('T')[0], notes: '' });
                                                     setIsCollectRentOpen(true);
                                                 }}
                                             />
@@ -474,24 +546,27 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
             {/* --- DIALOGS --- */}
 
             {/* Generate Rent */}
-            <Dialog open={isRentGenOpen} onOpenChange={setIsRentGenOpen}>
+            <Dialog open={isRentGenOpen} onOpenChange={(open) => !isGeneratingRent && setIsRentGenOpen(open)}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader><DialogTitle>Generate Rent Invoice</DialogTitle></DialogHeader>
-                    <Form {...rentGenForm}>
-                        <form onSubmit={rentGenForm.handleSubmit(handleGenerateRent)} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField control={rentGenForm.control} name="month" render={({ field }) => (<FormItem><FormLabel className="text-xs">Month</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="h-8 text-xs w-full"><SelectValue /></SelectTrigger></FormControl><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                                <FormField control={rentGenForm.control} name="year" render={({ field }) => (<FormItem><FormLabel className="text-xs">Year</FormLabel><FormControl><Input className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            </div>
-                            <FormField control={rentGenForm.control} name="amount" render={({ field }) => (<FormItem><FormLabel className="text-xs">Rent Amount</FormLabel><FormControl><Input type="number" className="h-8 text-xs font-bold" {...field} value={(field.value as number) ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-                            <DialogFooter><Button type="submit" size="sm">Generate</Button></DialogFooter>
-                        </form>
-                    </Form>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div><div className="text-xs">Month</div><Select value={rentGenForm.month} onValueChange={v => setRentGenForm(p => ({ ...p, month: v }))}><SelectTrigger className="h-8 text-xs w-full"><SelectValue /></SelectTrigger><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select></div>
+                            <div><div className="text-xs">Year</div><Input className="h-8 text-xs" value={rentGenForm.year} onChange={e => setRentGenForm(p => ({ ...p, year: e.target.value }))} /></div>
+                        </div>
+                        <div><div className="text-xs">Rent Amount</div><Input type="number" className="h-8 text-xs font-bold" value={rentGenForm.amount} onChange={e => setRentGenForm(p => ({ ...p, amount: Number(e.target.value) }))} /></div>
+                        <DialogFooter>
+                            <Button type="button" size="sm" disabled={isGeneratingRent} onClick={handleGenerateRent}>
+                                {isGeneratingRent && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isGeneratingRent ? "Generating..." : "Generate"}
+                            </Button>
+                        </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
 
             {/* Collect Rent */}
-            <Dialog open={isCollectRentOpen} onOpenChange={setIsCollectRentOpen}>
+            <Dialog open={isCollectRentOpen} onOpenChange={(open) => !isCollectingRent && setIsCollectRentOpen(open)}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
                         <DialogTitle>Collect Rent Payment</DialogTitle>
@@ -501,39 +576,24 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                             </DialogDescription>
                         )}
                     </DialogHeader>
-                    <Form {...collectRentForm}>
-                        <form onSubmit={collectRentForm.handleSubmit(handleCollectRent)} className="space-y-4">
-                            <FormField control={collectRentForm.control} name="amount" render={({ field }) => (<FormItem><FormLabel className="text-xs">Amount Received</FormLabel><FormControl><Input type="number" className="h-8 text-xs font-bold" {...field} value={(field.value as number) ?? ''} /></FormControl><FormMessage /></FormItem>)} />
-
-                            <FormField control={collectRentForm.control} name="accountId" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs">Deposit To Account</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="h-8 text-xs w-full">
-                                                <SelectValue placeholder="Select Account" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {accounts.map(acc => (
-                                                <SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-
-                            <FormField control={collectRentForm.control} name="date" render={({ field }) => (<FormItem><FormLabel className="text-xs">Date</FormLabel><FormControl><Input type="date" className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={collectRentForm.control} name="notes" render={({ field }) => (<FormItem><FormLabel className="text-xs">Notes</FormLabel><FormControl><Input className="h-8 text-xs" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <DialogFooter><Button type="submit" size="sm">Record Payment</Button></DialogFooter>
-                        </form>
-                    </Form>
+                    <div className="space-y-4">
+                        <div><div className="text-xs">Amount Received</div><Input type="number" className="h-8 text-xs font-bold" value={collectRentForm.amount} onChange={e => setCollectRentForm(p => ({ ...p, amount: Number(e.target.value) }))} /></div>
+                        <div><div className="text-xs">Deposit To Account</div><Select value={collectRentForm.accountId} onValueChange={v => setCollectRentForm(p => ({ ...p, accountId: v }))}><SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>))}</SelectContent></Select></div>
+                        <div><div className="text-xs">Date</div><Input type="date" className="h-8 text-xs" value={collectRentForm.date} onChange={e => setCollectRentForm(p => ({ ...p, date: e.target.value }))} /></div>
+                        <div><div className="text-xs">Notes</div><Input className="h-8 text-xs" value={collectRentForm.notes} onChange={e => setCollectRentForm(p => ({ ...p, notes: e.target.value }))} /></div>
+                        <DialogFooter>
+                            <Button type="button" size="sm" disabled={isCollectingRent || !collectRentForm.accountId} onClick={handleCollectRent}>
+                                {isCollectingRent && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isCollectingRent ? "Recording..." : "Record Payment"}
+                            </Button>
+                        </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
+                                   
 
             {/* Collect Deposit */}
-            <Dialog open={isCollectDepositOpen} onOpenChange={setIsCollectDepositOpen}>
+            <Dialog open={isCollectDepositOpen} onOpenChange={(open) => !isCollectingDeposit && setIsCollectDepositOpen(open)}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
                         <DialogTitle>Collect Security Deposit</DialogTitle>
@@ -546,67 +606,23 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                             </DialogDescription>
                         )}
                     </DialogHeader>
-                    <Form {...collectDepositForm}>
-                        <form onSubmit={collectDepositForm.handleSubmit(handleCollectDeposit)} className="space-y-4">
-                            <FormField control={collectDepositForm.control} name="amount" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs">Amount Collected</FormLabel>
-                                    <FormControl>
-                                        <Input type="number" className="h-8 text-xs font-bold" {...field} value={(field.value as number) ?? ''} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-
-                            <FormField control={collectDepositForm.control} name="accountId" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs">Deposit To Account</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="h-8 text-xs w-full">
-                                                <SelectValue placeholder="Select Account" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {accounts.map(acc => (
-                                                <SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-
-                            <FormField control={collectDepositForm.control} name="date" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs">Date</FormLabel>
-                                    <FormControl>
-                                        <Input type="date" className="h-8 text-xs" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-
-                            <FormField control={collectDepositForm.control} name="notes" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs">Notes</FormLabel>
-                                    <FormControl>
-                                        <Input className="h-8 text-xs" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-
-                            <DialogFooter>
-                                <Button type="submit" size="sm">Record Deposit Collection</Button>
-                            </DialogFooter>
-                        </form>
-                    </Form>
+                    <div className="space-y-4">
+                        <div><div className="text-xs">Amount Collected</div><Input type="number" className="h-8 text-xs font-bold" value={collectDepositForm.amount} onChange={e => setCollectDepositForm(p => ({ ...p, amount: Number(e.target.value) }))} /></div>
+                        <div><div className="text-xs">Deposit To Account</div><Select value={collectDepositForm.accountId} onValueChange={v => setCollectDepositForm(p => ({ ...p, accountId: v }))}><SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>))}</SelectContent></Select></div>
+                        <div><div className="text-xs">Date</div><Input type="date" className="h-8 text-xs" value={collectDepositForm.date} onChange={e => setCollectDepositForm(p => ({ ...p, date: e.target.value }))} /></div>
+                        <div><div className="text-xs">Notes</div><Input className="h-8 text-xs" value={collectDepositForm.notes} onChange={e => setCollectDepositForm(p => ({ ...p, notes: e.target.value }))} /></div>
+                        <DialogFooter>
+                            <Button type="button" size="sm" disabled={isCollectingDeposit || !collectDepositForm.accountId} onClick={handleCollectDeposit}>
+                                {isCollectingDeposit && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isCollectingDeposit ? "Recording..." : "Record Deposit Collection"}
+                            </Button>
+                        </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
 
             {/* Termination */}
-            <Dialog open={isTerminateOpen} onOpenChange={setIsTerminateOpen}>
+            <Dialog open={isTerminateOpen} onOpenChange={(open) => !isTerminating && setIsTerminateOpen(open)}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle className="text-destructive flex items-center gap-2"><AlertTriangle className="h-5 w-5" /> Terminate Contract</DialogTitle>
@@ -623,56 +639,32 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                         </AlertDescription>
                     </Alert>
 
-                    <Form {...terminateForm}>
-                        <form onSubmit={terminateForm.handleSubmit(handleTerminate)} className="space-y-4 mt-2">
-                            {depositHeld > 0 && (
-                                <div className="p-3 bg-orange-50 text-orange-800 text-xs rounded border border-orange-200">
-                                    You are holding <strong>₹{depositHeld}</strong>. Do you want to record a refund now?
-                                </div>
-                            )}
+                    <div className="space-y-4 mt-2">
+                        {depositHeld > 0 && (
+                            <div className="p-3 bg-orange-50 text-orange-800 text-xs rounded border border-orange-200">
+                                You are holding <strong>₹{depositHeld}</strong>. Do you want to record a refund now?
+                            </div>
+                        )}
 
-                            <FormField control={terminateForm.control} name="returnAmount" render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs">Refund Amount (Optional - Closing Balance)</FormLabel>
-                                    <FormControl><div className="relative"><Input type="number" className="h-9 font-bold pl-6" {...field} value={(field.value as number) ?? ''} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
+                        <div><div className="text-xs">Refund Amount (Optional - Closing Balance)</div><div className="relative"><Input type="number" className="h-9 font-bold pl-6" value={terminateForm.returnAmount} onChange={e => setTerminateForm(p => ({ ...p, returnAmount: Number(e.target.value) }))} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></div>
 
-                            {(terminateForm.watch('returnAmount') as number) > 0 && (
-                                <FormField control={terminateForm.control} name="accountId" render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs">Refund From Account</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="h-8 text-xs w-full">
-                                                    <SelectValue placeholder="Select Account" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {accounts.map(acc => (
-                                                    <SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type}) - ₹{acc.balance?.toLocaleString()}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                            )}
+                        {terminateForm.returnAmount > 0 && (
+                            <div><div className="text-xs">Refund From Account</div><Select value={terminateForm.accountId} onValueChange={v => setTerminateForm(p => ({ ...p, accountId: v }))}><SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type}) - ₹{acc.balance?.toLocaleString()}</SelectItem>))}</SelectContent></Select></div>
+                        )}
 
-                            <FormField control={terminateForm.control} name="confirm" render={({ field }) => (
-                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
-                                    <FormControl><input type="checkbox" checked={field.value} onChange={field.onChange} className="mt-1" /></FormControl>
-                                    <div className="space-y-1 leading-none"><FormLabel>I confirm all dues are cleared/refunded.</FormLabel></div>
-                                </FormItem>
-                            )} />
+                        <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
+                            <input type="checkbox" checked={terminateForm.confirm} onChange={e => setTerminateForm(p => ({ ...p, confirm: e.target.checked }))} className="mt-1" />
+                            <div className="space-y-1 leading-none text-sm">I confirm all dues are cleared/refunded.</div>
+                        </div>
 
-                            <DialogFooter>
-                                <Button type="button" variant="ghost" onClick={() => setIsTerminateOpen(false)}>Cancel</Button>
-                                <Button type="submit" variant="destructive" disabled={!terminateForm.watch('confirm')}>Terminate Contract</Button>
-                            </DialogFooter>
-                        </form>
-                    </Form>
+                        <DialogFooter>
+                            <Button type="button" variant="ghost" onClick={() => setIsTerminateOpen(false)} disabled={isTerminating}>Cancel</Button>
+                            <Button type="button" variant="destructive" disabled={!terminateForm.confirm || isTerminating} onClick={handleTerminate}>
+                                {isTerminating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                {isTerminating ? "Terminating..." : "Terminate Contract"}
+                            </Button>
+                        </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
