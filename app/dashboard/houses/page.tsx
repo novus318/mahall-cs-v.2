@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { getHouses, createHouse, deleteHouse, updateHouse, getFamilies, importHouses } from "@/lib/api"
+import { getHouses, createHouse, deleteHouse, updateHouse, getAllFamilies, importHouses } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import {
     Table,
@@ -107,21 +107,14 @@ export default function HousesPage() {
         try {
             const [housesData, familiesData] = await Promise.all([
                 getHouses({ page, limit, search, frequency: frequencyFilter }),
-                getFamilies()
+                getAllFamilies()
             ])
             setHouses(housesData.houses)
             setPage(housesData.page)
             setTotalPages(housesData.pages)
             setTotal(housesData.total)
 
-            // Fix for getFamilies returning paginated object
-            // If getFamilies is standard list API it's fine, but we updated it to return { families, page... }
-            // Let's assume getFamilies without params returns defaults (page 1). 
-            // Ideally we need a 'fetchAll' for dropdowns or loop. 
-            // For now, let's just use what we get. If it's paginated, we only get page 1.
-            // This is a potential bug but out of scope for "same UI changes".
-            // Let's assume for now families list is small. 
-            setFamilies(familiesData.families || [])
+            setFamilies(familiesData || [])
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to fetch data")
         } finally {

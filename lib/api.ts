@@ -74,6 +74,7 @@ api.interceptors.response.use(
 
 // --- Families ---
 export const getFamilies = async (params?: any) => (await api.get('/families', { params })).data;
+export const getAllFamilies = async (search?: string) => (await api.get('/families/all', { params: { search } })).data;
 export const importFamilies = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
