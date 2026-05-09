@@ -562,7 +562,7 @@ export default function InventoryPage() {
                                                 <TableCell className="py-2 text-sm text-right font-mono">{tx.quantity}</TableCell>
                                                 <TableCell className="py-2 text-right">
                                                     <div className="text-sm font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
-                                                    {tx.paidAmount > 0 && <div className="text-[10px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                    {(tx.paidAmount || 0) > 0 && <div className="text-[10px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
                                                     {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[10px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
                                                 </TableCell>
                                                 <TableCell className="py-2 text-center">
@@ -666,7 +666,7 @@ export default function InventoryPage() {
                                                 <TableCell className="py-2 text-sm text-right font-mono">{tx.quantity}</TableCell>
                                                 <TableCell className="py-2 text-right">
                                                     <div className="text-sm font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
-                                                    {tx.paidAmount > 0 && <div className="text-[10px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                    {(tx.paidAmount || 0) > 0 && <div className="text-[10px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
                                                     {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[10px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
                                                 </TableCell>
                                                 <TableCell className="py-2 text-center">
@@ -779,7 +779,7 @@ export default function InventoryPage() {
                                                     </TableCell>
                                                     <TableCell className="text-xs text-right">
                                                         <div className="font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
-                                                        {tx.paidAmount > 0 && <div className="text-[9px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                        {(tx.paidAmount || 0) > 0 && <div className="text-[9px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
                                                         {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[9px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
                                                     </TableCell>
                                                     <TableCell className="text-xs text-right font-medium font-mono">{tx.quantity}</TableCell>
