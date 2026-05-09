@@ -213,7 +213,7 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
 
     const fetchHouseMembers = async (houseId: string) => {
         try {
-            const data = await getMembers({ house: houseId })
+            const data = await getAllMembers({ house: houseId })
             setExistingMembers(Array.isArray(data) ? data : data.members || [])
         } catch (error) {
             console.error(error)
