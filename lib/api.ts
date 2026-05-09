@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const API_URL = 'https://mahall-bk-v2-production.up.railway.app/api';
+export const API_URL = 'http://localhost:5000/api';
 
 // export const API_URL = 'http://localhost:5000/api';
 
@@ -148,6 +148,20 @@ export const sendArrearsReminder = async (data: { entityId: string, entityType: 
 
 export const downloadCollectionReceipt = async (id: string) => {
     return api.get(`/collections/receipts/${id}/pdf`, {
+        responseType: 'blob'
+    });
+};
+
+export const payInventoryRent = async (transactionId: string, payload: { accountId: string, amountPaid: number }) => {
+    return api.post(`/inventory/transactions/${transactionId}/pay`, payload);
+};
+
+export const getInventoryReceipts = async (transactionId: string) => {
+    return api.get(`/inventory/transactions/${transactionId}/receipts`);
+};
+
+export const downloadInventoryReceiptPdf = async (id: string) => {
+    return api.get(`/inventory/receipts/${id}/pdf`, {
         responseType: 'blob'
     });
 };

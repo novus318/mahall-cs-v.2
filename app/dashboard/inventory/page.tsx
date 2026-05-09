@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Package, ArrowRightLeft, ArrowLeft, Search, Filter, History, MoreHorizontal, FileText, ChevronLeft, ChevronRight, Loader2, AlertTriangle } from 'lucide-react';
+import { Plus, Package, ArrowRightLeft, ArrowLeft, Search, Filter, History, MoreHorizontal, FileText, ChevronLeft, ChevronRight, Loader2, AlertTriangle, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -40,6 +40,7 @@ type Transaction = {
     customerName: string;
     customerPhone?: string;
     totalRentAmount: number;
+    paidAmount?: number;
     status: 'ACTIVE' | 'RETURNED';
     issuedDate: string;
     returnedDate?: string;
@@ -71,6 +72,11 @@ const rentSchema = z.object({
 const damageSchema = z.object({
     quantity: z.coerce.number().min(1, "Quantity must be > 0"),
     notes: z.string().optional(),
+});
+
+const returnSchema = z.object({
+    amountPaid: z.coerce.number().min(0),
+    accountId: z.string().optional(),
 });
 
 const PAGE_SIZE = 5;
@@ -110,13 +116,36 @@ export default function InventoryPage() {
     const [isRestockOpen, setIsRestockOpen] = useState(false);
     const [isRentOpen, setIsRentOpen] = useState(false);
     const [isDamageOpen, setIsDamageOpen] = useState(false);
+    const [isReturnOpen, setIsReturnOpen] = useState(false);
+    const [isLedgerOpen, setIsLedgerOpen] = useState(false);
+    
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const [selectedReturnTx, setSelectedReturnTx] = useState<Transaction | null>(null);
+    const [accounts, setAccounts] = useState<any[]>([]);
+    
+    // Ledger State
+    const [ledgerData, setLedgerData] = useState<{ payments: any[], receipt: any | null }>({ payments: [], receipt: null });
+
+    // All Rentals State
+    const [allRentals, setAllRentals] = useState<Transaction[]>([]);
+    const [allRentalsLoading, setAllRentalsLoading] = useState(false);
+    const [allRentalsPage, setAllRentalsPage] = useState(1);
+    const [allRentalsTotalPages, setAllRentalsTotalPages] = useState(1);
+
+    // Loading States
+    const [isSubmittingAddItem, setIsSubmittingAddItem] = useState(false);
+    const [isSubmittingRestock, setIsSubmittingRestock] = useState(false);
+    const [isSubmittingRent, setIsSubmittingRent] = useState(false);
+    const [isSubmittingDamage, setIsSubmittingDamage] = useState(false);
+    const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
+    const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
 
     // Forms
     const addItemForm = useForm<z.infer<typeof itemSchema>>({ resolver: zodResolver(itemSchema) as any, defaultValues: { name: '', totalQuantity: 1, averageValue: 0, rentalRate: 0 } });
     const restockForm = useForm<z.infer<typeof restockSchema>>({ resolver: zodResolver(restockSchema) as any, defaultValues: { quantity: 1, unitCost: 0 } });
     const rentForm = useForm<z.infer<typeof rentSchema>>({ resolver: zodResolver(rentSchema) as any, defaultValues: { quantity: 1, rentPerUnit: 0, typ: 'RENT_OUT', customerName: '', customerPhone: '', notes: '' } });
     const damageForm = useForm<z.infer<typeof damageSchema>>({ resolver: zodResolver(damageSchema) as any, defaultValues: { quantity: 1, notes: '' } });
+    const returnForm = useForm<z.infer<typeof returnSchema>>({ resolver: zodResolver(returnSchema) as any, defaultValues: { amountPaid: 0, accountId: '' } });
 
     // Watch values for Rent Calculation
     const rentQty = rentForm.watch('quantity');
@@ -131,12 +160,21 @@ export default function InventoryPage() {
         return () => clearTimeout(delayDebounceFn);
     }, [itemsSearch, itemsPage]);
 
-    // Load Transactions when tab changes to rentals
+    // Load Transactions when tab changes
     useEffect(() => {
-        if (activeTab === 'rentals') {
-            fetchActiveTransactions();
-        }
-    }, [activeTab, txMainPage]);
+        if (activeTab === 'rentals') fetchActiveTransactions();
+        if (activeTab === 'history') fetchAllRentals();
+    }, [activeTab, txMainPage, allRentalsPage]);
+
+    useEffect(() => {
+        const fetchAccounts = async () => {
+            try {
+                const { data } = await api.get('/accounts');
+                setAccounts(data.data || []);
+            } catch (e) {}
+        };
+        fetchAccounts();
+    }, []);
 
     const fetchItems = async () => {
         setItemsLoading(true);
@@ -154,14 +192,21 @@ export default function InventoryPage() {
     const fetchActiveTransactions = async () => {
         setTransactionsLoading(true);
         try {
-            // Force status=ACTIVE via all=false (backend default unless all=true)
-            // But verify backend logic: if !req.query.all filter.status = 'ACTIVE'.
-            // So calling without all=true ensures ACTIVE only.
             const { data } = await api.get(`/inventory/transactions?page=${txMainPage}&limit=10`);
             setTransactions(data.data);
             setTxMainTotalPages(data.pagination.pages);
         } catch (error) { toast.error("Failed to load rentals"); }
         finally { setTransactionsLoading(false); }
+    };
+
+    const fetchAllRentals = async () => {
+        setAllRentalsLoading(true);
+        try {
+            const { data } = await api.get(`/inventory/transactions?all=true&page=${allRentalsPage}&limit=10`);
+            setAllRentals(data.data);
+            setAllRentalsTotalPages(data.pagination.pages);
+        } catch (error) { toast.error("Failed to load rental history"); }
+        finally { setAllRentalsLoading(false); }
     };
 
     // Open History & Fetch First Page
@@ -206,41 +251,117 @@ export default function InventoryPage() {
 
     // Actions
     const onAddItem = async (v: any) => {
+        setIsSubmittingAddItem(true);
         try { await api.post('/inventory/items', v); toast.success("Added"); setIsAddItemOpen(false); addItemForm.reset(); fetchItems(); }
         catch (e) { toast.error("Failed"); }
+        finally { setIsSubmittingAddItem(false); }
     };
 
     const onRestock = async (v: any) => {
+        setIsSubmittingRestock(true);
         try { await api.put(`/inventory/items/${selectedItem?._id}/restock`, v); toast.success("Restocked"); setIsRestockOpen(false); fetchItems(); }
         catch (e) { toast.error("Failed"); }
+        finally { setIsSubmittingRestock(false); }
     };
 
     const onRent = async (v: any) => {
+        setIsSubmittingRent(true);
         try {
             if (v.quantity > (selectedItem?.availableQuantity || 0)) return toast.error("Not enough stock");
             await api.post('/inventory/transactions', { itemId: selectedItem?._id, ...v });
             toast.success("Issued"); setIsRentOpen(false); fetchItems();
         } catch (e) { toast.error("Failed"); }
+        finally { setIsSubmittingRent(false); }
     };
 
     const onDamage = async (v: z.infer<typeof damageSchema>) => {
+        setIsSubmittingDamage(true);
         try {
             if (v.quantity > (selectedItem?.availableQuantity || 0)) return toast.error("Not enough stock to write off");
             await api.put(`/inventory/items/${selectedItem?._id}/damage`, v);
             toast.success("Damage reported"); setIsDamageOpen(false); fetchItems();
         } catch (e) { toast.error("Failed to report damage"); }
+        finally { setIsSubmittingDamage(false); }
     };
 
-    const onReturn = async (id: string, refreshItemHistory = false) => {
+    const handleReturnClick = async (tx: Transaction, isHistory = false) => {
+        setIsSubmittingReturn(true);
         try {
-            await api.put(`/inventory/transactions/${id}/return`);
+            await api.put(`/inventory/transactions/${tx._id}/return`);
             toast.success("Returned");
-            fetchItems(); // update stock counts
-            if (activeTab === 'rentals') fetchActiveTransactions(); // refresh active list
-            if (refreshItemHistory && selectedItemHistory) {
+            fetchItems();
+            if (activeTab === 'rentals') fetchActiveTransactions();
+            if (activeTab === 'history') fetchAllRentals();
+            if (isHistory && selectedItemHistory) {
                 fetchHistoryTransactions(selectedItemHistory._id, txPage);
             }
-        } catch (e) { toast.error("Failed"); }
+        } catch (e: any) {
+            toast.error(e.response?.data?.message || "Failed to return");
+        } finally {
+            setIsSubmittingReturn(false);
+        }
+    };
+
+    const handleLedgerClick = async (tx: Transaction) => {
+        setSelectedReturnTx(tx);
+        const pendingAmount = tx.totalRentAmount - (tx.paidAmount || 0);
+        returnForm.reset({ amountPaid: pendingAmount > 0 ? pendingAmount : 0, accountId: '' });
+        setIsLedgerOpen(true);
+        fetchLedgerReceipts(tx._id);
+    };
+
+    const fetchLedgerReceipts = async (txId: string) => {
+        try {
+            const { data } = await api.get(`/inventory/transactions/${txId}/receipts`);
+            setLedgerData(data.data || { payments: [], receipt: null });
+        } catch (e) { toast.error("Failed to load ledger"); }
+    };
+
+    const onPayRent = async (v: z.infer<typeof returnSchema>) => {
+        if (!selectedReturnTx) return;
+        setIsSubmittingPayment(true);
+        try {
+            await api.post(`/inventory/transactions/${selectedReturnTx._id}/pay`, {
+                accountId: v.accountId,
+                amountPaid: v.amountPaid
+            });
+            toast.success("Payment recorded");
+            
+            // Refresh Data
+            fetchLedgerReceipts(selectedReturnTx._id);
+            fetchItems();
+            if (activeTab === 'rentals') fetchActiveTransactions();
+            if (activeTab === 'history') fetchAllRentals();
+            if (selectedItemHistory) {
+                fetchHistoryTransactions(selectedItemHistory._id, txPage);
+            }
+            
+            // Update local state so modal updates balance immediately
+            setSelectedReturnTx({
+                ...selectedReturnTx,
+                paidAmount: (selectedReturnTx.paidAmount || 0) + Number(v.amountPaid)
+            });
+            returnForm.reset({ amountPaid: 0, accountId: '' });
+        } catch (e: any) {
+            toast.error(e.response?.data?.message || "Payment Failed");
+        } finally {
+            setIsSubmittingPayment(false);
+        }
+    };
+
+    const handleDownloadPdf = async (receiptId: string) => {
+        try {
+            const res = await api.get(`/inventory/receipts/${receiptId}/pdf`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([res.data as any]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Inventory-Receipt-${receiptId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            toast.error("Failed to download PDF");
+        }
     };
 
     return (
@@ -262,6 +383,7 @@ export default function InventoryPage() {
                 <TabsList>
                     <TabsTrigger value="items">All Items</TabsTrigger>
                     <TabsTrigger value="rentals">Active Rentals</TabsTrigger>
+                    <TabsTrigger value="history">Rental History</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="items" className="space-y-4">
@@ -438,16 +560,25 @@ export default function InventoryPage() {
                                                     <div className="text-[10px] text-muted-foreground">{tx.customerPhone}</div>
                                                 </TableCell>
                                                 <TableCell className="py-2 text-sm text-right font-mono">{tx.quantity}</TableCell>
-                                                <TableCell className="py-2 text-sm text-right font-mono text-muted-foreground">₹{tx.totalRentAmount}</TableCell>
+                                                <TableCell className="py-2 text-right">
+                                                    <div className="text-sm font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
+                                                    {tx.paidAmount > 0 && <div className="text-[10px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                    {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[10px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
+                                                </TableCell>
                                                 <TableCell className="py-2 text-center">
                                                     <Badge variant={tx.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-[10px] h-5 px-2 font-medium">{tx.status}</Badge>
                                                 </TableCell>
                                                 <TableCell className="py-2 text-right">
-                                                    {tx.status === 'ACTIVE' && (
-                                                        <Button size="sm" variant="ghost" className="h-7 px-3 text-xs hover:bg-primary/10 hover:text-primary" onClick={() => onReturn(tx._id)}>
-                                                            Return
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button size="sm" variant="outline" className="h-7 px-3 text-xs" onClick={() => handleLedgerClick(tx)}>
+                                                            Ledger
                                                         </Button>
-                                                    )}
+                                                        {tx.status === 'ACTIVE' && (
+                                                            <Button size="sm" variant="ghost" className="h-7 px-3 text-xs hover:bg-primary/10 hover:text-primary" onClick={() => handleReturnClick(tx)} disabled={isSubmittingReturn}>
+                                                                {isSubmittingReturn ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Return'}
+                                                            </Button>
+                                                        )}
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))
@@ -472,6 +603,109 @@ export default function InventoryPage() {
                                         size="sm"
                                         onClick={() => setTxMainPage(p => Math.min(txMainTotalPages, p + 1))}
                                         disabled={txMainPage >= txMainTotalPages}
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="history" className="space-y-4">
+                    <Card className="border shadow-sm">
+                        <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <CardTitle className="text-base font-semibold">Rental History</CardTitle>
+                                    <CardDescription className="text-xs">
+                                        All past and active rental transactions
+                                    </CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <Table>
+                                <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="h-9 text-xs font-semibold">Date</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold">Item</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold">Customer</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold text-right">Qty</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold text-right">Rent</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold text-center">Status</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold text-right">Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {allRentalsLoading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="h-24 text-center">
+                                                <div className="flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : allRentals.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="h-24 text-center text-sm text-muted-foreground">
+                                                No rental history found.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        allRentals.map((tx) => (
+                                            <TableRow key={tx._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                                                <TableCell className="py-2 text-xs text-muted-foreground">
+                                                    <div>{new Date(tx.issuedDate).toLocaleDateString()}</div>
+                                                    {tx.returnedDate && <div className="text-[10px] text-green-600">Ret: {new Date(tx.returnedDate).toLocaleDateString()}</div>}
+                                                </TableCell>
+                                                <TableCell className="py-2 text-sm font-medium">{tx.itemId?.name}</TableCell>
+                                                <TableCell className="py-2 text-sm">
+                                                    <div>{tx.customerName}</div>
+                                                    <div className="text-[10px] text-muted-foreground">{tx.customerPhone}</div>
+                                                </TableCell>
+                                                <TableCell className="py-2 text-sm text-right font-mono">{tx.quantity}</TableCell>
+                                                <TableCell className="py-2 text-right">
+                                                    <div className="text-sm font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
+                                                    {tx.paidAmount > 0 && <div className="text-[10px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                    {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[10px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
+                                                </TableCell>
+                                                <TableCell className="py-2 text-center">
+                                                    <Badge variant={tx.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-[10px] h-5 px-2 font-medium">{tx.status}</Badge>
+                                                </TableCell>
+                                                <TableCell className="py-2 text-right">
+                                                    <div className="flex justify-end gap-2">
+                                                        <Button size="sm" variant="outline" className="h-7 px-3 text-xs" onClick={() => handleLedgerClick(tx)}>
+                                                            Ledger
+                                                        </Button>
+                                                        {tx.status === 'ACTIVE' && (
+                                                            <Button size="sm" variant="ghost" className="h-7 px-3 text-xs hover:bg-primary/10 hover:text-primary" onClick={() => handleReturnClick(tx)} disabled={isSubmittingReturn}>
+                                                                {isSubmittingReturn ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Return'}
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                            {allRentalsTotalPages > 1 && (
+                                <div className="p-4 border-t flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-900/50">
+                                    <span className="text-xs text-muted-foreground mr-2">Page {allRentalsPage} of {allRentalsTotalPages}</span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setAllRentalsPage(p => Math.max(1, p - 1))}
+                                        disabled={allRentalsPage === 1}
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setAllRentalsPage(p => Math.min(allRentalsTotalPages, p + 1))}
+                                        disabled={allRentalsPage >= allRentalsTotalPages}
                                         className="h-8 w-8 p-0"
                                     >
                                         <ChevronRight className="h-4 w-4" />
@@ -543,10 +777,17 @@ export default function InventoryPage() {
                                                         <div className="font-medium truncate max-w-[80px] sm:max-w-[100px]">{tx.customerName}</div>
                                                         <Badge variant={tx.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-[8px] h-3 px-1">{tx.status}</Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-xs text-right font-mono">₹{tx.totalRentAmount}</TableCell>
+                                                    <TableCell className="text-xs text-right">
+                                                        <div className="font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
+                                                        {tx.paidAmount > 0 && <div className="text-[9px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                        {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[9px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
+                                                    </TableCell>
                                                     <TableCell className="text-xs text-right font-medium font-mono">{tx.quantity}</TableCell>
                                                     <TableCell className="text-xs text-right">
-                                                        {tx.status === 'ACTIVE' && <Button size="icon" variant="ghost" className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10" onClick={() => onReturn(tx._id, true)}><ArrowLeft className="h-3 w-3" /></Button>}
+                                                        <div className="flex justify-end gap-1">
+                                                            <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => handleLedgerClick(tx)}><History className="h-3 w-3" /></Button>
+                                                            {tx.status === 'ACTIVE' && <Button size="icon" variant="ghost" className="h-6 w-6 text-primary hover:text-primary hover:bg-primary/10" onClick={() => handleReturnClick(tx, true)} disabled={isSubmittingReturn}><ArrowLeft className="h-3 w-3" /></Button>}
+                                                        </div>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -708,6 +949,111 @@ export default function InventoryPage() {
                             </DialogFooter>
                         </form>
                     </Form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Ledger and Payment Dialog */}
+            <Dialog open={isLedgerOpen} onOpenChange={setIsLedgerOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Rent Ledger & Payments</DialogTitle>
+                        <DialogDescription>
+                            View payment history and record new payments for this rental.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div className="p-3 bg-muted/40 rounded-md border space-y-2">
+                                <div className="text-xs font-medium">Rent Details</div>
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">Total Rent:</span>
+                                    <span>₹{selectedReturnTx?.totalRentAmount}</span>
+                                </div>
+                                <div className="flex justify-between text-xs">
+                                    <span className="text-muted-foreground">Paid Amount:</span>
+                                    <span>₹{selectedReturnTx?.paidAmount || 0}</span>
+                                </div>
+                                <Separator />
+                                <div className="flex justify-between text-xs font-bold">
+                                    <span>Balance Due:</span>
+                                    <span className={((selectedReturnTx?.totalRentAmount || 0) - (selectedReturnTx?.paidAmount || 0)) > 0 ? "text-red-600" : "text-green-600"}>
+                                        ₹{Math.max(0, (selectedReturnTx?.totalRentAmount || 0) - (selectedReturnTx?.paidAmount || 0))}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {((selectedReturnTx?.totalRentAmount || 0) - (selectedReturnTx?.paidAmount || 0)) > 0 && (
+                                <Form {...returnForm}>
+                                    <form onSubmit={returnForm.handleSubmit(onPayRent)} className="space-y-3">
+                                        <div className="text-xs font-semibold">Make Payment</div>
+                                        <FormField control={returnForm.control} name="amountPaid" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-xs">Amount</FormLabel>
+                                                <FormControl><Input type="number" {...field} className="h-8 text-xs" /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <FormField control={returnForm.control} name="accountId" render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-xs">Deposit Account</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Select Account" /></SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {accounts.map(acc => (
+                                                            <SelectItem key={acc._id} value={acc._id}>{acc.name} (₹{acc.balance})</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )} />
+                                        <Button type="submit" size="sm" className="w-full" disabled={isSubmittingPayment}>
+                                            {isSubmittingPayment ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Record Payment
+                                        </Button>
+                                    </form>
+                                </Form>
+                            )}
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="text-xs font-semibold">Payment History</div>
+                            <ScrollArea className="h-[200px] border rounded-md p-2 mb-2">
+                                {ledgerData.payments.length === 0 ? (
+                                    <div className="text-xs text-muted-foreground text-center py-4">No payments recorded yet.</div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {ledgerData.payments.map((payment: any, index: number) => (
+                                            <div key={index} className="flex flex-col gap-1 p-2 border rounded-md text-xs bg-slate-50 dark:bg-slate-900">
+                                                <div className="flex justify-between font-medium">
+                                                    <span>Payment {ledgerData.payments.length - index}</span>
+                                                    <span>₹{payment.amount}</span>
+                                                </div>
+                                                <div className="flex justify-between text-muted-foreground text-[10px]">
+                                                    <span>{new Date(payment.date).toLocaleDateString()}</span>
+                                                    <span>{payment.accountId?.name || 'Account'}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </ScrollArea>
+                            
+                            {ledgerData.receipt && (
+                                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-md flex items-center justify-between">
+                                    <div className="text-xs">
+                                        <span className="font-semibold text-green-700 dark:text-green-400">Fully Paid</span>
+                                        <div className="text-[10px] text-green-600 dark:text-green-500">Official Receipt Generated</div>
+                                    </div>
+                                    <Button size="sm" variant="outline" className="h-7 text-xs bg-white dark:bg-slate-950" onClick={() => handleDownloadPdf(ledgerData.receipt._id)}>
+                                        <Download className="mr-1 h-3 w-3" /> Download PDF
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </div>
