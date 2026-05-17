@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://mahall-bk-v2-production.up.railway.app/api',
+    baseURL: 'https://mahall-bk.up.railway.app/api',
     headers: {
         'Content-Type': 'application/json',
     },
