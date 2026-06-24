@@ -146,6 +146,12 @@ export const getArrearsSummary = async (params: any) => (await api.get('/collect
 export const sendArrearsReminder = async (data: { entityId: string, entityType: string }) =>
     (await api.post('/collections/remind/summary', data)).data;
 
+export const getPublicEntityDues = async (type: string, id: string) =>
+    (await api.get(`/collections/public/${type}/${id}/dues`)).data;
+
+export const getPublicEntityDetails = async (type: string, id: string) =>
+    (await api.get(`/collections/public/${type}/${id}/details`)).data;
+
 export const downloadCollectionReceipt = async (id: string) => {
     return api.get(`/collections/receipts/${id}/pdf`, {
         responseType: 'blob'
