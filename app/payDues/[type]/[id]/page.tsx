@@ -2,14 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getPublicEntityDues, getPublicEntityDetails, API_URL } from "@/lib/api";
+import { getPublicEntityDues, getPublicEntityDetails, createRazorpayOrder, API_URL } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ExternalLink, ArrowLeft, Home, User, Building2, Phone, MapPin, Droplets, Briefcase, Cake } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Loader2, ExternalLink, ArrowLeft, Home, User, Building2, Phone, MapPin, Droplets, Briefcase, Cake, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function PayDuesPage() {
     const params = useParams();
@@ -21,10 +24,13 @@ export default function PayDuesPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    const [payingDue, setPayingDue] = useState<any>(null);
+    const [paymentAmount, setPaymentAmount] = useState(0);
+    const [submitting, setSubmitting] = useState(false);
+
     useEffect(() => {
         if (!id) return;
         setLoading(true);
-
         Promise.all([
             getPublicEntityDetails(type, id).then((r: any) => r?.data || r),
             getPublicEntityDues(type, id).then((r: any) => (Array.isArray(r) ? r : r?.data || []))
@@ -36,6 +42,66 @@ export default function PayDuesPage() {
             .catch((err: any) => setError(err?.message || "Failed to load data"))
             .finally(() => setLoading(false));
     }, [type, id]);
+
+    const openPayDialog = (due: any) => {
+        setPayingDue(due);
+        setPaymentAmount(due.amount - (due.paidAmount || 0));
+    };
+
+    const handlePay = async () => {
+        if (!payingDue || !entity) return;
+        setSubmitting(true);
+        try {
+            const contact = entity.mobile || entity.whatsapp || "";
+            const data = await createRazorpayOrder({
+                amount: paymentAmount,
+                dueId: payingDue._id,
+                entityId: (type === "hou" ? "hou/" : "mem/") + id,
+                name: entity.name,
+                contact,
+                receipt_note: `Due Payment - ${payingDue.period}`
+            });
+
+            if (!data.success) {
+                throw new Error("Failed to create order");
+            }
+
+            const options = {
+                key: data.key,
+                amount: data.order.amount,
+                currency: data.order.currency,
+                name: "Mahall Management System",
+                description: `Due Payment - ${payingDue.period}`,
+                order_id: data.order.id,
+                handler: function () {
+                    setPayingDue(null);
+                    toast.success("Payment successful!");
+                },
+                prefill: {
+                    name: entity.name,
+                    contact
+                },
+                notes: {
+                    dueId: payingDue._id,
+                    entityId: (type === "hou" ? "hou/" : "mem/") + id,
+                    entityCustomId: entity.customId,
+                    name: entity.name,
+                    contact
+                },
+                theme: { color: "#16a34a" }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on("payment.failed", function (response: any) {
+                toast.error(response.error?.description || "Payment failed");
+            });
+            rzp.open();
+        } catch (err: any) {
+            toast.error(err?.message || "Something went wrong");
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     const isHouse = type === "hou";
 
@@ -76,9 +142,7 @@ export default function PayDuesPage() {
                                     </div>
                                     <div className="space-y-1.5 min-w-0">
                                         <p className="font-semibold text-base truncate">{entity.name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            House ID: {entity.customId}
-                                        </p>
+                                        <p className="text-xs text-muted-foreground">House ID: {entity.customId}</p>
                                         {entity.head && (
                                             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                                 <User className="h-3.5 w-3.5" />
@@ -86,9 +150,13 @@ export default function PayDuesPage() {
                                             </div>
                                         )}
                                         {entity.family && (
-                                            <p className="text-xs text-muted-foreground">
-                                                Family: {entity.family.name}
-                                            </p>
+                                            <p className="text-xs text-muted-foreground">Family: {entity.family.name}</p>
+                                        )}
+                                        {entity.address && (
+                                            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                                <MapPin className="h-3.5 w-3.5" />
+                                                <span>{entity.address}</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
@@ -99,15 +167,13 @@ export default function PayDuesPage() {
                                     </div>
                                     <div className="space-y-2 min-w-0 flex-1">
                                         <p className="font-semibold text-base truncate">{entity.name}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Member ID: {entity.customId}
-                                        </p>
+                                        <p className="text-xs text-muted-foreground">Member ID: {entity.customId}</p>
 
                                         <div className="grid grid-cols-2 gap-x-6 gap-y-2 pt-1">
                                             {entity.dateOfBirth && (
                                                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                                     <Cake className="h-3.5 w-3.5 shrink-0" />
-                                                    <span>{new Date(entity.dateOfBirth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} ({new Date().getFullYear() - new Date(entity.dateOfBirth).getFullYear()} years)</span>
+                                                    <span>{new Date(entity.dateOfBirth).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })} ({new Date().getFullYear() - new Date(entity.dateOfBirth).getFullYear()} years)</span>
                                                 </div>
                                             )}
                                             {entity.gender && (
@@ -165,17 +231,13 @@ export default function PayDuesPage() {
                     </Card>
                 )}
 
-                <Card className="shadow-sm border-slate-200 dark:border-neutral-800 py-3">
+                <Card className="shadow-sm border-slate-200 dark:border-neutral-800">
                     <CardHeader className="pb-4 border-b border-slate-100 dark:border-neutral-800">
-                        <CardTitle className="text-lg font-semibold">
-                            Collection Dues
-                        </CardTitle>
+                        <CardTitle className="text-lg font-semibold">Collection Dues</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
                         {dues.length === 0 ? (
-                            <div className="text-center text-sm text-muted-foreground py-10">
-                                No dues found.
-                            </div>
+                            <div className="text-center text-sm text-muted-foreground py-10">No dues found.</div>
                         ) : (
                             <Table>
                                 <TableHeader className="bg-slate-50/50 dark:bg-neutral-900">
@@ -201,29 +263,21 @@ export default function PayDuesPage() {
                                             <TableRow key={due._id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 border-b last:border-0">
                                                 <TableCell className="py-2.5 text-xs font-medium">{due.period}</TableCell>
                                                 <TableCell className="py-2.5">
-                                                    <Badge
-                                                        variant="outline"
-                                                        className={cn(
-                                                            "text-[10px] px-1.5 py-0 h-5 border-0 font-medium",
-                                                            due.status === "PAID"
-                                                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                                                                : due.status === "PARTIAL"
-                                                                  ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                                                                  : due.status === "REJECTED"
+                                                    <Badge variant="outline" className={cn(
+                                                        "text-[10px] px-1.5 py-0 h-5 border-0 font-medium",
+                                                        due.status === "PAID"
+                                                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                            : due.status === "PARTIAL"
+                                                                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                                                : due.status === "REJECTED"
                                                                     ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                                                                     : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                                                        )}
-                                                    >
+                                                    )}>
                                                         {due.status}
                                                     </Badge>
                                                     {receiptId && (
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-6 w-6 ml-1.5"
-                                                            title="View Receipt"
-                                                            onClick={() => window.open(`${API_URL}/collections/receipts/${receiptId}/pdf`, "_blank")}
-                                                        >
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 ml-1.5" title="View Receipt"
+                                                            onClick={() => window.open(`${API_URL}/collections/receipts/${receiptId}/pdf`, "_blank")}>
                                                             <ExternalLink className="h-3 w-3 text-slate-500" />
                                                         </Button>
                                                     )}
@@ -234,12 +288,10 @@ export default function PayDuesPage() {
                                                 </TableCell>
                                                 <TableCell className="py-2.5 text-right">
                                                     {due.status !== "PAID" && due.status !== "REJECTED" && (
-                                                        <Button
-                                                            size="sm"
-                                                            variant="secondary"
-                                                            className="h-6 w-12 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                                                        >
-                                                            Pay
+                                                        <Button size="sm" variant="secondary"
+                                                            className="h-7 text-[10px] px-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                                            onClick={() => openPayDialog(due)}>
+                                                            <CreditCard className="h-3 w-3 mr-1" /> Pay
                                                         </Button>
                                                     )}
                                                 </TableCell>
@@ -252,6 +304,39 @@ export default function PayDuesPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            <Dialog open={!!payingDue} onOpenChange={(open) => !open && setPayingDue(null)}>
+                <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle className="text-base">Pay Due</DialogTitle>
+                    </DialogHeader>
+                    {payingDue && (
+                        <div className="space-y-4 py-2">
+                            <div className="text-sm space-y-1">
+                                <p><span className="text-muted-foreground">Period:</span> <span className="font-medium">{payingDue.period}</span></p>
+                                <p><span className="text-muted-foreground">Total:</span> <span className="font-medium">₹{payingDue.amount}</span></p>
+                                {payingDue.paidAmount > 0 && (
+                                    <p><span className="text-muted-foreground">Paid:</span> <span className="font-medium">₹{payingDue.paidAmount}</span></p>
+                                )}
+                                <p><span className="text-muted-foreground">Due:</span> <span className="font-semibold text-green-600">₹{payingDue.amount - (payingDue.paidAmount || 0)}</span></p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-xs text-muted-foreground">Payment Amount</label>
+                                <Input type="number" value={paymentAmount}
+                                    onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                                    min={1} max={payingDue.amount - (payingDue.paidAmount || 0)} />
+                            </div>
+                        </div>
+                    )}
+                    <DialogFooter>
+                        <Button variant="outline" size="sm" onClick={() => setPayingDue(null)}>Cancel</Button>
+                        <Button size="sm" onClick={handlePay} disabled={submitting || paymentAmount <= 0}>
+                            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                            Pay ₹{paymentAmount}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

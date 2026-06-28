@@ -158,6 +158,15 @@ export const downloadCollectionReceipt = async (id: string) => {
     });
 };
 
+export const createRazorpayOrder = async (data: {
+    amount: number;
+    dueId: string;
+    entityId: string;
+    name: string;
+    contact: string;
+    receipt_note?: string;
+}) => (await api.post('/payment-gateway/create-order', data)).data;
+
 export const payInventoryRent = async (transactionId: string, payload: { accountId: string, amountPaid: number }) => {
     return api.post(`/inventory/transactions/${transactionId}/pay`, payload);
 };
