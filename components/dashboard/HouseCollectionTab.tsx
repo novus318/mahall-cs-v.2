@@ -411,7 +411,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                                     const recId = lastTx?.collectionReceipt || (typeof lastTx?.receiptId === 'object' ? lastTx.receiptId?._id : lastTx?.receiptId);
 
                                                                     if (recId) {
-                                                                        window.open(`${API_URL}/collections/receipts/${recId}/pdf`, '_blank');
+                                                                        window.open(`https://tmj.org.in/collections/receipts/${recId}/pdf`, '_blank');
                                                                     }
                                                                 }}
                                                             >
