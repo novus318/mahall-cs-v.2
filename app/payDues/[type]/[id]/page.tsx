@@ -277,7 +277,7 @@ export default function PayDuesPage() {
                                                     </Badge>
                                                     {receiptId && (
                                                         <Button variant="ghost" size="icon" className="h-6 w-6 ml-1.5" title="View Receipt"
-                                                            onClick={() => window.open(`${API_URL}/collections/receipts/${receiptId}/pdf`, "_blank")}>
+                                                            onClick={() => window.open(`https://api.tmj.org.in/collections/receipts/${receiptId}/pdf`, "_blank")}>
                                                             <ExternalLink className="h-3 w-3 text-slate-500" />
                                                         </Button>
                                                     )}
