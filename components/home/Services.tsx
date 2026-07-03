@@ -101,7 +101,7 @@ export default function Services() {
             );
 
             gsap.fromTo(
-                galleryRef.current?.querySelectorAll(".gallery-img"),
+                galleryRef.current?.querySelectorAll(".gallery-img") || [],
                 { y: 40, opacity: 0, scale: 0.95 },
                 {
                     y: 0,
