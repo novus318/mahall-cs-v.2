@@ -87,7 +87,7 @@ export default function Hero() {
         >
             <div className="hero-bg absolute inset-0 z-0">
                 <img
-                    src="/thayineri-juma-masjid-kokkanisseri-kannur-mosques-ISt8r8b0tm.avif"
+                    src="/mousque.jpg"
                     alt="Beautiful Mosque"
                     className="w-full h-full object-cover"
                 />

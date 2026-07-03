@@ -35,10 +35,19 @@ const services = [
     },
 ];
 
+const schoolImages = [
+    { src: "/school1.jpg", alt: "School building front view" },
+    { src: "/school2.jpg", alt: "School campus" },
+    { src: "/school3.jpg", alt: "School students" },
+    { src: "/schoool.jpg", alt: "School activities" },
+];
+
 export default function Services() {
     const sectionRef = useRef<HTMLDivElement>(null);
     const titleRef = useRef<HTMLDivElement>(null);
     const cardsRef = useRef<HTMLDivElement>(null);
+    const galleryRef = useRef<HTMLDivElement>(null);
+    const galleryTitleRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const ctx = gsap.context(() => {
@@ -74,6 +83,40 @@ export default function Services() {
                     },
                 }
             );
+
+            gsap.fromTo(
+                galleryTitleRef.current,
+                { y: 30, opacity: 0 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: galleryRef.current,
+                        start: "top 80%",
+                        toggleActions: "play none none reverse",
+                    },
+                }
+            );
+
+            gsap.fromTo(
+                galleryRef.current?.querySelectorAll(".gallery-img"),
+                { y: 40, opacity: 0, scale: 0.95 },
+                {
+                    y: 0,
+                    opacity: 1,
+                    scale: 1,
+                    duration: 0.6,
+                    stagger: 0.15,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: galleryRef.current,
+                        start: "top 75%",
+                        toggleActions: "play none none reverse",
+                    },
+                }
+            );
         }, sectionRef);
 
         return () => ctx.revert();
@@ -95,7 +138,7 @@ export default function Services() {
                     </p>
                 </div>
 
-                <div ref={cardsRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div ref={cardsRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20">
                     {services.map((service, index) => (
                         <div
                             key={index}
@@ -110,6 +153,37 @@ export default function Services() {
                             </p>
                         </div>
                     ))}
+                </div>
+
+                <div ref={galleryRef}>
+                    <div ref={galleryTitleRef} className="text-center max-w-3xl mx-auto mb-12">
+                        <p className="text-muted-foreground font-amiri text-lg tracking-wider mb-2">
+                            OUR MADRASA
+                        </p>
+                        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                            Islamic <span className="text-primary">Education</span> Center
+                        </h2>
+                        <p className="text-muted-foreground">
+                            Our madrasa provides quality Islamic education, nurturing young minds with
+                            Quranic knowledge, Arabic language, and Islamic values.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {schoolImages.map((img, index) => (
+                            <div
+                                key={index}
+                                className="gallery-img relative rounded-xl overflow-hidden group cursor-pointer aspect-[4/3]"
+                            >
+                                <img
+                                    src={img.src}
+                                    alt={img.alt}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         </section>
