@@ -167,6 +167,17 @@ export const createRazorpayOrder = async (data: {
     receipt_note?: string;
 }) => (await api.post('/payment-gateway/create-order', data)).data;
 
+export const createDonationOrder = async (data: {
+    amount: number;
+    name: string;
+    contact: string;
+}) => (await api.post('/payment-gateway/create-order', {
+    amount: data.amount,
+    receipt_note: `Donation from ${data.name}`,
+    name: data.name,
+    contact: data.contact
+})).data;
+
 export const payInventoryRent = async (transactionId: string, payload: { accountId: string, amountPaid: number }) => {
     return api.post(`/inventory/transactions/${transactionId}/pay`, payload);
 };
