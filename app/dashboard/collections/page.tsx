@@ -208,7 +208,7 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
 
         if (recId) {
             // Direct PDF Download/View
-            window.open(`https://tmj.org.in/api/collections/receipts/${recId}/pdf`, '_blank');
+            window.open(`https://api.tmj.org.in/api/collections/receipts/${recId}/pdf`, '_blank');
         }
     }
 
@@ -423,7 +423,7 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                                                                                     className="h-6 w-6"
                                                                                     onClick={() => {
                                                                                         const recId = tx.collectionReceipt || (typeof tx.receiptId === 'object' ? tx.receiptId?._id : tx.receiptId);
-                                                                                        if (recId) window.open(`https://tmj.org.in/api/collections/receipts/${recId}/pdf`, '_blank');
+                                                                                        if (recId) window.open(`https://api.tmj.org.in/api/collections/receipts/${recId}/pdf`, '_blank');
                                                                                     }}
                                                                                     title="View Receipt"
                                                                                 >
