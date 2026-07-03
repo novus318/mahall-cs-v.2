@@ -17,7 +17,7 @@ declare global {
     }
 }
 
-const donationAmounts = [100, 500, 1000, 2000, 5000];
+const donationAmounts = [100, 500, 1000, 2000];
 
 export default function DonatePage() {
     const [selectedAmount, setSelectedAmount] = useState<number | null>(1000);
@@ -30,7 +30,7 @@ export default function DonatePage() {
 
     const handleAmountSelect = (amount: number) => {
         setSelectedAmount(amount);
-        setCustomAmount("");
+        setCustomAmount(String(amount));
     };
 
     const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,11 +127,8 @@ export default function DonatePage() {
                     </Link>
                 </div>
 
-                <Card className="shadow-sm border-slate-200 dark:border-neutral-800">
+                <Card className="shadow-sm border-slate-200 dark:border-neutral-800 py-3">
                     <CardHeader className="text-center pb-6 border-b border-slate-100 dark:border-neutral-800">
-                        <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
-                            <Heart className="w-6 h-6 text-primary" />
-                        </div>
                         <CardTitle className="text-2xl font-amiri font-bold">Make a Donation</CardTitle>
                         <CardDescription className="text-muted-foreground">
                             Your generous contribution helps our community grow and thrive.
@@ -143,7 +140,7 @@ export default function DonatePage() {
                                 <Label className="text-foreground/80 mb-3 block text-sm font-medium">
                                     Select Amount
                                 </Label>
-                                <div className="grid grid-cols-5 gap-2 mb-3">
+                                <div className="grid grid-cols-4 gap-2 mb-3">
                                     {donationAmounts.map((amount) => (
                                         <button
                                             key={amount}
@@ -257,12 +254,12 @@ export default function DonatePage() {
                             </div>
                             <span className="text-2xl font-amiri">JazakAllah Khair!</span>
                         </DialogTitle>
-                        <DialogDesc className="text-center text-muted-foreground space-y-2">
-                            <p>Thank you for your generous donation. Your contribution will help us continue serving our community.</p>
+                        <DialogDesc className="text-center text-muted-foreground">
+                            <span>Thank you for your generous donation. Your contribution will help us continue serving our community.</span>
                             {paymentId && (
-                                <p className="text-xs text-muted-foreground/70 font-mono">
+                                <span className="block text-xs text-muted-foreground/70 font-mono mt-2">
                                     Payment ID: {paymentId}
-                                </p>
+                                </span>
                             )}
                         </DialogDesc>
                     </DialogHeader>
