@@ -72,6 +72,8 @@ export default function PayablesPage() {
     const [isDeleteOpen, setIsDeleteOpen] = useState(false);
     const [selectedPayable, setSelectedPayable] = useState<any>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isRepaySubmitting, setIsRepaySubmitting] = useState(false);
 
     const form = useForm({
         resolver: zodResolver(payableSchema),
@@ -128,6 +130,8 @@ export default function PayablesPage() {
     };
 
     const handleCreate = async (values: z.infer<typeof payableSchema>) => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
         try {
             await api.post('/payables', values);
             toast.success("Loan/Credit recorded successfully");
@@ -136,11 +140,14 @@ export default function PayablesPage() {
             fetchPayables();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to record loan");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const handleRepay = async (values: z.infer<typeof repaymentSchema>) => {
-        if (!selectedPayable) return;
+        if (!selectedPayable || isRepaySubmitting) return;
+        setIsRepaySubmitting(true);
         
         try {
             await api.post(`/payables/${selectedPayable._id}/repay`, values);
@@ -151,11 +158,14 @@ export default function PayablesPage() {
             fetchPayables();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to record repayment");
+        } finally {
+            setIsRepaySubmitting(false);
         }
     };
 
     const handleDelete = async () => {
-        if (!deletingId) return;
+        if (!deletingId || isSubmitting) return;
+        setIsSubmitting(true);
         
         try {
             await api.delete(`/payables/${deletingId}`);
@@ -165,6 +175,8 @@ export default function PayablesPage() {
             fetchPayables();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to delete payable");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -620,7 +632,10 @@ export default function PayablesPage() {
                             />
 
                             <DialogFooter>
-                                <Button type="submit">Record Loan</Button>
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isSubmitting ? "Creating..." : "Record Loan"}
+                                </Button>
                             </DialogFooter>
                         </form>
                     </Form>
@@ -724,7 +739,10 @@ export default function PayablesPage() {
                             />
 
                             <DialogFooter>
-                                <Button type="submit">Record Repayment</Button>
+                                <Button type="submit" disabled={isRepaySubmitting}>
+                                    {isRepaySubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    {isRepaySubmitting ? "Recording..." : "Record Repayment"}
+                                </Button>
                             </DialogFooter>
                         </form>
                     </Form>
