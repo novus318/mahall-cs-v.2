@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Filter, Loader2, ArrowRight } from 'lucide-react';
+import { Plus, Search, Filter, Loader2, ArrowRight, Printer, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
@@ -171,7 +171,7 @@ export default function PaymentsPage() {
                                         <TableRow><TableCell colSpan={8} className="h-24 text-center text-muted-foreground">No payments found.</TableCell></TableRow>
                                     ) : (
                                         payments.map((payment) => (
-                                            <TableRow key={payment._id} className="hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/payments/edit/${payment._id}`)}>
+                                            <TableRow key={payment._id} className="hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/payments/${payment._id}`)}>
                                                 <TableCell className="font-medium text-xs text-muted-foreground">{payment.receiptNo}</TableCell>
                                                 <TableCell className="text-xs">{format(new Date(payment.date), 'MMM d, yyyy')}</TableCell>
                                                 <TableCell className="font-medium">
@@ -198,9 +198,14 @@ export default function PaymentsPage() {
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/payments/edit/${payment._id}`); }}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-                                                    </Button>
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); window.open(`https://api.tmj.org.in/api/payments/${payment._id}/pdf`, '_blank'); }}>
+                                                            <Printer className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/payments/edit/${payment._id}`); }}>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                                                        </Button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))

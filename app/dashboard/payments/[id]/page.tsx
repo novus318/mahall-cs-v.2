@@ -35,7 +35,7 @@ export default function PaymentDetailPage() {
     if (!payment) return <div className="p-10 text-center">Payment not found</div>;
 
     return (
-        <div className="flex flex-col h-full w-full  border-r bg-background print:border-0 print:max-w-none">
+        <div className="flex flex-col h-full w-full border-r bg-background print:border-0 print:max-w-none print:!h-auto print:!overflow-visible">
             {/* Command Bar / Header */}
             <div className="flex items-center justify-between px-6 py-3 border-b print:hidden bg-slate-50/50">
                 <div className="flex items-center gap-3">
@@ -51,21 +51,21 @@ export default function PaymentDetailPage() {
                     <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => router.push(`/dashboard/payments/edit/${payment._id}`)}>
                         <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
                     </Button>
-                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => window.print()}>
+                    <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => window.open(`/api/payments/${payment._id}/pdf`, '_blank')}>
                         <Printer className="mr-2 h-3.5 w-3.5" /> Print
                     </Button>
                 </div>
             </div>
 
             {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-auto p-8 print:p-0 print:overflow-visible">
+            <div className="flex-1 overflow-auto p-8 print:!p-0 print:!overflow-visible print:!flex-none">
                 {/* Voucher Document */}
-                <div className="bg-white border shadow-sm max-w-[210mm] mx-auto min-h-[197mm] p-10 print:border-0 print:shadow-none print:p-0 print:scale-100">
+                <div className="bg-white border shadow-sm max-w-[210mm] mx-auto min-h-[197mm] p-10 print:!border-0 print:!shadow-none print:!max-w-none print:!min-h-0 print:!p-6 print:!mx-0 print:!w-full">
 
                     {/* Voucher Header */}
-                    <div className="flex justify-between items-start mb-8 pb-6 border-b border-double">
+                    <div className="flex justify-between items-start mb-8 pb-6 border-b border-double print:mb-4 print:pb-4">
                         <div>
-                            <h1 className="text-xl font-bold uppercase tracking-wider text-slate-800">Payment Voucher</h1>
+                            <h1 className="text-xl font-bold uppercase tracking-wider text-slate-800 print:text-lg">Payment Voucher</h1>
                             <p className="text-xs text-slate-500 mt-1">Mahall Committee Expense Record</p>
                         </div>
                         <div className="text-right">
@@ -75,7 +75,7 @@ export default function PaymentDetailPage() {
                     </div>
 
                     {/* Metadata Grid */}
-                    <div className="grid grid-cols-2 gap-x-12 gap-y-6 mb-8 text-sm">
+                    <div className="grid grid-cols-2 gap-x-12 gap-y-6 mb-8 text-sm print:mb-4 print:gap-y-4">
                         <div className="space-y-1">
                             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Pay To</span>
                             <div className="font-semibold text-slate-900 text-base">{payment.payee}</div>
@@ -96,7 +96,7 @@ export default function PaymentDetailPage() {
                     </div>
 
                     {/* Line Items */}
-                    <div className="mb-8">
+                    <div className="mb-8 print:mb-4">
                         <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="border-b border-slate-200">
