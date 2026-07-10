@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Edit2, CreditCard, User, Building2, Trash2, Plus, Loader2, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowLeft, Edit2, CreditCard, User, Building2, Trash2, Plus, Loader2, AlertTriangle, CheckCircle2, XCircle, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +47,7 @@ type DepositTx = {
     amount: number;
     type: 'DEPOSIT' | 'REFUND';
     paymentDate: string;
+    receipt?: { _id: string; receiptNo: string } | null;
 };
 
 const RentRow = ({ rent, isActive, onCollect }: { rent: RentDue, isActive: boolean, onCollect: (id: string, due: number) => void }) => {
@@ -468,12 +469,19 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                                 {deposits.length > 0 && (
                                                     <div className="border-t bg-muted/20 p-2 space-y-1">
                                                         {deposits.map(d => (
-                                                            <div key={d._id} className="flex justify-between text-[10px] text-muted-foreground">
+                                                            <div key={d._id} className="flex justify-between items-center text-[10px] text-muted-foreground">
                                                                 <span className="flex items-center gap-1.5">
                                                                     {d.type === 'DEPOSIT' ? <div className="w-1.5 h-1.5 rounded-full bg-green-500" /> : <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
                                                                     {d.type === 'DEPOSIT' ? 'Collected' : 'Refunded'} on {format(new Date(d.paymentDate), 'dd MMM yyyy')}
                                                                 </span>
-                                                                <span className="font-mono">{d.type === 'REFUND' ? '-' : ''}₹{d.amount}</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-mono">{d.type === 'REFUND' ? '-' : ''}₹{d.amount}</span>
+                                                                    {d.receipt && (
+                                                                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${d.receipt._id}/pdf`, '_blank')}>
+                                                                            <FileText className="h-3 w-3" />
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         ))}
                                                     </div>
