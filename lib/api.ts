@@ -152,6 +152,16 @@ export const getPublicEntityDues = async (type: string, id: string) =>
 export const getPublicEntityDetails = async (type: string, id: string) =>
     (await api.get(`/collections/public/${type}/${id}/details`)).data;
 
+// --- Rent Collections ---
+export const getRentDues = async (params: any) => (await api.get('/contracts/rent/dues', { params })).data;
+
+export const getRentPeriods = async () => (await api.get('/contracts/rent/periods')).data;
+
+export const getRentArrearsSummary = async () => (await api.get('/contracts/rent/arrears')).data;
+
+export const sendRentReminder = async (data: { contractId: string }) =>
+    (await api.post('/contracts/rent/remind/summary', data)).data;
+
 export const downloadCollectionReceipt = async (id: string) => {
     return api.get(`/collections/receipts/${id}/pdf`, {
         responseType: 'blob'

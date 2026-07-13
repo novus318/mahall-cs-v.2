@@ -72,6 +72,10 @@ const data = {
           url: "/dashboard/collections",
         },
         {
+          title: "Rent Collections",
+          url: "/dashboard/rent/collections",
+        },
+        {
           title: "Transactions",
           url: "/dashboard/transactions",
         },
