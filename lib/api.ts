@@ -152,6 +152,13 @@ export const getPublicEntityDues = async (type: string, id: string) =>
 export const getPublicEntityDetails = async (type: string, id: string) =>
     (await api.get(`/collections/public/${type}/${id}/details`)).data;
 
+// --- Public Rent ---
+export const getPublicRentDetails = async (id: string) =>
+    (await api.get(`/contracts/public/${id}/details`)).data;
+
+export const getPublicRentDues = async (id: string) =>
+    (await api.get(`/contracts/public/${id}/dues`)).data;
+
 // --- Rent Collections ---
 export const getRentDues = async (params: any) => (await api.get('/contracts/rent/dues', { params })).data;
 
@@ -170,7 +177,9 @@ export const downloadCollectionReceipt = async (id: string) => {
 
 export const createRazorpayOrder = async (data: {
     amount: number;
-    dueId: string;
+    type?: string;
+    dueId?: string;
+    rentDueId?: string;
     entityId: string;
     name: string;
     contact: string;
