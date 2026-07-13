@@ -33,13 +33,13 @@ type Contract = {
 
 type RentDue = {
     _id: string;
-    monthYear: string; // "MM-YYYY"
+    monthYear: string;
     amount: number;
     collectedAmount: number;
     status: 'PENDING' | 'PARTIAL' | 'PAID';
     paymentDate?: string;
     notes?: string;
-    transactions?: { amount: number; date: string; notes?: string }[];
+    transactions?: { amount: number; date: string; notes?: string; receipt?: { _id: string; receiptNo: string } | null }[];
 };
 
 type DepositTx = {
@@ -100,7 +100,14 @@ const RentRow = ({ rent, isActive, onCollect }: { rent: RentDue, isActive: boole
                                             <span className="font-medium text-slate-700">Payment #{idx + 1}</span>
                                             <span className="text-[10px] text-muted-foreground">{format(new Date(tx.date), 'dd MMM yyyy')} • {tx.notes || 'No notes'}</span>
                                         </div>
-                                        <div className="font-mono font-bold text-green-700">+₹{tx.amount}</div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="font-mono font-bold text-green-700">+₹{tx.amount}</div>
+                                            {tx.receipt && (
+                                                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${tx.receipt._id}/pdf`, '_blank')}>
+                                                    <FileText className="h-3 w-3" />
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
