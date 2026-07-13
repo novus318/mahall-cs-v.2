@@ -9,6 +9,7 @@ import UserManagementTab from '@/components/settings/UserManagementTab';
 import NotificationSettingsTab from '@/components/settings/NotificationSettingsTab';
 import PaymentSettingsTab from '@/components/settings/PaymentSettingsTab';
 import CollectionSettingsTab from '@/components/settings/CollectionSettingsTab';
+import RentSettingsTab from '@/components/settings/RentSettingsTab';
 import OTPVerificationDialog from '@/components/settings/OTPVerificationDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
@@ -113,6 +114,12 @@ export default function SettingsPage() {
                                 >
                                     Collection Automation
                                 </TabsTrigger>
+                                <TabsTrigger
+                                    value="rent"
+                                    className="justify-start px-3 py-2 h-9 data-[state=active]:bg-muted data-[state=active]:text-foreground font-normal hover:bg-muted/50 rounded-md transition-colors text-muted-foreground"
+                                >
+                                    Rent Automation
+                                </TabsTrigger>
                             </>
                         )}
                     </TabsList>
@@ -160,6 +167,13 @@ export default function SettingsPage() {
                                     <p className="text-xs text-muted-foreground">Configure automated monthly due generation.</p>
                                 </div>
                                 <CollectionSettingsTab />
+                            </TabsContent>
+                            <TabsContent value="rent" className="mt-0 space-y-4 animate-in fade-in-50 duration-300">
+                                <div className="mb-4 hidden md:block border-b pb-2">
+                                    <h2 className="text-lg font-medium">Rent Automation</h2>
+                                    <p className="text-xs text-muted-foreground">Configure automated monthly rent invoice generation.</p>
+                                </div>
+                                <RentSettingsTab />
                             </TabsContent>
                         </>
                     )}
