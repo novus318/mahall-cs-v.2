@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getDues, getAccounts, payDue, initiateRejection, confirmRejection, API_URL, getArrearsSummary, sendArrearsReminder } from "@/lib/api"
-import { Loader2, Search, Filter, ExternalLink, Calendar, Building2, User, Coins, Wallet, Landmark, ShieldAlert, LockKeyhole, ChevronDown, ChevronUp, History, Bell, Send } from "lucide-react"
+import { Loader2, Search, Filter, ExternalLink, Calendar, Building2, User, Coins, Wallet, Landmark, ShieldAlert, LockKeyhole, ChevronDown, ChevronUp, History, Bell, Send, Printer as PrinterIcon } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -216,6 +216,15 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
         }
     }
 
+    const handlePrint = (due: any) => {
+        const lastTx = due.transactions[due.transactions.length - 1];
+        const recId = lastTx?.collectionReceipt || (typeof lastTx?.receiptId === 'object' ? lastTx.receiptId?._id : lastTx?.receiptId);
+
+        if (recId) {
+            window.location.href = `my.bluetoothprint.scheme://https://api.tmj.org.in/api/print/receipts/${recId}`;
+        }
+    }
+
     return (
         <>
             <Card>
@@ -358,15 +367,26 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                                                     <TableCell className="text-right">
                                                         <div className="flex items-center justify-end gap-1 sm:gap-2">
                                                             {(due.status === 'PAID' || due.status === 'PARTIAL') && due.transactions?.length > 0 && !isYearly && (
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-7 w-7 sm:h-8 sm:w-8"
-                                                                    onClick={() => handleViewReceipt(due)}
-                                                                    title="View Receipt"
-                                                                >
-                                                                    <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                                                                </Button>
+                                                                <>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 sm:h-8 sm:w-8"
+                                                                        onClick={() => handleViewReceipt(due)}
+                                                                        title="View Receipt"
+                                                                    >
+                                                                        <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-7 w-7 sm:h-8 sm:w-8"
+                                                                        onClick={() => handlePrint(due)}
+                                                                        title="Print Receipt"
+                                                                    >
+                                                                        <PrinterIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                                                                    </Button>
+                                                                </>
                                                             )}
                                                             {due.status !== 'PAID' && due.status !== 'REJECTED' && (
                                                                 <Button
