@@ -18,25 +18,29 @@ import { Label } from "@/components/ui/label"
 
 export default function CollectionsPage() {
     return (
-        <div className="flex flex-col h-full bg-slate-50/50 dark:bg-black/20 p-6 space-y-6">
-            <div>
-                <h2 className="text-2xl font-bold tracking-tight">Collections</h2>
-                <p className="text-muted-foreground">Manage and monitor all collected dues.</p>
+        <div className="flex flex-col h-full bg-slate-50/50 dark:bg-black/20 p-3 sm:p-6 space-y-4 sm:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight">Collections</h2>
+                    <p className="text-sm text-muted-foreground">Manage and monitor all collected dues.</p>
+                </div>
             </div>
 
-            <Tabs defaultValue="house" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="house" className="gap-2"><Building2 className="h-4 w-4" /> House Collections</TabsTrigger>
-                    <TabsTrigger value="member" className="gap-2"><User className="h-4 w-4" /> Member Collections</TabsTrigger>
-                    <TabsTrigger value="arrears" className="gap-2 text-red-600 dark:text-red-400"><Bell className="h-4 w-4" /> Arrears Summary</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="house" className="space-y-4">
-                    <CollectionTable type="House" />
-                </TabsContent>
+            <Tabs defaultValue="member" className="space-y-4">
+                <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+                    <TabsList>
+                        <TabsTrigger value="member" className="gap-1 sm:gap-2 text-xs sm:text-sm"><User className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Member</TabsTrigger>
+                        <TabsTrigger value="house" className="gap-1 sm:gap-2 text-xs sm:text-sm"><Building2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> House</TabsTrigger>
+                        <TabsTrigger value="arrears" className="gap-1 sm:gap-2 text-xs sm:text-sm text-red-600 dark:text-red-400"><Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Arrears</TabsTrigger>
+                    </TabsList>
+                </div>
 
                 <TabsContent value="member" className="space-y-4">
                     <CollectionTable type="Member" />
+                </TabsContent>
+
+                <TabsContent value="house" className="space-y-4">
+                    <CollectionTable type="House" />
                 </TabsContent>
 
                 <TabsContent value="arrears" className="space-y-4">
@@ -215,240 +219,245 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
     return (
         <>
             <Card>
-                <CardHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0">
-                    <div className="flex items-center gap-2">
-                        <div className="relative">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <CardHeader className="p-3 sm:p-4 border-b flex flex-col sm:flex-row gap-3 sm:items-center justify-between space-y-0">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+                        <div className="relative flex-1 sm:flex-initial">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder={`Search ${type}...`}
-                                className="pl-8 h-9 w-[200px] lg:w-[300px]"
+                                className="pl-8 h-9 w-full sm:w-[200px] lg:w-[300px]"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
-                        <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                            <SelectTrigger className="h-9 w-[130px]">
-                                <SelectValue placeholder="Period" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ALL">All Periods</SelectItem>
-                                {periods.map((p) => (
-                                    <SelectItem key={p} value={p}>{p}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="flex gap-2">
+                            <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                                <SelectTrigger className="h-9 flex-1 sm:w-[130px]">
+                                    <SelectValue placeholder="Period" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Periods</SelectItem>
+                                    {periods.map((p) => (
+                                        <SelectItem key={p} value={p}>{p}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
 
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
-                            <SelectTrigger className="h-9 w-[130px]">
-                                <SelectValue placeholder="Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ALL">All Status</SelectItem>
-                                <SelectItem value="PAID">Paid</SelectItem>
-                                <SelectItem value="PENDING">Pending</SelectItem>
-                                <SelectItem value="PARTIAL">Partial</SelectItem>
-                                <SelectItem value="REJECTED">Rejected</SelectItem>
-                            </SelectContent>
-                        </Select>
+                            <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                <SelectTrigger className="h-9 flex-1 sm:w-[130px]">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Status</SelectItem>
+                                    <SelectItem value="PAID">Paid</SelectItem>
+                                    <SelectItem value="PENDING">Pending</SelectItem>
+                                    <SelectItem value="PARTIAL">Partial</SelectItem>
+                                    <SelectItem value="REJECTED">Rejected</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Button variant="outline" size="sm" onClick={fetchDues} className="gap-2 sm:hidden">
+                                <Filter className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={fetchDues} className="gap-2">
+                    <Button variant="outline" size="sm" onClick={fetchDues} className="gap-2 hidden sm:flex">
                         <Filter className="h-4 w-4" /> Refresh
                     </Button>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-neutral-900">
-                            <TableRow>
-                                <TableHead className="w-[100px]">Period</TableHead>
-                                <TableHead>Payer ({type})</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Paid On</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
-                                <TableHead className="text-right">Paid</TableHead>
-                                <TableHead className="w-[120px]"></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {loading ? (
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader className="bg-slate-50 dark:bg-neutral-900">
                                 <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center">
-                                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
-                                    </TableCell>
+                                    <TableHead className="w-[90px] sm:w-[100px]">Period</TableHead>
+                                    <TableHead>Payer ({type})</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right hidden sm:table-cell">Paid On</TableHead>
+                                    <TableHead className="text-right">Amount</TableHead>
+                                    <TableHead className="text-right hidden sm:table-cell">Paid</TableHead>
+                                    <TableHead className="w-[80px] sm:w-[120px]"></TableHead>
                                 </TableRow>
-                            ) : filteredDues.length === 0 ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                                        No records found.
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                filteredDues.map((due) => {
-                                    const paidDate = due.transactions?.length > 0
-                                        ? new Date(due.transactions[due.transactions.length - 1].date).toLocaleDateString('en-GB')
-                                        : '-';
+                            </TableHeader>
+                            <TableBody>
+                                {loading ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="h-24 text-center">
+                                            <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                                        </TableCell>
+                                    </TableRow>
+                                ) : filteredDues.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                                            No records found.
+                                        </TableCell>
+                                    </TableRow>
+                                ) : (
+                                    filteredDues.map((due) => {
+                                        const paidDate = due.transactions?.length > 0
+                                            ? new Date(due.transactions[due.transactions.length - 1].date).toLocaleDateString('en-GB')
+                                            : '-';
 
-                                    // Check if expandable (Yearly due)
-                                    const isYearly = due.frequency === 'Yearly' || due.status === 'PARTIAL';
-                                    const isExpanded = expandedRowId === due._id;
+                                        const isYearly = due.frequency === 'Yearly' || due.status === 'PARTIAL';
+                                        const isExpanded = expandedRowId === due._id;
 
-                                    return (
-                                        <Fragment key={due._id}>
-                                            <TableRow className={cn("hover:bg-slate-50 dark:hover:bg-neutral-800/50", isExpanded && "bg-slate-50 dark:bg-neutral-800/50")}>
-                                                <TableCell className="font-medium">
-                                                    <div className="flex items-center gap-2">
-                                                        {isYearly && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-5 w-5 p-0 text-muted-foreground"
-                                                                onClick={() => setExpandedRowId(isExpanded ? null : due._id)}
-                                                            >
-                                                                {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                                                            </Button>
-                                                        )}
-                                                        {due.period}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <div className="flex flex-col">
-                                                        {type === 'House' ? (
-                                                            <Link href={`/dashboard/houses/${due.entityId?._id}`} className="font-medium text-sm hover:underline hover:text-primary transition-colors">
-                                                                {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1">({due.entityId?.customId || '-'})</span>
-                                                            </Link>
-                                                        ) : (
-                                                            <>
-                                                                <Link href={`/dashboard/members/${due.entityId?._id}`} className="font-medium text-sm hover:underline hover:text-primary transition-colors">
-                                                                    {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1">({due.entityId?.customId || '-'})</span>
+                                        return (
+                                            <Fragment key={due._id}>
+                                                <TableRow className={cn("hover:bg-slate-50 dark:hover:bg-neutral-800/50", isExpanded && "bg-slate-50 dark:bg-neutral-800/50")}>
+                                                    <TableCell className="font-medium text-xs sm:text-sm">
+                                                        <div className="flex items-center gap-1 sm:gap-2">
+                                                            {isYearly && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-5 w-5 p-0 text-muted-foreground shrink-0"
+                                                                    onClick={() => setExpandedRowId(isExpanded ? null : due._id)}
+                                                                >
+                                                                    {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                                                                </Button>
+                                                            )}
+                                                            <span className="truncate">{due.period}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex flex-col">
+                                                            {type === 'House' ? (
+                                                                <Link href={`/dashboard/houses/${due.entityId?._id}`} className="font-medium text-xs sm:text-sm hover:underline hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-none">
+                                                                    {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1 hidden xs:inline">({due.entityId?.customId || '-'})</span>
                                                                 </Link>
-                                                                {due.entityId?.houseId && (
-                                                                    <Link href={`/dashboard/ houses/${due.entityId.houseId._id}`} className="text-[10px] text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 mt-0.5">
-                                                                        <Building2 className="h-3 w-3" />
-                                                                        {due.entityId.houseId.customId || 'View House'}
+                                                            ) : (
+                                                                <>
+                                                                    <Link href={`/dashboard/members/${due.entityId?._id}`} className="font-medium text-xs sm:text-sm hover:underline hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-none">
+                                                                        {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1 hidden xs:inline">({due.entityId?.customId || '-'})</span>
                                                                     </Link>
-                                                                )}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant="outline" className={cn(
-                                                        "text-[10px] px-2 py-0.5 border-0 font-medium",
-                                                        due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                                                            due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                                                                due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-                                                                    "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                                                    )}>
-                                                        {due.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-xs text-muted-foreground font-mono">{paidDate}</TableCell>
-                                                <TableCell className="text-right font-mono text-sm">₹{due.amount}</TableCell>
-                                                <TableCell className="text-right font-mono text-sm text-green-600 font-bold">
-                                                    {due.paidAmount > 0 ? `₹${due.paidAmount}` : '-'}
-                                                </TableCell>
-                                                <TableCell className="text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        {(due.status === 'PAID' || due.status === 'PARTIAL') && due.transactions?.length > 0 && !isYearly && (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8"
-                                                                onClick={() => handleViewReceipt(due)}
-                                                                title="View Receipt"
-                                                            >
-                                                                <ExternalLink className="h-4 w-4 text-primary" />
-                                                            </Button>
-                                                        )}
-                                                        {due.status !== 'PAID' && due.status !== 'REJECTED' && (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="secondary"
-                                                                className="h-7 w-14 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                                                                onClick={() => openPayDialog(due)}
-                                                            >
-                                                                Pay
-                                                            </Button>
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                            {isExpanded && (
-                                                <TableRow className="bg-slate-50/50 dark:bg-neutral-900/20">
-                                                    <TableCell colSpan={7} className="p-0">
-                                                        <div className="p-4 pl-12 border-b">
-                                                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
-                                                                <History className="h-3 w-3" /> Payment History
-                                                            </h4>
-                                                            <Table>
-                                                                <TableHeader>
-                                                                    <TableRow className="h-8 hover:bg-transparent">
-                                                                        <TableHead className="h-8 text-xs">Date</TableHead>
-                                                                        <TableHead className="h-8 text-xs">Receipt No</TableHead>
-                                                                        <TableHead className="h-8 text-xs text-right">Amount</TableHead>
-                                                                        <TableHead className="h-8 text-xs text-right">Deposit Account</TableHead>
-                                                                        <TableHead className="h-8 text-xs w-[60px]"></TableHead>
-                                                                    </TableRow>
-                                                                </TableHeader>
-                                                                <TableBody>
-                                                                    {due.transactions?.map((tx: any, idx: number) => (
-                                                                        <TableRow key={tx._id || idx} className="h-8 border-none hover:bg-slate-100 dark:hover:bg-neutral-800">
-                                                                            <TableCell className="py-1 text-xs">{new Date(tx.date).toLocaleDateString('en-GB')}</TableCell>
-                                                                            <TableCell className="py-1 text-xs font-mono text-muted-foreground">
-                                                                                {/* Assuming receipt details are nested or we just use ID for now if number unavailable */}
-                                                                                #{typeof tx.receiptId === 'object' ? tx.receiptId?.receiptNo : tx.receiptId?.slice(-6).toUpperCase()}
-                                                                            </TableCell>
-                                                                            <TableCell className="py-1 text-xs text-right font-mono font-medium">₹{tx.amount}</TableCell>
-                                                                            <TableCell className="py-1 text-xs text-right text-muted-foreground">
-                                                                                {tx.receiptId?.account?._id ? (
-                                                                                    <div className="flex items-center justify-end gap-1.5">
-                                                                                        {tx.receiptId.account.type === 'BANK' ?
-                                                                                            <Landmark className="h-3 w-3" /> :
-                                                                                            <Wallet className="h-3 w-3" />
-                                                                                        }
-                                                                                        <Link href={`/dashboard/accounts/${tx.receiptId.account._id}`} className="hover:underline hover:text-primary transition-colors">
-                                                                                            {tx.receiptId.account.name}
-                                                                                        </Link>
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <span className="flex items-center justify-end gap-1.5">
-                                                                                        <Wallet className="h-3 w-3" />
-                                                                                        {tx.receiptId?.account?.name || 'Cash'}
-                                                                                    </span>
-                                                                                )}
-                                                                            </TableCell>
-                                                                            <TableCell className="py-1 text-right">
-                                                                                <Button
-                                                                                    variant="ghost"
-                                                                                    size="icon"
-                                                                                    className="h-6 w-6"
-                                                                                    onClick={() => {
-                                                                                        const recId = tx.collectionReceipt || (typeof tx.receiptId === 'object' ? tx.receiptId?._id : tx.receiptId);
-                                                                                        if (recId) window.open(`https://api.tmj.org.in/api/collections/receipts/${recId}/pdf`, '_blank');
-                                                                                    }}
-                                                                                    title="View Receipt"
-                                                                                >
-                                                                                    <ExternalLink className="h-3 w-3 text-slate-500" />
-                                                                                </Button>
-                                                                            </TableCell>
-                                                                        </TableRow>
-                                                                    ))}
-                                                                    {(!due.transactions || due.transactions.length === 0) && (
-                                                                        <TableRow>
-                                                                            <TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-2">No transactions recorded.</TableCell>
-                                                                        </TableRow>
+                                                                    {due.entityId?.houseId && (
+                                                                        <Link href={`/dashboard/houses/${due.entityId.houseId._id}`} className="text-[10px] text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 mt-0.5">
+                                                                            <Building2 className="h-3 w-3 shrink-0" />
+                                                                            <span className="truncate max-w-[80px] sm:max-w-none">{due.entityId.houseId.customId || 'View House'}</span>
+                                                                        </Link>
                                                                     )}
-                                                                </TableBody>
-                                                            </Table>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge variant="outline" className={cn(
+                                                            "text-[10px] px-1.5 sm:px-2 py-0.5 border-0 font-medium whitespace-nowrap",
+                                                            due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
+                                                                due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
+                                                                    due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
+                                                                        "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                                        )}>
+                                                            {due.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-xs text-muted-foreground font-mono hidden sm:table-cell">{paidDate}</TableCell>
+                                                    <TableCell className="text-right font-mono text-xs sm:text-sm whitespace-nowrap">₹{due.amount}</TableCell>
+                                                    <TableCell className="text-right font-mono text-xs sm:text-sm text-green-600 font-bold hidden sm:table-cell whitespace-nowrap">
+                                                        {due.paidAmount > 0 ? `₹${due.paidAmount}` : '-'}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex items-center justify-end gap-1 sm:gap-2">
+                                                            {(due.status === 'PAID' || due.status === 'PARTIAL') && due.transactions?.length > 0 && !isYearly && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-7 w-7 sm:h-8 sm:w-8"
+                                                                    onClick={() => handleViewReceipt(due)}
+                                                                    title="View Receipt"
+                                                                >
+                                                                    <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                                                                </Button>
+                                                            )}
+                                                            {due.status !== 'PAID' && due.status !== 'REJECTED' && (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="secondary"
+                                                                    className="h-7 px-2 sm:px-3 text-[10px] sm:text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                                                    onClick={() => openPayDialog(due)}
+                                                                >
+                                                                    Pay
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
-                                            )}
-                                        </Fragment>
-                                    )
-                                })
-                            )}
-                        </TableBody>
-                    </Table>
+                                                {isExpanded && (
+                                                    <TableRow className="bg-slate-50/50 dark:bg-neutral-900/20">
+                                                        <TableCell colSpan={7} className="p-0">
+                                                            <div className="p-3 sm:p-4 pl-6 sm:pl-12 border-b overflow-x-auto">
+                                                                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
+                                                                    <History className="h-3 w-3" /> Payment History
+                                                                </h4>
+                                                                <Table>
+                                                                    <TableHeader>
+                                                                        <TableRow className="h-8 hover:bg-transparent">
+                                                                            <TableHead className="h-8 text-xs whitespace-nowrap">Date</TableHead>
+                                                                            <TableHead className="h-8 text-xs whitespace-nowrap">Receipt No</TableHead>
+                                                                            <TableHead className="h-8 text-xs text-right whitespace-nowrap">Amount</TableHead>
+                                                                            <TableHead className="h-8 text-xs text-right hidden sm:table-cell whitespace-nowrap">Deposit Account</TableHead>
+                                                                            <TableHead className="h-8 text-xs w-[50px] sm:w-[60px]"></TableHead>
+                                                                        </TableRow>
+                                                                    </TableHeader>
+                                                                    <TableBody>
+                                                                        {due.transactions?.map((tx: any, idx: number) => (
+                                                                            <TableRow key={tx._id || idx} className="h-8 border-none hover:bg-slate-100 dark:hover:bg-neutral-800">
+                                                                                <TableCell className="py-1 text-xs whitespace-nowrap">{new Date(tx.date).toLocaleDateString('en-GB')}</TableCell>
+                                                                                <TableCell className="py-1 text-xs font-mono text-muted-foreground whitespace-nowrap">
+                                                                                    #{typeof tx.receiptId === 'object' ? tx.receiptId?.receiptNo : tx.receiptId?.slice(-6).toUpperCase()}
+                                                                                </TableCell>
+                                                                                <TableCell className="py-1 text-xs text-right font-mono font-medium whitespace-nowrap">₹{tx.amount}</TableCell>
+                                                                                <TableCell className="py-1 text-xs text-right text-muted-foreground hidden sm:table-cell">
+                                                                                    {tx.receiptId?.account?._id ? (
+                                                                                        <div className="flex items-center justify-end gap-1.5">
+                                                                                            {tx.receiptId.account.type === 'BANK' ?
+                                                                                                <Landmark className="h-3 w-3 shrink-0" /> :
+                                                                                                <Wallet className="h-3 w-3 shrink-0" />
+                                                                                            }
+                                                                                            <Link href={`/dashboard/accounts/${tx.receiptId.account._id}`} className="hover:underline hover:text-primary transition-colors truncate max-w-[100px]">
+                                                                                                {tx.receiptId.account.name}
+                                                                                            </Link>
+                                                                                        </div>
+                                                                                    ) : (
+                                                                                        <span className="flex items-center justify-end gap-1.5">
+                                                                                            <Wallet className="h-3 w-3 shrink-0" />
+                                                                                            {tx.receiptId?.account?.name || 'Cash'}
+                                                                                        </span>
+                                                                                    )}
+                                                                                </TableCell>
+                                                                                <TableCell className="py-1 text-right">
+                                                                                    <Button
+                                                                                        variant="ghost"
+                                                                                        size="icon"
+                                                                                        className="h-6 w-6"
+                                                                                        onClick={() => {
+                                                                                            const recId = tx.collectionReceipt || (typeof tx.receiptId === 'object' ? tx.receiptId?._id : tx.receiptId);
+                                                                                            if (recId) window.open(`https://api.tmj.org.in/api/collections/receipts/${recId}/pdf`, '_blank');
+                                                                                        }}
+                                                                                        title="View Receipt"
+                                                                                    >
+                                                                                        <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                                                    </Button>
+                                                                                </TableCell>
+                                                                            </TableRow>
+                                                                        ))}
+                                                                        {(!due.transactions || due.transactions.length === 0) && (
+                                                                            <TableRow>
+                                                                                <TableCell colSpan={5} className="text-center text-xs text-muted-foreground py-2">No transactions recorded.</TableCell>
+                                                                            </TableRow>
+                                                                        )}
+                                                                    </TableBody>
+                                                                </Table>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </Fragment>
+                                        )
+                                    })
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -618,17 +627,17 @@ function ArrearsTable() {
 
     return (
         <Card className="border-red-100 dark:border-red-900/30">
-            <CardHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0 bg-red-50/50 dark:bg-red-950/10">
+            <CardHeader className="p-3 sm:p-4 border-b flex flex-col sm:flex-row gap-3 sm:items-center justify-between space-y-0 bg-red-50/50 dark:bg-red-950/10">
                 <div>
-                    <CardTitle className="text-lg flex items-center gap-2 text-red-700 dark:text-red-400">
-                        <ShieldAlert className="h-5 w-5" /> Pending Arrears Summary
+                    <CardTitle className="text-base sm:text-lg flex items-center gap-2 text-red-700 dark:text-red-400">
+                        <ShieldAlert className="h-4 w-4 sm:h-5 sm:w-5" /> Pending Arrears
                     </CardTitle>
-                    <CardDescription>
-                        Overview of total outstanding balances across all periods.
+                    <CardDescription className="text-xs sm:text-sm">
+                        Outstanding balances across all periods.
                     </CardDescription>
                 </div>
                 <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="h-9 w-[150px]">
+                    <SelectTrigger className="h-9 w-full sm:w-[150px]">
                         <SelectValue placeholder="All Entities" />
                     </SelectTrigger>
                     <SelectContent>
@@ -639,72 +648,74 @@ function ArrearsTable() {
                 </Select>
             </CardHeader>
             <CardContent className="p-0">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Entity</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead className="text-center">Pending Months</TableHead>
-                            <TableHead className="text-right">Total Outstanding</TableHead>
-                            <TableHead className="w-[150px]"></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center">
-                                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
-                                </TableCell>
+                                <TableHead>Entity</TableHead>
+                                <TableHead className="hidden sm:table-cell">Type</TableHead>
+                                <TableHead className="text-center whitespace-nowrap">Pending</TableHead>
+                                <TableHead className="text-right whitespace-nowrap">Outstanding</TableHead>
+                                <TableHead className="w-[100px] sm:w-[150px]"></TableHead>
                             </TableRow>
-                        ) : arrears.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                    No arrears found.
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            arrears.map((item) => (
-                                <TableRow key={item.entityId}>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span className="font-medium text-sm">{item.entity?.name || 'Unknown'}</span>
-                                            <span className="text-[10px] text-muted-foreground font-mono">{item.entity?.customId || '-'}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="text-[10px]">
-                                            {item.entityType}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <Badge variant="secondary" className="font-bold">
-                                            {item.pendingCount}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right font-mono font-bold text-red-600">
-                                        ₹{item.totalAmount}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-8 gap-2 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-900/30 dark:text-green-400 dark:hover:bg-green-950/20"
-                                            onClick={() => handleSendReminder(item)}
-                                            disabled={remindingId === item.entityId}
-                                        >
-                                            {remindingId === item.entityId ? (
-                                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                            ) : (
-                                                <Send className="h-3.5 w-3.5" />
-                                            )}
-                                            Remind
-                                        </Button>
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center">
+                                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : arrears.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                                        No arrears found.
+                                    </TableCell>
+                                </TableRow>
+                            ) : (
+                                arrears.map((item) => (
+                                    <TableRow key={item.entityId}>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="font-medium text-xs sm:text-sm">{item.entity?.name || 'Unknown'}</span>
+                                                <span className="text-[10px] text-muted-foreground font-mono">{item.entity?.customId || '-'}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="hidden sm:table-cell">
+                                            <Badge variant="outline" className="text-[10px]">
+                                                {item.entityType}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <Badge variant="secondary" className="font-bold text-xs">
+                                                {item.pendingCount}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right font-mono font-bold text-red-600 text-xs sm:text-sm whitespace-nowrap">
+                                            ₹{item.totalAmount}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-7 sm:h-8 gap-1 sm:gap-2 text-xs border-green-200 text-green-700 hover:bg-green-50 dark:border-green-900/30 dark:text-green-400 dark:hover:bg-green-950/20"
+                                                onClick={() => handleSendReminder(item)}
+                                                disabled={remindingId === item.entityId}
+                                            >
+                                                {remindingId === item.entityId ? (
+                                                    <Loader2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 animate-spin" />
+                                                ) : (
+                                                    <Send className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                                                )}
+                                                <span className="hidden xs:inline">Remind</span>
+                                            </Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
             </CardContent>
         </Card>
     )
