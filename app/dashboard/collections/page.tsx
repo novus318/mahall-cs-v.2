@@ -221,7 +221,7 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
         const recId = lastTx?.collectionReceipt || (typeof lastTx?.receiptId === 'object' ? lastTx.receiptId?._id : lastTx?.receiptId);
 
         if (recId) {
-            window.location.href = `my.bluetoothprint.scheme://https://api.tmj.org.in/api/print/receipts/${recId}`;
+            window.location.href = `my.bluetoothprint.scheme://print/${recId}`;
         }
     }
 
