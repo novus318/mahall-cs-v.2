@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Loader2, Pencil, Printer } from 'lucide-react';
+import { Plus, Search, Loader2, Pencil, Printer, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
@@ -108,6 +108,10 @@ export default function ReceiptsPage() {
         }
     };
 
+    const handleThermalPrint = (receipt: any) => {
+        window.location.href = `my.bluetoothprint.scheme://print/inc/${receipt._id}`;
+    };
+
     const handleDeleteCategory = async (id: string) => {
         if (!confirm("Are you sure? This will remove the category from future selection.")) return;
         try {
@@ -182,8 +186,11 @@ export default function ReceiptsPage() {
                                                 <TableCell className="text-right font-bold text-green-700">+₹{receipt.amount?.toLocaleString()}</TableCell>
                                                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                                     <div className="flex justify-end gap-1">
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${receipt._id}/pdf`, '_blank')}>
-                                                            <Printer className="h-3.5 w-3.5" />
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${receipt._id}/pdf`, '_blank')} title="View PDF">
+                                                            <ExternalLink className="h-3.5 w-3.5 text-primary" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleThermalPrint(receipt)} title="Print via Bluetooth">
+                                                            <Printer className="h-3.5 w-3.5 text-primary" />
                                                         </Button>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/dashboard/receipts/edit/${receipt._id}`)}>
                                                             <Pencil className="h-3.5 w-3.5" />
