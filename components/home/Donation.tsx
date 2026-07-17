@@ -94,7 +94,9 @@ export default function Donation() {
             const { data } = await api.post('/payment-gateway/create-order', {
                 amount: amount,
                 currency: "INR",
-                receipt_note: `Donation from ${donorName}`
+                receipt_note: `Donation from ${donorName}`,
+                name: donorName,
+                contact: donorPhone
             });
 
             if (!data.success) {

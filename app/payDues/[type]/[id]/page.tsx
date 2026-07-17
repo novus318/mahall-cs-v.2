@@ -52,7 +52,9 @@ export default function PayDuesPage() {
         if (!payingDue || !entity) return;
         setSubmitting(true);
         try {
-            const contact = entity.mobile || entity.whatsapp || "";
+            const contact = type === "hou"
+                ? (entity.head?.whatsapp || entity.head?.mobile || "")
+                : (entity.whatsapp || entity.mobile || "");
             const data = await createRazorpayOrder({
                 amount: paymentAmount,
                 dueId: payingDue._id,
