@@ -27,6 +27,7 @@ export default function PayDuesPage() {
     const [payingDue, setPayingDue] = useState<any>(null);
     const [paymentAmount, setPaymentAmount] = useState(0);
     const [submitting, setSubmitting] = useState(false);
+    const [processingDues, setProcessingDues] = useState<string[]>([]);
 
     useEffect(() => {
         if (!id) return;
@@ -43,13 +44,34 @@ export default function PayDuesPage() {
             .finally(() => setLoading(false));
     }, [type, id]);
 
+    const pollDueStatus = async (dueId: string) => {
+        const maxAttempts = 10;
+        for (let i = 0; i < maxAttempts; i++) {
+            await new Promise(r => setTimeout(r, 3000));
+            const data = await getPublicEntityDues(type, id);
+            const duesData: any[] = Array.isArray(data) ? data : data?.data || [];
+            setDues(duesData);
+            const updated = duesData.find((d: any) => d._id === dueId);
+            if (updated && (updated.status === "PAID" || updated.status === "PARTIAL" || updated.status === "REJECTED")) {
+                setProcessingDues(prev => prev.filter(id => id !== dueId));
+                toast.success("Payment confirmed!");
+                return;
+            }
+        }
+        setProcessingDues(prev => prev.filter(id => id !== dueId));
+        toast.info("Payment received! It may take a moment to reflect.");
+    };
+
     const openPayDialog = (due: any) => {
+        setProcessingDues(prev => prev.filter(id => id !== due._id));
         setPayingDue(due);
         setPaymentAmount(due.amount - (due.paidAmount || 0));
     };
 
     const handlePay = async () => {
         if (!payingDue || !entity) return;
+        const dueId = payingDue._id;
+        setProcessingDues(prev => [...prev, dueId]);
         setSubmitting(true);
         try {
             const contact = type === "hou"
@@ -57,7 +79,7 @@ export default function PayDuesPage() {
                 : (entity.whatsapp || entity.mobile || "");
             const data = await createRazorpayOrder({
                 amount: paymentAmount,
-                dueId: payingDue._id,
+                dueId,
                 entityId: (type === "hou" ? "hou/" : "mem/") + id,
                 name: entity.name,
                 contact,
@@ -77,14 +99,15 @@ export default function PayDuesPage() {
                 order_id: data.order.id,
                 handler: function () {
                     setPayingDue(null);
-                    toast.success("Payment successful!");
+                    toast.success("Payment initiated! Verifying...");
+                    pollDueStatus(dueId);
                 },
                 prefill: {
                     name: entity.name,
                     contact
                 },
                 notes: {
-                    dueId: payingDue._id,
+                    dueId,
                     entityId: (type === "hou" ? "hou/" : "mem/") + id,
                     entityCustomId: entity.customId,
                     name: entity.name,
@@ -95,10 +118,12 @@ export default function PayDuesPage() {
 
             const rzp = new (window as any).Razorpay(options);
             rzp.on("payment.failed", function (response: any) {
+                setProcessingDues(prev => prev.filter(id => id !== dueId));
                 toast.error(response.error?.description || "Payment failed");
             });
             rzp.open();
         } catch (err: any) {
+            setProcessingDues(prev => prev.filter(id => id !== dueId));
             toast.error(err?.message || "Something went wrong");
         } finally {
             setSubmitting(false);
@@ -289,7 +314,11 @@ export default function PayDuesPage() {
                                                     {due.paidAmount > 0 ? `₹${due.paidAmount}` : "-"}
                                                 </TableCell>
                                                 <TableCell className="py-2.5 text-right">
-                                                    {due.status !== "PAID" && due.status !== "REJECTED" && (
+                                                    {processingDues.includes(due._id) ? (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap">
+                                                            <Loader2 className="h-3 w-3 animate-spin" /> Verifying
+                                                        </span>
+                                                    ) : due.status !== "PAID" && due.status !== "REJECTED" && (
                                                         <Button size="sm" variant="secondary"
                                                             className="h-7 text-[10px] px-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
                                                             onClick={() => openPayDialog(due)}>
