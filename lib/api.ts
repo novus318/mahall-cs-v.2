@@ -4,18 +4,48 @@ export const API_URL = 'https://mahall-bk.up.railway.app/api';
 
 // export const API_URL = 'http://localhost:5000/api';
 
+function getFromStorage(key: string): string | null {
+    if (typeof window === 'undefined') return null;
+    try {
+        return localStorage.getItem(key);
+    } catch {
+        return null;
+    }
+}
+
+function setToStorage(key: string, value: string): void {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.setItem(key, value);
+    } catch {
+        // localStorage unavailable
+    }
+}
+
+function removeFromStorage(key: string): void {
+    if (typeof window === 'undefined') return;
+    try {
+        localStorage.removeItem(key);
+    } catch {
+        // localStorage unavailable
+    }
+}
+
 const api = axios.create({
     baseURL: API_URL,
     withCredentials: true, // Important for cookies/sessions if used, and CORS
 });
 
+// Public API instance without auth interceptors
+export const publicApi = axios.create({
+    baseURL: API_URL
+});
+
 // Request Interceptor (Attach Token)
 api.interceptors.request.use((config) => {
-    if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+    const token = getFromStorage('accessToken');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 }, (error) => Promise.reject(error));
@@ -26,8 +56,6 @@ api.interceptors.response.use(
         // Standardize: If response follows { status: true, data: ... }, return data directly
         // to keep frontend code compatible.
         if (response.data && response.data.status === true && response.data.data !== undefined) {
-            // Wait, the calling code is `(await api.get(...)).data`.
-            // If we return `response`, then `response.data` will be the unwrapped data.
             response.data = response.data.data;
             return response;
         }
@@ -38,31 +66,25 @@ api.interceptors.response.use(
 
         // Handle Standardized Error from Backend
         if (error.response && error.response.data && error.response.data.status === false) {
-            // You might want to propagate the message more clearly
             error.message = error.response.data.message || error.message;
         }
 
         if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url?.includes('/auth/login')) {
             originalRequest._retry = true;
             try {
-                if (typeof window !== 'undefined') {
-                    const refreshToken = localStorage.getItem('refreshToken');
-                    if (refreshToken) {
-                        const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
-                        // New standardized response for refresh: { status: true, data: { accessToken } }
-                        // But axios.post here is raw, so we need to check data structure
-                        const newAccessToken = data.data?.accessToken || data.accessToken; // handle both just in case
+                const refreshToken = getFromStorage('refreshToken');
+                if (refreshToken) {
+                    const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+                    const newAccessToken = data.data?.accessToken || data.accessToken;
 
-                        localStorage.setItem('accessToken', newAccessToken);
-                        api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-                        return api(originalRequest);
-                    }
+                    setToStorage('accessToken', newAccessToken);
+                    api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+                    return api(originalRequest);
                 }
             } catch (refreshError) {
-                // Logout if refresh fails
+                removeFromStorage('accessToken');
+                removeFromStorage('refreshToken');
                 if (typeof window !== 'undefined') {
-                    localStorage.removeItem('accessToken');
-                    localStorage.removeItem('refreshToken');
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);
@@ -190,7 +212,7 @@ export const createDonationOrder = async (data: {
     amount: number;
     name: string;
     contact: string;
-}) => (await api.post('/payment-gateway/create-order', {
+}) => (await publicApi.post('/payment-gateway/create-order', {
     amount: data.amount,
     receipt_note: `Donation from ${data.name}`,
     name: data.name,
