@@ -104,6 +104,9 @@ export default function DonatePage() {
                 toast.error(response.error?.description || "Payment Failed");
                 setIsSubmitting(false);
             });
+            rzp1.on("modal.close", function () {
+                setIsSubmitting(false);
+            });
             rzp1.open();
         } catch (error: any) {
             console.error("Payment Error:", error);
