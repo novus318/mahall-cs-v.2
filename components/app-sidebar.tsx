@@ -20,7 +20,8 @@ import {
   IndianRupee,
   Landmark,
   MessageCircle,
-  HandCoins
+  HandCoins,
+  Heart
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -105,6 +106,11 @@ const data = {
         {
           title: "Nikah Certificates",
           url: "/dashboard/certificates",
+        },
+        {
+          title: "Death Register",
+          url: "/dashboard/death-registers",
+          icon: Heart
         },
       ],
     },

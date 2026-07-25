@@ -239,4 +239,15 @@ export const getCertificateById = async (id: string) => (await api.get(`/certifi
 export const createCertificate = async (data: any) => (await api.post('/certificates', data)).data;
 export const updateCertificate = async (id: string, data: any) => (await api.put(`/certificates/${id}`, data)).data;
 
+// --- Death Registers ---
+export const getDeathRegisters = async () => (await api.get('/death-registers')).data;
+export const getDeathRegisterById = async (id: string) => (await api.get(`/death-registers/${id}`)).data;
+export const createDeathRegister = async (data: any) => (await api.post('/death-registers', data)).data;
+export const updateDeathRegister = async (id: string, data: any) => (await api.put(`/death-registers/${id}`, data)).data;
+export const downloadDeathRegisterPdf = async (id: string) => {
+    return api.get(`/death-registers/${id}/pdf`, {
+        responseType: 'blob'
+    });
+};
+
 export default api;
