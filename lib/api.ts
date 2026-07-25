@@ -250,4 +250,10 @@ export const downloadDeathRegisterPdf = async (id: string) => {
     });
 };
 
+// --- Nikah Registers ---
+export const getNikahRegisters = async () => (await api.get('/nikah-registers')).data;
+export const getNikahRegisterById = async (id: string) => (await api.get(`/nikah-registers/${id}`)).data;
+export const createNikahRegister = async (data: any) => (await api.post('/nikah-registers', data)).data;
+export const updateNikahRegister = async (id: string, data: any) => (await api.put(`/nikah-registers/${id}`, data)).data;
+
 export default api;

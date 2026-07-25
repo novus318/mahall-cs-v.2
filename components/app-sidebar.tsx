@@ -104,8 +104,8 @@ const data = {
           url: "/dashboard/members",
         },
         {
-          title: "Nikah Certificates",
-          url: "/dashboard/certificates",
+          title: "Nikah Register",
+          url: "/dashboard/nikah-registers",
         },
         {
           title: "Death Register",

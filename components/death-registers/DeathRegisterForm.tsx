@@ -24,7 +24,7 @@ const deathRegisterSchema = z.object({
     name: z.string().min(1, 'Required'),
     gender: z.string().optional(),
     mahallId: z.string().optional(),
-    age: z.coerce.number().min(0).optional(),
+    age: z.string().optional(),
     address: z.string().optional(),
     dateOfDeath: z.string().min(1, 'Required'),
     placeOfDeath: z.string().optional(),
@@ -43,13 +43,14 @@ export default function DeathRegisterForm({ initialData }: { initialData?: any }
 
     const defaultValues = initialData ? {
         ...initialData,
+        age: initialData.age != null ? String(initialData.age) : '',
         dateOfDeath: initialData.dateOfDeath ? new Date(initialData.dateOfDeath).toISOString().split('T')[0] : '',
         dateOfBurial: initialData.dateOfBurial ? new Date(initialData.dateOfBurial).toISOString().split('T')[0] : '',
     } : {
         name: '',
         gender: '',
         mahallId: '',
-        age: undefined,
+        age: '',
         address: '',
         dateOfDeath: '',
         placeOfDeath: '',
@@ -67,14 +68,15 @@ export default function DeathRegisterForm({ initialData }: { initialData?: any }
 
     const onSubmit = async (data: DeathRegisterFormValues) => {
         setSubmitting(true);
+        const payload = { ...data, age: data.age ? Number(data.age) : undefined };
         try {
             if (initialData?._id) {
-                await updateDeathRegister(initialData._id, data);
+                await updateDeathRegister(initialData._id, payload);
                 toast.success('Death record updated successfully');
                 router.push(`/dashboard/death-registers/${initialData._id}`);
                 router.refresh();
             } else {
-                const result = await createDeathRegister(data);
+                const result = await createDeathRegister(payload);
                 if (result?._id) {
                     toast.success('Death record created successfully');
                     router.push(`/dashboard/death-registers/${result._id}`);
