@@ -1,12 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { getNikahRegisterById, API_URL } from '@/lib/api';
+import { getNikahRegisterById } from '@/lib/api';
+import NikahCertificateTemplate from '@/components/nikah-registers/NikahCertificateTemplate';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronLeft, Edit, Printer } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
 
 export default function NikahRegisterViewPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -34,7 +33,7 @@ export default function NikahRegisterViewPage({ params }: { params: Promise<{ id
     }, [resolvedId]);
 
     const handlePrint = () => {
-        window.open(`${API_URL}/nikah-registers/${resolvedId}/pdf`, '_blank');
+        window.print();
     };
 
     if (loading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
@@ -48,7 +47,7 @@ export default function NikahRegisterViewPage({ params }: { params: Promise<{ id
                         <ChevronLeft className="h-4 w-4" />
                     </Button>
                     <div>
-                        <h1 className="text-xl font-bold tracking-tight">Nikah Register</h1>
+                        <h1 className="text-xl font-bold tracking-tight">Nikah Certificate</h1>
                         <p className="text-sm text-muted-foreground">{record.registerNo} &mdash; {record.groomName} &amp; {record.brideName}</p>
                     </div>
                 </div>
@@ -59,80 +58,15 @@ export default function NikahRegisterViewPage({ params }: { params: Promise<{ id
                     </Button>
                     <Button onClick={handlePrint} className="gap-2">
                         <Printer className="h-4 w-4" />
-                        Print Certificate
+                        Print
                     </Button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className='py-3'>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Registration Info</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div><span className="font-medium">Register No:</span> {record.registerNo}</div>
-                        <div><span className="font-medium">Date of Registration:</span> {record.dateOfRegistration ? format(new Date(record.dateOfRegistration), 'MMM dd, yyyy') : '-'}</div>
-                    </CardContent>
-                </Card>
-
-                <Card className='py-3'>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Groom Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div><span className="font-medium">Name:</span> {record.groomName}</div>
-                        <div><span className="font-medium">Father's Name:</span> {record.groomFatherName}</div>
-                        <div><span className="font-medium">Address:</span> {record.groomAddress || '-'}</div>
-                        <div><span className="font-medium">Mahall ID:</span> {record.groomMahallId || '-'}</div>
-                    </CardContent>
-                </Card>
-
-                <Card className='py-3'>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Bride Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div><span className="font-medium">Name:</span> {record.brideName}</div>
-                        <div><span className="font-medium">Father's Name:</span> {record.brideFatherName}</div>
-                        <div><span className="font-medium">Address:</span> {record.brideAddress || '-'}</div>
-                        <div><span className="font-medium">Mahall ID:</span> {record.brideMahallId || '-'}</div>
-                    </CardContent>
-                </Card>
-
-                <Card className='py-3'>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Nikah Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div><span className="font-medium">Date of Nikah:</span> {format(new Date(record.nikahDate), 'MMM dd, yyyy')}</div>
-                        <div><span className="font-medium">Time of Nikah:</span> {record.nikahTime || '-'}</div>
-                        <div><span className="font-medium">Place of Nikah:</span> {record.nikahPlace}</div>
-                        <div><span className="font-medium">Mahr Amount:</span> {record.mahrAmount}</div>
-                        <div><span className="font-medium">Bride Guardian (Wali):</span> {record.brideGuardian}</div>
-                    </CardContent>
-                </Card>
-
-                <Card className='py-3'>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Witnesses & Officiator</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div><span className="font-medium">Witness 1:</span> {record.witness1Name}</div>
-                        <div><span className="font-medium">Witness 2:</span> {record.witness2Name}</div>
-                        <div><span className="font-medium">Qazi / Imam:</span> {record.qaziName}</div>
-                    </CardContent>
-                </Card>
-
-                {record.remarks && (
-                    <Card className='py-3'>
-                        <CardHeader>
-                            <CardTitle className="text-lg">Remarks</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div>{record.remarks}</div>
-                        </CardContent>
-                    </Card>
-                )}
+            <div className="flex justify-center w-full overflow-auto bg-gray-50 py-8 rounded-lg border border-gray-200 shadow-inner">
+                <div id="print-section" className="shadow-lg">
+                    <NikahCertificateTemplate data={record} />
+                </div>
             </div>
         </div>
     );
