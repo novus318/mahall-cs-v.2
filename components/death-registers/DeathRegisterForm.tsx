@@ -137,13 +137,6 @@ export default function DeathRegisterForm({ initialData }: { initialData?: any }
                                 <FormMessage />
                             </FormItem>
                         )} />
-                        <FormField control={form.control} name="zone" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Zone</FormLabel>
-                                <FormControl><Input placeholder="e.g. North, South, etc." {...field} /></FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )} />
                     </CardContent>
                     <CardContent className='mt-2'>
                         <FormField control={form.control} name="address" render={({ field }) => (
@@ -189,6 +182,15 @@ export default function DeathRegisterForm({ initialData }: { initialData?: any }
                                 <FormItem>
                                     <FormLabel>Date of Burial</FormLabel>
                                     <FormControl><Input type="date" {...field} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField control={form.control} name="zone" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Zone/Section of Qabar</FormLabel>
+                                    <FormControl><Input placeholder="e.g. Zone A, Section 2" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                             )} />

@@ -77,7 +77,6 @@ export default function DeathRegisterViewPage({ params }: { params: Promise<{ id
                         <div><span className="font-medium">Mahall ID:</span> {record.mahallId || '-'}</div>
                         <div><span className="font-medium">Age:</span> {record.age ?? '-'}</div>
                         <div><span className="font-medium">Address:</span> {record.address || '-'}</div>
-                        <div><span className="font-medium">Zone:</span> {record.zone || '-'}</div>
                     </CardContent>
                 </Card>
 
@@ -90,6 +89,7 @@ export default function DeathRegisterViewPage({ params }: { params: Promise<{ id
                         <div><span className="font-medium">Place of Death:</span> {record.placeOfDeath || '-'}</div>
                         <div><span className="font-medium">Cause of Death:</span> {record.causeOfDeath || '-'}</div>
                         <div><span className="font-medium">Date of Burial:</span> {record.dateOfBurial ? format(new Date(record.dateOfBurial), 'MMM dd, yyyy') : '-'}</div>
+                        <div><span className="font-medium">Zone/Section of Qabar:</span> {record.zone || '-'}</div>
                     </CardContent>
                 </Card>
 
