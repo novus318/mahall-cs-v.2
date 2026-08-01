@@ -8,10 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Filter, Loader2, ArrowRight, Printer, Eye } from 'lucide-react';
+import { Plus, Search, Loader2, Printer, Pencil, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -121,11 +122,14 @@ export default function PaymentsPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Payments</h2>
-                    <p className="text-muted-foreground text-sm">Manage expenses and payment receipts.</p>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Finances · Payments
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Payments</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Manage expenses and payment receipts.</p>
                 </div>
                 <Button onClick={() => router.push('/dashboard/payments/create')}>
                     <Plus className="mr-2 h-4 w-4" /> Create Payment
@@ -139,21 +143,19 @@ export default function PaymentsPage() {
                 </TabsList>
 
                 <TabsContent value="history" className="space-y-4">
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="Search receipt or payee..." className="pl-8" value={search} onChange={(e) => setSearch(e.target.value)} />
-                        </div>
+                    <div className="relative max-w-sm">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input placeholder="Search receipt or payee..." className="h-9 bg-background pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
                     </div>
 
-                    <Card>
-                        <CardHeader className="p-4 border-b bg-slate-50/50">
+                    <Card className="bg-card shadow-sm">
+                        <CardHeader className="border-b bg-muted/40 !pb-1 p-3">
                             <CardTitle className="text-base font-semibold">Recent Payments</CardTitle>
                         </CardHeader>
                         <div className="p-0">
                             <Table>
-                                <TableHeader>
-                                    <TableRow>
+                                <TableHeader className="bg-muted/40">
+                                    <TableRow className="hover:bg-transparent">
                                         <TableHead className="w-12.5 font-semibold text-xs uppercase tracking-wider">#</TableHead>
                                         <TableHead className="w-27.5 font-semibold text-xs uppercase tracking-wider">Date</TableHead>
                                         <TableHead className="font-semibold text-xs uppercase tracking-wider">Payee</TableHead>
@@ -184,26 +186,26 @@ export default function PaymentsPage() {
                                                     <Badge variant="secondary" className="font-normal text-xs">{payment.category?.name || '-'}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-sm text-muted-foreground">{payment.account?.name || '-'}</TableCell>
-                                                <TableCell className="text-right font-medium">₹{payment.amount.toLocaleString()}</TableCell>
+                                                <TableCell className="text-right font-semibold tabular-nums">₹{payment.amount.toLocaleString()}</TableCell>
                                                 <TableCell className="text-center">
-                                                    <Badge 
-                                                        variant={payment.status === 'COMPLETED' ? 'default' : payment.status === 'PENDING' ? 'outline' : 'destructive'}
-                                                        className={`font-normal text-xs ${
-                                                            payment.status === 'COMPLETED' ? 'bg-green-100 text-green-700 hover:bg-green-100' : 
-                                                            payment.status === 'PENDING' ? 'bg-amber-100 text-amber-700 hover:bg-amber-100' : 
-                                                            'bg-red-100 text-red-700 hover:bg-red-100'
-                                                        }`}
+                                                    <Badge
+                                                        className={cn(
+                                                            "font-normal text-xs border-0",
+                                                            payment.status === 'COMPLETED' && "bg-chart-1/10 text-chart-1",
+                                                            payment.status === 'PENDING' && "bg-chart-2/10 text-chart-2",
+                                                            payment.status !== 'COMPLETED' && payment.status !== 'PENDING' && "bg-destructive/10 text-destructive"
+                                                        )}
                                                     >
                                                         {payment.status === 'COMPLETED' ? 'Completed' : payment.status === 'PENDING' ? 'Pending' : 'Deleted'}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-1">
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); window.open(`https://api.tmj.org.in/api/payments/${payment._id}/pdf`, '_blank'); }}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-3/10 hover:text-chart-3" onClick={(e) => { e.stopPropagation(); window.open(`https://api.tmj.org.in/api/payments/${payment._id}/pdf`, '_blank'); }}>
                                                             <Printer className="h-3.5 w-3.5" />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/payments/edit/${payment._id}`); }}>
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-2/10 hover:text-chart-2" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/payments/edit/${payment._id}`); }}>
+                                                            <Pencil className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </div>
                                                 </TableCell>
@@ -217,11 +219,13 @@ export default function PaymentsPage() {
                 </TabsContent>
 
                 <TabsContent value="categories" className="space-y-4">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <div className="space-y-1">
+                    <Card className="bg-card shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between gap-4 border-b bg-muted/40 p-4">
+                            <div>
                                 <CardTitle className="text-base font-semibold">Categories</CardTitle>
-                                <p className="text-xs text-muted-foreground mt-1">Manage payment classification types.</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    {categories.length > 0 ? `${categories.length} payment categories` : "Manage payment classification types."}
+                                </p>
                             </div>
                             <Button size="sm" onClick={() => setIsCatDialogOpen(true)}>
                                 <Plus className="mr-2 h-3.5 w-3.5" /> Add Category
@@ -229,31 +233,49 @@ export default function PaymentsPage() {
                         </CardHeader>
                         <div className="p-0">
                             <Table>
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow>
+                                <TableHeader className="bg-muted/40">
+                                    <TableRow className="hover:bg-transparent">
                                         <TableHead className="w-50 font-semibold text-xs uppercase tracking-wider">Name</TableHead>
                                         <TableHead className="font-semibold text-xs uppercase tracking-wider">Description</TableHead>
                                         <TableHead className="w-37.5 text-right font-semibold text-xs uppercase tracking-wider">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {categories.map((cat) => (
-                                        <TableRow key={cat._id} className="hover:bg-muted/50">
-                                            <TableCell className="font-medium">{cat.name}</TableCell>
-                                            <TableCell className="text-muted-foreground">{cat.description || '-'}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleOpenCatDialog(cat)}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-                                                        <span className="sr-only">Edit</span>
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteCategory(cat._id)}>
-                                                        Remove
-                                                    </Button>
+                                    {categories.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="h-32 text-center">
+                                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                                    <Tag className="h-8 w-8 text-muted-foreground/40" />
+                                                    <p className="text-sm">No categories yet. Add your first one.</p>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    ) : (
+                                        categories.map((cat) => (
+                                            <TableRow key={cat._id} className="hover:bg-muted/50">
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
+                                                            <Tag className="h-3.5 w-3.5" />
+                                                        </div>
+                                                        <span className="font-medium">{cat.name}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="max-w-md truncate text-muted-foreground">{cat.description || '-'}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-chart-2/10 text-chart-2 hover:bg-chart-2/20 hover:text-chart-2" onClick={() => handleOpenCatDialog(cat)}>
+                                                            <Pencil className="h-3.5 w-3.5" />
+                                                            <span className="sr-only">Edit</span>
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" className="h-8 bg-destructive/10 px-2 text-destructive hover:bg-destructive/20 hover:text-destructive" onClick={() => handleDeleteCategory(cat._id)}>
+                                                            Remove
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>
