@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Pencil, Trash2, KeyRound } from 'lucide-react';
+import { Plus, Pencil, Trash2, KeyRound, Users, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
@@ -30,6 +32,13 @@ type User = {
     username: string;
     name: string;
     role: 'admin' | 'staff' | 'data-entry' | 'committee';
+};
+
+const ROLE_STYLES: Record<User['role'], string> = {
+    'admin': 'bg-chart-2/10 text-chart-2 border-chart-2/20',
+    'staff': 'bg-chart-3/10 text-chart-3 border-chart-3/20',
+    'data-entry': 'bg-chart-1/10 text-chart-1 border-chart-1/20',
+    'committee': 'bg-muted/60 text-muted-foreground border-border',
 };
 
 // --- API Functions ---
@@ -156,45 +165,58 @@ export default function UserManagementTab() {
         setIsPasswordDialogOpen(true);
     }
 
-    if (isLoading) return <div>Loading users...</div>;
+    const userInitials = (name: string) => name.split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase() || "?";
+
+    if (isLoading) return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading users...</div>;
 
     return (
         <div className="space-y-4">
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-                <div className="flex justify-between items-center p-4 border-b">
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b bg-muted/40 p-4 sm:p-5">
                     <div>
-                        <h3 className="text-sm font-medium">System Users</h3>
+                        <h3 className="text-sm font-semibold">System Users</h3>
                         <p className="text-xs text-muted-foreground">Manage administrative access.</p>
                     </div>
                     <Button onClick={openAddDialog} size="sm" className="h-8 text-xs"><Plus className="mr-2 h-3.5 w-3.5" /> Add User</Button>
                 </div>
 
-                <div className="p-0">
+                <div className="overflow-x-auto">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="bg-muted/40">
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="h-10 text-xs">Name</TableHead>
-                                <TableHead className="h-10 text-xs">Username</TableHead>
-                                <TableHead className="h-10 text-xs">Role</TableHead>
-                                <TableHead className="h-10 text-right text-xs">Actions</TableHead>
+                                <TableHead className="h-10 text-xs font-semibold uppercase tracking-wider">User</TableHead>
+                                <TableHead className="h-10 text-xs font-semibold uppercase tracking-wider">Username</TableHead>
+                                <TableHead className="h-10 text-xs font-semibold uppercase tracking-wider">Role</TableHead>
+                                <TableHead className="h-10 text-right text-xs font-semibold uppercase tracking-wider">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {users.map((user) => (
-                                <TableRow key={user._id} className="h-10">
-                                    <TableCell className="py-2 text-sm font-medium">{user.name || '-'}</TableCell>
-                                    <TableCell className="py-2 text-sm">{user.username}</TableCell>
-                                    <TableCell className="py-2 text-sm capitalize">{user.role}</TableCell>
-                                    <TableCell className="py-2 text-right">
-                                        <div className="flex justify-end gap-1">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(user)} title="Edit Details">
-                                                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                                <TableRow key={user._id} className="hover:bg-muted/50">
+                                    <TableCell className="py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                                                {userInitials(user.name || user.username)}
+                                            </div>
+                                            <span className="text-sm font-medium">{user.name || '-'}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="py-3 text-sm text-muted-foreground">{user.username}</TableCell>
+                                    <TableCell className="py-3">
+                                        <Badge variant="outline" className={`h-5 text-[10px] font-medium uppercase tracking-wide border-0 ${ROLE_STYLES[user.role] || ROLE_STYLES.staff}`}>
+                                            {user.role}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="py-3 text-right">
+                                        <div className="flex justify-end gap-0.5">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => openEditDialog(user)} title="Edit Details">
+                                                <Pencil className="h-3.5 w-3.5" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openPasswordDialog(user)} title="Reset Password">
-                                                <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-chart-2 hover:bg-chart-2/10" onClick={() => openPasswordDialog(user)} title="Reset Password">
+                                                <KeyRound className="h-3.5 w-3.5" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => handleDeleteClick(user._id)} title="Delete User">
-                                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteClick(user._id)} title="Delete User">
+                                                <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -215,21 +237,21 @@ export default function UserManagementTab() {
             {/* Add/Edit User Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>{selectedUser ? "Edit User" : "Add New User"}</DialogTitle>
+                    <DialogHeader className="border-b bg-muted/40 px-6 py-4">
+                        <DialogTitle className="text-lg">{selectedUser ? "Edit User" : "Add New User"}</DialogTitle>
                         <DialogDescription className="text-xs">
                             {selectedUser ? "Modify user details." : "Create a new system user."}
                         </DialogDescription>
                     </DialogHeader>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-6 py-4">
                             <FormField
                                 control={form.control}
                                 name="name"
                                 render={({ field }) => (
-                                    <FormItem className="space-y-1">
-                                        <FormLabel className="text-xs">Full Name</FormLabel>
-                                        <FormControl><Input placeholder="Name" {...field} className="h-8 text-sm" /></FormControl>
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-xs font-medium">Full Name</FormLabel>
+                                        <FormControl><Input placeholder="Name" {...field} className="h-9 text-sm bg-background" /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -238,9 +260,9 @@ export default function UserManagementTab() {
                                 control={form.control}
                                 name="username"
                                 render={({ field }) => (
-                                    <FormItem className="space-y-1">
-                                        <FormLabel className="text-xs">Username</FormLabel>
-                                        <FormControl><Input placeholder="username" {...field} className="h-8 text-sm" /></FormControl>
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-xs font-medium">Username</FormLabel>
+                                        <FormControl><Input placeholder="username" {...field} className="h-9 text-sm bg-background" /></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -250,9 +272,9 @@ export default function UserManagementTab() {
                                     control={form.control}
                                     name="password"
                                     render={({ field }) => (
-                                        <FormItem className="space-y-1">
-                                            <FormLabel className="text-xs">Password</FormLabel>
-                                            <FormControl><Input type="password" placeholder="******" {...field} className="h-8 text-sm" /></FormControl>
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-xs font-medium">Password</FormLabel>
+                                            <FormControl><Input type="password" placeholder="••••••••" {...field} className="h-9 text-sm bg-background" /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -262,11 +284,11 @@ export default function UserManagementTab() {
                                 control={form.control}
                                 name="role"
                                 render={({ field }) => (
-                                    <FormItem className="space-y-1">
-                                        <FormLabel className="text-xs">Role</FormLabel>
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-xs font-medium">Role</FormLabel>
                                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                                             <FormControl>
-                                                <SelectTrigger className="h-8 text-sm"><SelectValue placeholder="Select a role" /></SelectTrigger>
+                                                <SelectTrigger className="h-9 text-sm bg-background"><SelectValue placeholder="Select a role" /></SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
                                                 <SelectItem value="admin">Admin</SelectItem>
@@ -279,8 +301,8 @@ export default function UserManagementTab() {
                                     </FormItem>
                                 )}
                             />
-                            <DialogFooter className="pt-2">
-                                <Button type="submit" size="sm">Save</Button>
+                            <DialogFooter className="border-t bg-muted/40 -mx-6 -mb-4 mt-4 px-6 py-3">
+                                <Button type="submit" size="sm">Save User</Button>
                             </DialogFooter>
                         </form>
                     </Form>
@@ -290,22 +312,24 @@ export default function UserManagementTab() {
             {/* Reset Password Dialog */}
             <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Reset Password</DialogTitle>
+                    <DialogHeader className="border-b bg-muted/40 px-6 py-4">
+                        <DialogTitle className="text-lg">Reset Password</DialogTitle>
                         <DialogDescription className="text-xs">
-                            Enter a new password for user <strong>{selectedUser?.username}</strong>.
+                            Enter a new password for user <strong className="text-foreground">{selectedUser?.username}</strong>.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="py-2">
+                    <div className="space-y-2 px-6 py-4">
+                        <Label>New Password</Label>
                         <Input
                             type="password"
                             placeholder="New Password"
                             value={resetPasswordValue}
                             onChange={(e) => setResetPasswordValue(e.target.value)}
-                            className="h-9 text-sm"
+                            className="h-9 text-sm bg-background"
                         />
+                        <p className="text-xs text-muted-foreground">Minimum 6 characters.</p>
                     </div>
-                    <DialogFooter>
+                    <DialogFooter className="border-t bg-muted/40 px-6 py-3">
                         <Button variant="ghost" size="sm" onClick={() => setIsPasswordDialogOpen(false)}>Cancel</Button>
                         <Button onClick={handleResetPassword} disabled={!resetPasswordValue || resetPasswordValue.length < 6} size="sm">
                             Reset Password

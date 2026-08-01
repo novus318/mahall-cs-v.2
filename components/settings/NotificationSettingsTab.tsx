@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, Bell, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -13,7 +13,6 @@ import api from '@/lib/axios';
 import {
     AlertDialog,
     AlertDialogAction,
-    AlertDialogAction as AlertDialogConfirm, // Alias if needed, but Action is fine
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -91,12 +90,10 @@ export default function NotificationSettingsTab() {
 
     return (
         <div className="space-y-4">
-            <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-
-                {/* ... Header ... */}
-                <div className="flex justify-between items-center p-4 border-b">
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b bg-muted/40 p-4 sm:p-5">
                     <div>
-                        <h3 className="text-sm font-medium">Alert Contacts</h3>
+                        <h3 className="text-sm font-semibold">Alert Contacts</h3>
                         <p className="text-xs text-muted-foreground">Recipients for critical alerts.</p>
                     </div>
                     <Button onClick={() => append({ name: '', number: '' })} variant="outline" size="sm" className="h-8 text-xs">
@@ -108,21 +105,25 @@ export default function NotificationSettingsTab() {
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                             {fields.length === 0 && (
-                                <div className="text-xs text-muted-foreground text-center py-8 border rounded-md border-dashed bg-muted/20">
-                                    No contacts configured. Add one to receive system alerts.
+                                <div className="flex flex-col items-center justify-center gap-2 py-10 text-center">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground">
+                                        <Bell className="h-5 w-5" />
+                                    </div>
+                                    <p className="text-sm font-medium text-foreground">No contacts configured</p>
+                                    <p className="text-xs text-muted-foreground max-w-sm">Add a contact to start receiving SMS/WhatsApp system alerts.</p>
                                 </div>
                             )}
 
                             {fields.map((field, index) => (
-                                <div key={field.id} className="flex gap-3 items-end p-3 rounded-md border bg-muted/10 group hover:bg-muted/20 transition-colors">
+                                <div key={field.id} className="flex flex-col sm:flex-row sm:items-end gap-3 p-3 rounded-lg border bg-muted/10 group hover:bg-muted/20 transition-colors">
                                     <FormField
                                         control={form.control}
                                         name={`contacts.${index}.name`}
                                         render={({ field }) => (
-                                            <FormItem className="flex-1 space-y-1">
-                                                <FormLabel className={index !== 0 ? "sr-only" : "text-xs"}>Name</FormLabel>
+                                            <FormItem className="flex-1 space-y-1.5">
+                                                <FormLabel className={index !== 0 ? "sr-only" : "text-xs font-medium"}>Name</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Person Name / Role" {...field} className="h-8 text-sm" />
+                                                    <Input placeholder="Person Name / Role" {...field} className="h-9 text-sm bg-background" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -132,10 +133,10 @@ export default function NotificationSettingsTab() {
                                         control={form.control}
                                         name={`contacts.${index}.number`}
                                         render={({ field }) => (
-                                            <FormItem className="flex-1 space-y-1">
-                                                <FormLabel className={index !== 0 ? "sr-only" : "text-xs"}>Phone Number</FormLabel>
+                                            <FormItem className="flex-1 space-y-1.5">
+                                                <FormLabel className={index !== 0 ? "sr-only" : "text-xs font-medium"}>Phone Number</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="+91..." {...field} className="h-8 text-sm" />
+                                                    <Input placeholder="+91..." {...field} className="h-9 text-sm bg-background" />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -146,16 +147,17 @@ export default function NotificationSettingsTab() {
                                         variant="ghost"
                                         size="icon"
                                         onClick={() => setDeleteIndex(index)}
-                                        className="h-8 w-8 mb-0.5 text-muted-foreground hover:text-destructive"
+                                        className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                        title="Remove contact"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
                                 </div>
                             ))}
 
-                            <div className="flex justify-end pt-2">
+                            <div className="flex justify-end pt-3">
                                 <Button type="submit" disabled={isLoading} size="sm">
-                                    <Save className="mr-2 h-4 w-4" />
+                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                                     {isLoading ? "Saving..." : "Save Configuration"}
                                 </Button>
                             </div>
@@ -179,15 +181,13 @@ export default function NotificationSettingsTab() {
                 </AlertDialogContent>
             </AlertDialog>
 
-            <div className="bg-chart-3/10 p-3 rounded-md border border-chart-3/20">
-                <div className="flex gap-2">
-                    <div className="shrink-0 mt-0.5 text-chart-3">
-                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7.49991 0.876892C3.84222 0.876892 0.877075 3.84204 0.877075 7.49972C0.877075 11.1574 3.84222 14.1226 7.49991 14.1226C11.1576 14.1226 14.1227 11.1574 14.1227 7.49972C14.1227 3.84204 11.1576 0.876892 7.49991 0.876892ZM1.82707 7.49972C1.82707 4.36671 4.36689 1.82689 7.49991 1.82689C10.6329 1.82689 13.1727 4.36671 13.1727 7.49972C13.1727 10.6327 10.6329 13.1726 7.49991 13.1726C4.36689 13.1726 1.82707 10.6327 1.82707 7.49972ZM8.24992 4.49999C8.24992 4.9142 7.91413 5.24999 7.49992 5.24999C7.08571 5.24999 6.74992 4.9142 6.74992 4.49999C6.74992 4.08577 7.08571 3.74999 7.49992 3.74999C7.91413 3.74999 8.24992 4.08577 8.24992 4.49999ZM6.00003 5.99999H6.50003H7.50003C7.77618 5.99999 8.00003 6.22385 8.00003 6.49999V9.99999H8.50003H9.00003V11H8.50003H7.50003H6.50003H6.00003V9.99999H6.50003H7.00003V6.99999H6.00003V5.99999Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
-                    </div>
-                    <div className="text-xs text-foreground">
-                        <p className="font-medium mb-0.5">Note</p>
-                        <p className="text-muted-foreground">These contacts will receive SMS/WhatsApp alerts.</p>
-                    </div>
+            <div className="flex items-start gap-3 rounded-lg border bg-chart-3/10 p-4 border-chart-3/20">
+                <div className="shrink-0 mt-0.5 text-chart-3">
+                    <Info className="h-4 w-4" />
+                </div>
+                <div className="text-xs">
+                    <p className="font-medium text-foreground mb-0.5">Note</p>
+                    <p className="text-muted-foreground">These contacts will receive SMS/WhatsApp alerts.</p>
                 </div>
             </div>
         </div>

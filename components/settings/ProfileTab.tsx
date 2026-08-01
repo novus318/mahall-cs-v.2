@@ -1,20 +1,16 @@
 'use client';
 
-// (imports remain same, need to add useEffect)
-// (previous imports)
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { toast } from 'sonner';
-import { Pencil, X, Check } from 'lucide-react';
+import { Pencil, X, Check, UserRound, ShieldCheck, Mail, Phone, Loader2 } from 'lucide-react';
 import api from '@/lib/axios';
 
-// (schemas remain same)
 const profileSchema = z.object({
     name: z.string().min(2, { message: "Name must be at least 2 characters." }),
     contactNumber: z.string().optional(),
@@ -33,6 +29,8 @@ export default function ProfileTab() {
     const [isLoadingPassword, setIsLoadingPassword] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
 
     // Profile Form
     const profileForm = useForm<z.infer<typeof profileSchema>>({
@@ -58,10 +56,13 @@ export default function ProfileTab() {
             try {
                 const { data } = await api.get('/users/profile');
                 if (data.status) {
+                    const profile = data.data;
                     profileForm.reset({
-                        name: data.data.name || "",
-                        contactNumber: data.data.contactNumber || "",
+                        name: profile.name || "",
+                        contactNumber: profile.contactNumber || "",
                     });
+                    setUsername(profile.username || "");
+                    setEmail(profile.email || "");
                 }
             } catch (error) {
                 toast.error("Failed to load profile data");
@@ -100,34 +101,61 @@ export default function ProfileTab() {
         }
     }
 
-    if (isFetching) return <div className="p-4 text-sm text-muted-foreground">Loading profile...</div>;
+    if (isFetching) return <div className="flex items-center justify-center py-16 text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading profile...</div>;
+
+    const initials = (profileForm.getValues("name") || username || "U").split(" ").map(p => p[0]).slice(0, 2).join("").toUpperCase() || "U";
 
     return (
         <div className="grid gap-6 lg:grid-cols-2">
             {/* Profile Information */}
-            <div className="space-y-4">
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 sm:p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                        <div>
-                            <h3 className="text-base font-medium">Personal Information</h3>
-                            <p className="text-xs text-muted-foreground">Your public profile details.</p>
-                        </div>
-                        {!isEditingProfile && (
-                            <Button variant="ghost" size="sm" onClick={() => setIsEditingProfile(true)} className="h-8 w-8 p-0">
-                                <Pencil className="h-4 w-4" />
-                            </Button>
-                        )}
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
+                <div className="flex items-center gap-3 border-b bg-muted/40 px-5 py-4">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                        <UserRound className="h-4 w-4" />
                     </div>
+                    <div>
+                        <h3 className="text-sm font-semibold">Personal Information</h3>
+                        <p className="text-xs text-muted-foreground">Your public profile details.</p>
+                    </div>
+                    {!isEditingProfile && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setIsEditingProfile(true)}
+                            className="ml-auto h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            title="Edit profile"
+                        >
+                            <Pencil className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
 
+                <div className="p-5 sm:p-6">
                     {!isEditingProfile ? (
-                        <div className="space-y-4 py-2">
-                            <div className="space-y-1">
-                                <span className="text-xs font-medium text-muted-foreground">Full Name</span>
-                                <p className="text-sm font-medium">{profileForm.getValues("name") || "-"}</p>
+                        <div className="space-y-5">
+                            <div className="flex items-center gap-4">
+                                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary ring-4 ring-primary/10">
+                                    {initials}
+                                </div>
+                                <div>
+                                    <p className="text-base font-semibold">{profileForm.getValues("name") || "-"}</p>
+                                    <p className="text-xs text-muted-foreground">{username ? `@${username}` : 'System user'}</p>
+                                </div>
                             </div>
-                            <div className="space-y-1">
-                                <span className="text-xs font-medium text-muted-foreground">Contact Number</span>
-                                <p className="text-sm font-medium">{profileForm.getValues("contactNumber") || "-"}</p>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                <div className="space-y-1.5 rounded-lg border bg-muted/40 p-3">
+                                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                        <Phone className="h-3 w-3" /> Contact Number
+                                    </div>
+                                    <p className="text-sm font-medium">{profileForm.getValues("contactNumber") || "Not set"}</p>
+                                </div>
+                                <div className="space-y-1.5 rounded-lg border bg-muted/40 p-3">
+                                    <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                                        <Mail className="h-3 w-3" /> Username
+                                    </div>
+                                    <p className="text-sm font-medium">{username || "Not set"}</p>
+                                </div>
                             </div>
                         </div>
                     ) : (
@@ -137,10 +165,10 @@ export default function ProfileTab() {
                                     control={profileForm.control}
                                     name="name"
                                     render={({ field }) => (
-                                        <FormItem className="space-y-1">
-                                            <FormLabel className="text-xs">Full Name</FormLabel>
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-xs font-medium">Full Name</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="John Doe" {...field} className="h-9 text-sm" />
+                                                <Input placeholder="John Doe" {...field} className="h-9 text-sm bg-background" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -150,10 +178,10 @@ export default function ProfileTab() {
                                     control={profileForm.control}
                                     name="contactNumber"
                                     render={({ field }) => (
-                                        <FormItem className="space-y-1">
-                                            <FormLabel className="text-xs">Contact Number</FormLabel>
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-xs font-medium">Contact Number</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="+1234567890" {...field} className="h-9 text-sm" />
+                                                <Input placeholder="+1234567890" {...field} className="h-9 text-sm bg-background" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -164,10 +192,11 @@ export default function ProfileTab() {
                                         profileForm.reset();
                                         setIsEditingProfile(false);
                                     }}>
-                                        Cancel
+                                        <X className="mr-1.5 h-3.5 w-3.5" /> Cancel
                                     </Button>
                                     <Button type="submit" disabled={isLoadingProfile} size="sm">
-                                        {isLoadingProfile ? "Saving..." : "Save Changes"}
+                                        {isLoadingProfile ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Check className="mr-1.5 h-3.5 w-3.5" />}
+                                        Save Changes
                                     </Button>
                                 </div>
                             </form>
@@ -177,24 +206,29 @@ export default function ProfileTab() {
             </div>
 
             {/* Change Password */}
-            <div className="space-y-4">
-                <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4 sm:p-6">
-                    <div className="mb-4">
-                        <h3 className="text-base font-medium">Change Password</h3>
+            <div className="rounded-xl border bg-card shadow-sm overflow-hidden h-fit">
+                <div className="flex items-center gap-3 border-b bg-muted/40 px-5 py-4">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
+                        <ShieldCheck className="h-4 w-4" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-semibold">Security</h3>
                         <p className="text-xs text-muted-foreground">Set a new password for your account.</p>
                     </div>
+                </div>
+
+                <div className="p-5 sm:p-6">
                     <Form {...passwordForm}>
                         <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
-                            {/* Current Password Field Removed */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <FormField
                                     control={passwordForm.control}
                                     name="newPassword"
                                     render={({ field }) => (
-                                        <FormItem className="space-y-1">
-                                            <FormLabel className="text-xs">New Password</FormLabel>
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-xs font-medium">New Password</FormLabel>
                                             <FormControl>
-                                                <Input type="password" placeholder="********" {...field} className="h-9 text-sm" />
+                                                <Input type="password" placeholder="••••••••" {...field} className="h-9 text-sm bg-background" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -204,19 +238,25 @@ export default function ProfileTab() {
                                     control={passwordForm.control}
                                     name="confirmPassword"
                                     render={({ field }) => (
-                                        <FormItem className="space-y-1">
-                                            <FormLabel className="text-xs">Confirm Password</FormLabel>
+                                        <FormItem className="space-y-1.5">
+                                            <FormLabel className="text-xs font-medium">Confirm Password</FormLabel>
                                             <FormControl>
-                                                <Input type="password" placeholder="********" {...field} className="h-9 text-sm" />
+                                                <Input type="password" placeholder="••••••••" {...field} className="h-9 text-sm bg-background" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                             </div>
-                            <div className="flex justify-end pt-2">
+
+                            <div className="rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
+                                <p className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-chart-1" /> Password must be at least 6 characters long.</p>
+                            </div>
+
+                            <div className="flex justify-end pt-1">
                                 <Button type="submit" variant="secondary" disabled={isLoadingPassword} size="sm">
-                                    {isLoadingPassword ? "Updating..." : "Update Password"}
+                                    {isLoadingPassword ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                                    Update Password
                                 </Button>
                             </div>
                         </form>
