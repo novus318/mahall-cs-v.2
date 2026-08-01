@@ -214,11 +214,11 @@ export default function PayablesPage() {
 
     const getStatusBadge = (status: string) => {
         const styles: Record<string, string> = {
-            'ACTIVE': 'bg-blue-100 text-blue-700 border-blue-200',
-            'PARTIALLY_REPAID': 'bg-amber-100 text-amber-700 border-amber-200',
-            'REPAID': 'bg-green-100 text-green-700 border-green-200',
-            'OVERDUE': 'bg-red-100 text-red-700 border-red-200',
-            'CANCELLED': 'bg-gray-100 text-gray-700 border-gray-200'
+            'ACTIVE': 'bg-primary/10 text-primary border-primary/20',
+            'PARTIALLY_REPAID': 'bg-chart-2/10 text-chart-2 border-chart-2/20',
+            'REPAID': 'bg-chart-1/10 text-chart-1 border-chart-1/20',
+            'OVERDUE': 'bg-destructive/10 text-destructive border-destructive/20',
+            'CANCELLED': 'bg-muted/60 text-muted-foreground border-muted-foreground/20'
         };
         
         const icons: Record<string, any> = {
@@ -240,15 +240,18 @@ export default function PayablesPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Payables (Loans & Credit)</h2>
-                    <p className="text-muted-foreground text-sm">Manage loans and credit taken from lenders.</p>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Finances · Payables
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Payables</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Manage loans and credit taken from lenders.</p>
                 </div>
-                <Button onClick={() => setIsAddOpen(true)} size="sm">
-                    <Plus className="mr-2 h-4 w-4" /> Record Loan/Credit
+                <Button onClick={() => setIsAddOpen(true)} size="sm" className="gap-2">
+                    <Plus className="h-4 w-4" /> Record Loan/Credit
                 </Button>
             </div>
 
@@ -282,10 +285,10 @@ export default function PayablesPage() {
                     <Card className='py-2'>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Total Repaid</CardTitle>
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <CheckCircle2 className="h-4 w-4 text-chart-1" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-green-600">₹{summary.totalRepaid?.toLocaleString()}</div>
+                            <div className="text-2xl font-bold text-chart-1">₹{summary.totalRepaid?.toLocaleString()}</div>
                             <p className="text-xs text-muted-foreground">
                                 Amount paid back
                             </p>
@@ -294,10 +297,10 @@ export default function PayablesPage() {
                     <Card className='py-2'>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Balance Due</CardTitle>
-                            <AlertCircle className="h-4 w-4 text-amber-600" />
+                            <AlertCircle className="h-4 w-4 text-chart-2" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-amber-600">₹{summary.totalDue?.toLocaleString()}</div>
+                            <div className="text-2xl font-bold text-chart-2">₹{summary.totalDue?.toLocaleString()}</div>
                             <p className="text-xs text-muted-foreground">
                                 {summary.overdueCount} overdue
                             </p>
@@ -309,16 +312,16 @@ export default function PayablesPage() {
             {/* Filters */}
             <div className="flex flex-col sm:flex-row gap-4">
                 <div className="relative flex-1">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                         placeholder="Search by lender name, contact..."
-                        className="pl-8"
+                        className="bg-background pl-9"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-[180px]">
+                    <SelectTrigger className="bg-background w-full sm:w-[180px]">
                         <SelectValue placeholder="Filter by status" />
                     </SelectTrigger>
                     <SelectContent>
@@ -336,17 +339,17 @@ export default function PayablesPage() {
             <Card className="border shadow-sm">
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
-                            <TableRow>
-                                <TableHead>Lender</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Account</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
-                                <TableHead className="text-right">Repaid</TableHead>
-                                <TableHead className="text-right">Balance</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Due Date</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                        <TableHeader className="bg-muted/40">
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Lender</TableHead>
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Type</TableHead>
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Account</TableHead>
+                                <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Amount</TableHead>
+                                <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Repaid</TableHead>
+                                <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Balance</TableHead>
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Status</TableHead>
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Due Date</TableHead>
+                                <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -364,7 +367,7 @@ export default function PayablesPage() {
                                 </TableRow>
                             ) : (
                                 filteredPayables.map((p) => (
-                                    <TableRow key={p._id} className="hover:bg-slate-50/50">
+                                    <TableRow key={p._id} className="hover:bg-muted/50">
                                         <TableCell>
                                             <div className="flex flex-col">
                                                 <span className="font-medium">{p.lenderName}</span>
@@ -382,7 +385,7 @@ export default function PayablesPage() {
                                         <TableCell className="text-right font-medium">
                                             ₹{p.amount.toLocaleString()}
                                         </TableCell>
-                                        <TableCell className="text-right text-green-600">
+                                        <TableCell className="text-right text-chart-1">
                                             ₹{p.totalRepaid.toLocaleString()}
                                         </TableCell>
                                         <TableCell className="text-right font-bold">
@@ -391,7 +394,7 @@ export default function PayablesPage() {
                                         <TableCell>{getStatusBadge(p.status)}</TableCell>
                                         <TableCell>
                                             {p.dueDate ? (
-                                                <span className={`text-sm ${p.status === 'OVERDUE' ? 'text-red-600 font-medium' : ''}`}>
+                                                <span className={`text-sm ${p.status === 'OVERDUE' ? 'text-destructive font-medium' : ''}`}>
                                                     {format(new Date(p.dueDate), 'dd MMM yyyy')}
                                                 </span>
                                             ) : (
@@ -412,7 +415,7 @@ export default function PayablesPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="h-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                        className="h-8 text-chart-1 hover:text-chart-1 hover:bg-chart-1/10"
                                                         onClick={() => openRepayDialog(p)}
                                                     >
                                                         Repay
@@ -421,7 +424,7 @@ export default function PayablesPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                                                     onClick={() => confirmDelete(p._id)}
                                                     disabled={p.totalRepaid > 0}
                                                 >
@@ -652,18 +655,18 @@ export default function PayablesPage() {
                         </DialogDescription>
                     </DialogHeader>
                     {selectedPayable && (
-                        <div className="bg-slate-50 p-3 rounded-lg mb-4">
+                        <div className="bg-muted/40 p-3 rounded-lg mb-4">
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Original Amount:</span>
                                 <span className="font-medium">₹{selectedPayable.amount.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">Already Repaid:</span>
-                                <span className="font-medium text-green-600">₹{selectedPayable.totalRepaid.toLocaleString()}</span>
+                                <span className="font-medium text-chart-1">₹{selectedPayable.totalRepaid.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between text-sm border-t pt-2 mt-2">
                                 <span className="text-muted-foreground">Balance Due:</span>
-                                <span className="font-bold text-amber-600">₹{selectedPayable.balanceDue.toLocaleString()}</span>
+                                <span className="font-bold text-chart-2">₹{selectedPayable.balanceDue.toLocaleString()}</span>
                             </div>
                         </div>
                     )}
@@ -767,18 +770,18 @@ export default function PayablesPage() {
                             </div>
 
                             {/* Amount Summary */}
-                            <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-lg">
+                            <div className="grid grid-cols-3 gap-4 bg-muted/40 p-4 rounded-lg">
                                 <div className="text-center">
                                     <p className="text-sm text-muted-foreground">Loan Amount</p>
                                     <p className="text-lg font-bold">₹{selectedPayable.amount.toLocaleString()}</p>
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm text-muted-foreground">Repaid</p>
-                                    <p className="text-lg font-bold text-green-600">₹{selectedPayable.totalRepaid.toLocaleString()}</p>
+                                    <p className="text-lg font-bold text-chart-1">₹{selectedPayable.totalRepaid.toLocaleString()}</p>
                                 </div>
                                 <div className="text-center">
                                     <p className="text-sm text-muted-foreground">Balance</p>
-                                    <p className="text-lg font-bold text-amber-600">₹{selectedPayable.balanceDue.toLocaleString()}</p>
+                                    <p className="text-lg font-bold text-chart-2">₹{selectedPayable.balanceDue.toLocaleString()}</p>
                                 </div>
                             </div>
 
@@ -835,11 +838,11 @@ export default function PayablesPage() {
                                     <h4 className="font-semibold mb-3">Repayment History</h4>
                                     <div className="border rounded-lg overflow-hidden">
                                         <Table>
-                                            <TableHeader>
-                                                <TableRow>
-                                                    <TableHead>Date</TableHead>
-                                                    <TableHead>Account</TableHead>
-                                                    <TableHead className="text-right">Amount</TableHead>
+                                            <TableHeader className="bg-muted/40">
+                                                <TableRow className="hover:bg-transparent">
+                                                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Date</TableHead>
+                                                    <TableHead className="font-semibold text-xs uppercase tracking-wider">Account</TableHead>
+                                                    <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Amount</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -849,7 +852,7 @@ export default function PayablesPage() {
                                                             {format(new Date(repayment.date), 'dd MMM yyyy')}
                                                         </TableCell>
                                                         <TableCell>{repayment.account?.name || 'Unknown'}</TableCell>
-                                                        <TableCell className="text-right font-medium text-green-600">
+                                                        <TableCell className="text-right font-medium text-chart-1">
                                                             ₹{repayment.amount.toLocaleString()}
                                                         </TableCell>
                                                     </TableRow>
