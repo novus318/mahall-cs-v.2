@@ -94,17 +94,20 @@ export default function TransactionsPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Global Transactions</h2>
-                    <p className="text-muted-foreground text-sm">View and filter financial activity across all accounts.</p>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Finances · Transactions
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Global Transactions</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">View and filter financial activity across all accounts.</p>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={fetchTransactions}>
                         <RefreshCcw className="mr-2 h-4 w-4" /> Refresh
                     </Button>
-                    <Button variant="default" size="sm" onClick={async () => {
+                    <Button size="sm" onClick={async () => {
                         try {
                             const params = new URLSearchParams({ search, accountId, type });
                             if (date) params.append('startDate', format(date, 'yyyy-MM-dd'));
@@ -129,110 +132,106 @@ export default function TransactionsPage() {
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 items-end md:items-center bg-slate-50/50 p-4 rounded-lg border">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full">
-
-                    {/* Search */}
-                    <div className="flex flex-col gap-1.5">
-                        <span className="text-xs font-medium text-muted-foreground">Search</span>
-                        <div className="relative">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Description..."
-                                className="pl-8 h-9 text-sm bg-white"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Account Filter */}
-                    <div className="flex flex-col gap-1.5">
-                        <span className="text-xs font-medium text-muted-foreground">Account</span>
-                        <Select value={accountId} onValueChange={setAccountId}>
-                            <SelectTrigger className="w-full h-9 bg-white text-sm">
-                                <SelectValue placeholder="All Accounts" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ALL">All Accounts</SelectItem>
-                                {accounts.map(acc => (
-                                    <SelectItem key={acc._id} value={acc._id}>{acc.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Type Filter */}
-                    <div className="flex flex-col gap-1.5">
-                        <span className="text-xs font-medium text-muted-foreground">Type</span>
-                        <Select value={type} onValueChange={setType}>
-                            <SelectTrigger className="w-full h-9 bg-white text-sm">
-                                <SelectValue placeholder="All Types" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="ALL">All Types</SelectItem>
-                                <SelectItem value="INCOME">Income</SelectItem>
-                                <SelectItem value="EXPENSE">Expense</SelectItem>
-                                <SelectItem value="TRANSFER_IN">Transfer In</SelectItem>
-                                <SelectItem value="TRANSFER_OUT">Transfer Out</SelectItem>
-                                <SelectItem value="OPENING_BALANCE">Opening Balance</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-
-                    {/* Date Picker (Single Date for now) */}
-                    <div className="flex flex-col gap-1.5">
-                        <span className="text-xs font-medium text-muted-foreground">Start Date</span>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                        "h-9 justify-start text-left font-normal bg-white",
-                                        !date && "text-muted-foreground"
-                                    )}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {date ? format(date, "PPP") : <span>Pick a date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    selected={date}
-                                    onSelect={setDate}
-                                    initialFocus
+            <Card className="bg-card shadow-sm">
+                <CardHeader className="border-b bg-muted/40 p-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 xl:items-end">
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-xs font-medium text-muted-foreground">Search</span>
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder="Description..."
+                                    className="h-9 bg-background pl-9 text-sm"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
                                 />
-                            </PopoverContent>
-                        </Popover>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-xs font-medium text-muted-foreground">Account</span>
+                            <Select value={accountId} onValueChange={setAccountId}>
+                                <SelectTrigger className="h-9 w-full bg-background text-sm">
+                                    <SelectValue placeholder="All Accounts" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Accounts</SelectItem>
+                                    {accounts.map(acc => (
+                                        <SelectItem key={acc._id} value={acc._id}>{acc.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-xs font-medium text-muted-foreground">Type</span>
+                            <Select value={type} onValueChange={setType}>
+                                <SelectTrigger className="h-9 w-full bg-background text-sm">
+                                    <SelectValue placeholder="All Types" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Types</SelectItem>
+                                    <SelectItem value="INCOME">Income</SelectItem>
+                                    <SelectItem value="EXPENSE">Expense</SelectItem>
+                                    <SelectItem value="TRANSFER_IN">Transfer In</SelectItem>
+                                    <SelectItem value="TRANSFER_OUT">Transfer Out</SelectItem>
+                                    <SelectItem value="OPENING_BALANCE">Opening Balance</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-xs font-medium text-muted-foreground">Start Date</span>
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant={"outline"}
+                                        className={cn(
+                                            "h-9 justify-start bg-background text-left font-normal",
+                                            !date && "text-muted-foreground"
+                                        )}
+                                    >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                        mode="single"
+                                        selected={date}
+                                        onSelect={setDate}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+
+                        <Button variant="outline" size="sm" onClick={handleClearFilters} className="h-9 justify-self-start text-muted-foreground xl:justify-self-end">
+                            <Filter className="mr-1 h-4 w-4" /> Clear Filters
+                        </Button>
                     </div>
-                </div>
+                </CardHeader>
+            </Card>
 
-                {/* Clear Filters */}
-                <Button variant="ghost" size="sm" onClick={handleClearFilters} className="h-9 px-2 text-muted-foreground hover:text-red-500">
-                    <Filter className="h-4 w-4 mr-1" /> Clear
-                </Button>
-            </div>
-
-            <Card className="border shadow-sm">
-                <CardHeader className="p-3 border-b bg-slate-50/50">
-                    <div className="flex justify-between items-center">
+            <Card className="border bg-card shadow-sm">
+                <CardHeader className="flex flex-row items-center justify-between border-b bg-muted/40 p-4">
+                    <div>
                         <CardTitle className="text-base font-semibold">Transaction Ledger</CardTitle>
-                        <Badge variant="secondary" className="font-normal">
-                            Total: {totalTransactions}
-                        </Badge>
+                        <CardDescription className="mt-1 text-xs">
+                            {loading ? "Loading transactions..." : `Total: ${totalTransactions} transactions`}
+                        </CardDescription>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-slate-50">
-                            <TableRow>
-                                <TableHead className="w-27.5">Date</TableHead>
-                                <TableHead>Account</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead>Type</TableHead>
-                                <TableHead className="text-right">Amount</TableHead>
-                                <TableHead className="text-right">Balance After</TableHead>
+                        <TableHeader className="bg-muted/40">
+                            <TableRow className="hover:bg-transparent">
+                                <TableHead className="w-27.5 font-semibold text-xs uppercase tracking-wider">Date</TableHead>
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Account</TableHead>
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Description</TableHead>
+                                <TableHead className="font-semibold text-xs uppercase tracking-wider">Type</TableHead>
+                                <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Amount</TableHead>
+                                <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Balance After</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -245,13 +244,13 @@ export default function TransactionsPage() {
                                     const isCredit = ['OPENING_BALANCE', 'TRANSFER_IN', 'INCOME', 'LOAN_RECEIVED'].includes(tx.type);
 
                                     return (
-                                        <TableRow key={tx._id} className="group hover:bg-slate-50/50">
+                                        <TableRow key={tx._id} className="group hover:bg-muted/50">
                                             <TableCell className="font-mono text-xs text-muted-foreground">
                                                 {format(new Date(tx.date), 'dd MMM yyyy')}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium text-sm text-slate-700">{tx.account?.name}</span>
+                                                    <span className="text-sm font-medium text-foreground">{tx.account?.name}</span>
                                                     <span className="text-[10px] text-muted-foreground">{tx.account?.type}</span>
                                                 </div>
                                             </TableCell>
@@ -297,22 +296,27 @@ export default function TransactionsPage() {
                                                 )}
                                                 {tx.relatedAccount && (
                                                     <div className="flex items-center gap-1 mt-0.5">
-                                                        <span className="text-[10px] text-muted-foreground bg-slate-100 px-1.5 rounded-full border">
+                                                        <span className="rounded-full border bg-muted px-1.5 text-[10px] text-muted-foreground">
                                                             {tx.type === 'TRANSFER_IN' ? 'From' : 'To'}: {tx.relatedAccount.name}
                                                         </span>
                                                     </div>
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant="outline" className={`font-normal text-[10px] tracking-wider uppercase border-0
-                                                    ${isCredit ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                                <Badge className={cn(
+                                                    "font-normal text-[10px] tracking-wider uppercase border-0",
+                                                    isCredit ? "bg-chart-1/10 text-chart-1" : "bg-destructive/10 text-destructive"
+                                                )}>
                                                     {tx.type.replace('_', ' ')}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className={`text-right font-mono text-sm font-medium ${isCredit ? 'text-green-600' : 'text-red-600'}`}>
+                                            <TableCell className={cn(
+                                                "text-right font-mono text-sm font-semibold",
+                                                isCredit ? "text-chart-1" : "text-destructive"
+                                            )}>
                                                 {isCredit ? '+' : '-'}₹{tx.amount.toLocaleString()}
                                             </TableCell>
-                                            <TableCell className="text-right font-bold text-sm text-slate-700">
+                                            <TableCell className="text-right font-bold text-sm tabular-nums text-foreground">
                                                 ₹{tx.balanceAfter.toLocaleString()}
                                             </TableCell>
                                         </TableRow>
