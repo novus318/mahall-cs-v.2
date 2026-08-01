@@ -184,7 +184,7 @@ export default function BuildingsPage() {
     );
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 h-[calc(100vh-4rem)] overflow-hidden bg-muted/40">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-8 h-[calc(100vh-4rem)] overflow-hidden bg-muted/40">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                 <div>
