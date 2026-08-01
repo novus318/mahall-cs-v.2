@@ -216,9 +216,9 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
     ]
 
     return (
-        <div className="flex flex-col h-full bg-slate-50/50 dark:bg-black/20">
+        <div className="flex flex-col h-full">
             {/* Header / Stats Strip */}
-            <div className="px-6 py-4 border-b bg-white dark:bg-neutral-900 flex items-center justify-between shrink-0">
+            <div className="flex items-center justify-between border-b bg-card px-6 py-4 shrink-0">
                 <div className="flex items-center gap-6">
                     {/* ... (Frequency/Amount display logic) ... */}
                     <div className="flex flex-col">
@@ -298,7 +298,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-[280px] p-0" align="end">
-                            <div className="p-3 border-b bg-slate-50 dark:bg-neutral-900/50">
+                            <div className="p-3 border-b bg-muted/40">
                                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                                     Select Period ({currentSubscription?.frequency})
                                 </h4>
@@ -334,16 +334,16 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                     </Popover>
                 </div>
 
-                <Card className="flex-1 border shadow-sm overflow-hidden bg-white dark:bg-neutral-900 rounded-lg">
+                <Card className="flex-1 overflow-hidden rounded-lg border shadow-sm bg-card">
                     <CardContent className="p-0 h-full overflow-auto">
                         <Table>
-                            <TableHeader className="bg-slate-50/50 dark:bg-neutral-900 sticky top-0 z-10">
-                                <TableRow className="hover:bg-transparent border-b">
-                                    <TableHead className="h-9 text-xs font-semibold">Period</TableHead>
-                                    <TableHead className="h-9 text-xs font-semibold">Status</TableHead>
-                                    <TableHead className="h-9 text-xs font-semibold">Paid On</TableHead>
-                                    <TableHead className="h-9 text-xs font-semibold text-right">Amount</TableHead>
-                                    <TableHead className="h-9 text-xs font-semibold text-right">Paid</TableHead>
+                            <TableHeader className="bg-muted/40 sticky top-0 z-10">
+                                <TableRow className="border-b hover:bg-transparent">
+                                    <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Period</TableHead>
+                                    <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Status</TableHead>
+                                    <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Paid On</TableHead>
+                                    <TableHead className="h-9 text-xs font-semibold text-right uppercase tracking-wider">Amount</TableHead>
+                                    <TableHead className="h-9 text-xs font-semibold text-right uppercase tracking-wider">Paid</TableHead>
                                     <TableHead className="h-9 text-xs font-semibold text-right w-[80px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -372,7 +372,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
 
                                         return (
                                             <Fragment key={due._id}>
-                                                <TableRow className={cn("hover:bg-slate-50 dark:hover:bg-neutral-800/50 border-b last:border-0", isExpanded && "bg-slate-50 dark:bg-neutral-800/50")}>
+                                                <TableRow className={cn("border-b last:border-0 hover:bg-muted/50", isExpanded && "bg-muted/40")}>
                                                     <TableCell className="py-2 text-xs font-medium">
                                                         <div className="flex items-center gap-2">
                                                             {isYearly && (
@@ -391,10 +391,10 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                     <TableCell className="py-2">
                                                         <Badge variant="outline" className={cn(
                                                             "text-[10px] px-1.5 py-0 h-5 border-0 font-medium",
-                                                            due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                                                                due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                                                                    due.status === 'REJECTED' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" :
-                                                                        "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                                            due.status === 'PAID' ? "bg-chart-1/10 text-chart-1" :
+                                                                due.status === 'PARTIAL' ? "bg-chart-2/10 text-chart-2" :
+                                                                    due.status === 'REJECTED' ? "bg-destructive/10 text-destructive" :
+                                                                        "bg-muted/60 text-muted-foreground"
                                                         )}>
                                                             {due.status}
                                                         </Badge>
@@ -415,7 +415,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                                     }
                                                                 }}
                                                             >
-                                                                <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                                                        <ExternalLink className="h-3 w-3 text-muted-foreground" />
                                                             </Button>
                                                         )}
                                                     </TableCell>
@@ -431,7 +431,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                             <Button
                                                                 size="sm"
                                                                 variant="secondary"
-                                                                className="h-6 w-12 text-[10px] px-0 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                                                className="h-6 w-12 text-[10px] px-0 bg-primary text-primary-foreground hover:bg-primary/90"
                                                                 onClick={() => openPayDialog(due)}
                                                             >
                                                                 Pay
@@ -441,7 +441,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                 </TableRow>
                                                 {isExpanded && (
                                                     <TableRow>
-                                                        <TableCell colSpan={6} className="p-0 border-b bg-slate-50/50 dark:bg-neutral-900/20">
+                                                        <TableCell colSpan={6} className="p-0 border-b bg-muted/40">
                                                             <div className="p-3 pl-8">
                                                                 <Table>
                                                                     <TableHeader className="bg-transparent border-b">
@@ -455,7 +455,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                                     </TableHeader>
                                                                     <TableBody>
                                                                         {due.transactions?.map((tx: any, idx: number) => (
-                                                                            <TableRow key={tx._id || idx} className="h-8 border-none hover:bg-slate-100 dark:hover:bg-neutral-800">
+                                                                            <TableRow key={tx._id || idx} className="h-8 border-none hover:bg-muted/50">
                                                                                 <TableCell className="py-1 text-xs">{new Date(tx.date).toLocaleDateString('en-GB')}</TableCell>
                                                                                 <TableCell className="py-1 text-xs font-mono text-muted-foreground">
                                                                                     #{typeof tx.receiptId === 'object' ? tx.receiptId?.receiptNo : tx.receiptId?.slice(-6).toUpperCase()}
@@ -490,7 +490,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                                                                                         }}
                                                                                         title="View Receipt"
                                                                                     >
-                                                                                        <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                                <ExternalLink className="h-3 w-3 text-muted-foreground" />
                                                                                     </Button>
                                                                                 </TableCell>
                                                                             </TableRow>
@@ -517,7 +517,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
-                            <Coins className="h-5 w-5 text-green-600" /> Confirm Payment
+                            <Coins className="h-5 w-5 text-chart-1" /> Confirm Payment
                         </DialogTitle>
                         <DialogDescription>
                             Receive payment for <strong>{entityName}</strong>
@@ -525,14 +525,14 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                     </DialogHeader>
                     {payingDue && (
                         <div className="grid gap-4 py-4">
-                            <div className="p-3 bg-slate-50 dark:bg-neutral-900 rounded-lg border space-y-1">
+                            <div className="p-3 bg-muted/40 rounded-lg border space-y-1">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Period:</span>
                                     <span className="font-semibold">{payingDue.period}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Amount Due:</span>
-                                    <span className="font-mono font-bold text-green-600">₹{payingDue.amount - payingDue.paidAmount}</span>
+                                    <span className="font-mono font-bold text-chart-1">₹{payingDue.amount - payingDue.paidAmount}</span>
                                 </div>
                             </div>
 
@@ -575,13 +575,13 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
                         <div className="flex gap-2 w-full">
                             <Button
                                 variant="outline"
-                                className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                className="flex-1 text-destructive hover:text-destructive hover:bg-destructive/10"
                                 onClick={handleInitiateRejection}
                                 disabled={sendingOtp}
                             >
                                 {sendingOtp ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reject"}
                             </Button>
-                            <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white" onClick={handleConfirmPay} disabled={paying || !selectedAccount}>
+                            <Button className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleConfirmPay} disabled={paying || !selectedAccount}>
                                 {paying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 Confirm Pay
                             </Button>
@@ -594,7 +594,7 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
             <Dialog open={isOtpOpen} onOpenChange={setIsOtpOpen}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-red-600">
+                        <DialogTitle className="flex items-center gap-2 text-destructive">
                             <ShieldAlert className="h-5 w-5" /> Reject Collection
                         </DialogTitle>
                         <DialogDescription>
