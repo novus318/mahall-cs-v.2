@@ -172,9 +172,9 @@ export default function HouseDetailPage() {
                 data: { label: `${houseData.name} (${houseData.customId})` },
                 position: { x: 0, y: 0 },
                 style: {
-                    background: '#0f172a',
+                    background: '#065f46',
                     color: '#fff',
-                    border: '1px solid #1e293b',
+                    border: '1px solid #065f46',
                     width: 180,
                     borderRadius: 8,
                     padding: '8px',
@@ -239,10 +239,10 @@ export default function HouseDetailPage() {
                         source: 'root',
                         target: member._id,
                         type: 'smoothstep',
-                        style: { stroke: '#eab308', strokeWidth: 2 },
+                        style: { stroke: '#ca8a04', strokeWidth: 2 },
                         label: 'Head of House',
-                        labelStyle: { fill: '#b45309', fontWeight: 700, fontSize: 10 },
-                        labelBgStyle: { fill: '#fffbeb' }
+                        labelStyle: { fill: '#a16207', fontWeight: 700, fontSize: 10 },
+                        labelBgStyle: { fill: '#fef9c3' }
                     });
                     processedRoots.add(member._id);
                     headAssigned = true;
@@ -282,10 +282,10 @@ export default function HouseDetailPage() {
                             source: parentId,
                             target: member._id,
                             type: 'smoothstep',
-                            style: { stroke: '#eab308', strokeWidth: 2 },
+                            style: { stroke: '#ca8a04', strokeWidth: 2 },
                             label: 'Head of House',
-                            labelStyle: { fill: '#b45309', fontWeight: 700, fontSize: 10 },
-                            labelBgStyle: { fill: '#fffbeb' }
+                            labelStyle: { fill: '#a16207', fontWeight: 700, fontSize: 10 },
+                            labelBgStyle: { fill: '#fef9c3' }
                         })
                     } else {
                         // Resident
@@ -294,10 +294,10 @@ export default function HouseDetailPage() {
                             source: parentId,
                             target: member._id,
                             type: 'smoothstep',
-                            style: { stroke: '#cbd5e1', strokeDasharray: '5,5' },
+                            style: { stroke: '#a1a1aa', strokeDasharray: '5,5' },
                             label: 'Resident',
-                            labelStyle: { fill: '#94a3b8', fontSize: 9 },
-                            labelBgStyle: { fill: '#f8fafc' }
+                            labelStyle: { fill: '#a1a1aa', fontSize: 9 },
+                            labelBgStyle: { fill: '#f4f4f5' }
                         })
                     }
                 }
@@ -326,7 +326,7 @@ export default function HouseDetailPage() {
                             style: {
                                 width: 10,
                                 height: 10,
-                                background: '#ec4899',
+                                background: '#a855f7',
                                 borderRadius: '50%',
                                 border: 'none'
                             },
@@ -338,18 +338,18 @@ export default function HouseDetailPage() {
                             source: member._id,
                             target: marriageNodeId,
                             type: 'smoothstep',
-                            style: { stroke: '#ec4899', strokeWidth: 1.5 },
+                            style: { stroke: '#a855f7', strokeWidth: 1.5 },
                             label: member.gender === 'Male' ? 'Husband' : 'Wife',
-                            labelStyle: { fill: '#ec4899', fontSize: 9 }
+                            labelStyle: { fill: '#a855f7', fontSize: 9 }
                         })
                         newEdges.push({
                             id: `e-${sid}-${marriageNodeId}`,
                             source: sid,
                             target: marriageNodeId,
                             type: 'smoothstep',
-                            style: { stroke: '#ec4899', strokeWidth: 1.5 },
+                            style: { stroke: '#a855f7', strokeWidth: 1.5 },
                             label: membersList.find((m: any) => m._id === sid)?.gender === 'Male' ? 'Husband' : 'Wife',
-                            labelStyle: { fill: '#ec4899', fontSize: 9 }
+                            labelStyle: { fill: '#a855f7', fontSize: 9 }
                         })
                     }
                 }
@@ -377,9 +377,9 @@ export default function HouseDetailPage() {
                                 source: marriageNodeId,
                                 target: member._id,
                                 type: 'smoothstep',
-                                style: { stroke: '#3b82f6', strokeWidth: 1.5 },
+                                style: { stroke: '#2563eb', strokeWidth: 1.5 },
                                 label: member.gender === 'Male' ? 'Son' : 'Daughter',
-                                labelStyle: { fill: '#3b82f6', fontSize: 9, fontWeight: 600 }
+                                labelStyle: { fill: '#2563eb', fontSize: 9, fontWeight: 600 }
                             })
                             connectedToMarriage = true
                         }
@@ -395,9 +395,9 @@ export default function HouseDetailPage() {
                                     source: pid,
                                     target: member._id,
                                     type: 'smoothstep',
-                                    style: { stroke: '#3b82f6', strokeWidth: 1.5 },
+                                    style: { stroke: '#2563eb', strokeWidth: 1.5 },
                                     label: member.gender === 'Male' ? 'Son' : 'Daughter',
-                                    labelStyle: { fill: '#3b82f6', fontSize: 9 }
+                                    labelStyle: { fill: '#2563eb', fontSize: 9 }
                                 })
                             }
                         })
@@ -452,9 +452,9 @@ export default function HouseDetailPage() {
 
     const MembersList = () => (
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <div className="p-3 border-b bg-slate-50/80 dark:bg-neutral-800/50 flex items-center justify-between shrink-0">
+            <div className="p-3 border-b bg-muted/40 flex items-center justify-between shrink-0">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <User className="h-3.5 w-3.5 text-slate-500" /> Residents ({members.length})
+                    <User className="h-3.5 w-3.5 text-muted-foreground" /> Residents ({members.length})
                 </h3>
                 <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => {
                     setEditingMember(null)
@@ -472,23 +472,23 @@ export default function HouseDetailPage() {
                             const isHead = house?.head === member._id || house?.head?._id === member._id;
                             const isMovedOut = member.status === 'Moved Out';
                             return (
-                                <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-neutral-50 dark:bg-neutral-900/50' : ''}`}>
-                                    <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isHead ? "bg-yellow-100 text-yellow-700" :
-                                        isMovedOut ? "bg-slate-100 text-slate-500" : "bg-blue-100 text-blue-600"
+                                <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-muted/40' : ''}`}>
+                                    <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isHead ? "bg-chart-2/10 text-chart-2" :
+                                        isMovedOut ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary"
                                         }`}>
                                         {isHead ? <Crown className="h-3 w-3" /> : member.name.charAt(0)}
                                     </div>
                                     <span className={`truncate flex-1 ${isMovedOut ? 'line-through text-muted-foreground' : ''}`}>{member.name}</span>
 
                                     {isMovedOut && (
-                                        <span className="text-[10px] bg-red-100 text-red-700 px-1.5 rounded border border-red-200">Moved Out</span>
+                                        <span className="text-[10px] bg-destructive/10 text-destructive px-1.5 rounded border border-destructive/20">Moved Out</span>
                                     )}
 
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                                         {!isHead && !isMovedOut && (
                                             <Button size="icon" variant="ghost" className="h-5 w-5" title="Make Head of House"
                                                 onClick={() => handleSetHead(member._id)}>
-                                                <Crown className="h-3 w-3 text-slate-400 hover:text-yellow-600" />
+                                                <Crown className="h-3 w-3 text-muted-foreground hover:text-chart-2" />
                                             </Button>
                                         )}
                                         <Button size="icon" variant="ghost" className="h-5 w-5"
@@ -496,11 +496,11 @@ export default function HouseDetailPage() {
                                                 setEditingMember(member)
                                                 setIsAddMemberOpen(true)
                                             }}>
-                                            <Pencil className="h-3 w-3 text-slate-400 hover:text-blue-600" />
+                                            <Pencil className="h-3 w-3 text-muted-foreground hover:text-primary" />
                                         </Button>
                                         <Button size="icon" variant="ghost" className="h-5 w-5"
                                             onClick={() => confirmDeleteMember(member._id)}>
-                                            <Trash2 className="h-3 w-3 text-slate-400 hover:text-red-600" />
+                                            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-destructive" />
                                         </Button>
                                     </div>
                                 </div>
@@ -529,17 +529,17 @@ export default function HouseDetailPage() {
             fitView
             attributionPosition="bottom-right"
         >
-            <Controls className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 shadow-sm" />
-            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#cbd5e1" />
+            <Controls className="bg-card border-border shadow-sm" />
+            <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#a1a1aa" />
         </ReactFlow>
     )
 
     const InfoSection = () => (
-        <div className="p-3 border-b bg-white dark:bg-neutral-900 flex flex-col gap-3 shrink-0">
+        <div className="p-3 border-b bg-card flex flex-col gap-3 shrink-0">
             <div className="space-y-0.5">
                 <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Address</span>
                 <div className="flex items-start gap-1.5 text-xs text-foreground">
-                    <MapPin className="h-3.5 w-3.5 text-blue-500 mt-0.5" />
+                    <MapPin className="h-3.5 w-3.5 text-primary mt-0.5" />
                     <span>{house?.address || "No address provided"}</span>
                 </div>
             </div>
@@ -547,7 +547,7 @@ export default function HouseDetailPage() {
                 <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Family Link</span>
                 {house?.family ? (
                     <div className="text-xs">
-                        <Link href={`/dashboard/families/${house.family._id}`} className="text-blue-600 hover:underline flex items-center gap-1">
+                        <Link href={`/dashboard/families/${house.family._id}`} className="text-primary hover:underline flex items-center gap-1">
                             {house.family.name} Family <ArrowLeft className="h-3 w-3 rotate-180" />
                         </Link>
                     </div>
@@ -559,29 +559,28 @@ export default function HouseDetailPage() {
     )
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] bg-slate-50/50 dark:bg-black/10">
+        <div className="flex flex-col h-[calc(100vh-4rem)] bg-muted/40">
             {/* Header */}
-            <header className="flex items-center justify-between px-6 py-3 bg-white dark:bg-neutral-900 border-b shrink-0">
+            <header className="flex items-center justify-between px-6 py-3 bg-card border-b shrink-0">
                 <div className="flex items-center gap-3">
                     <Link href="/dashboard/houses">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 dark:hover:bg-neutral-800">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted/50">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
                     <h1 className="text-lg font-bold flex items-center gap-2">
-                        <Home className="h-4 w-4 text-blue-500" />
+                        <Home className="h-4 w-4 text-primary" />
                         {house?.name}
                     </h1>
                     <p className="text-xs text-muted-foreground font-mono">{house?.customId}</p>
                 </div>
 
                 {/* View Switcher (Desktop) */}
-                {/* View Switcher (Desktop) */}
-                <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-neutral-800 p-1 rounded-lg">
+                <div className="hidden lg:flex items-center gap-1 bg-muted/60 p-1 rounded-lg">
                     <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-7 text-xs gap-2 ${viewMode === 'tree' ? 'bg-white shadow-sm text-foreground' : 'text-muted-foreground'}`}
+                        className={`h-7 text-xs gap-2 ${viewMode === 'tree' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
                         onClick={() => setViewMode('tree')}
                     >
                         <Network className="h-3.5 w-3.5" /> Visual Tree
@@ -589,7 +588,7 @@ export default function HouseDetailPage() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        className={`h-7 text-xs gap-2 ${viewMode === 'collections' ? 'bg-white shadow-sm text-foreground' : 'text-muted-foreground'}`}
+                        className={`h-7 text-xs gap-2 ${viewMode === 'collections' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground'}`}
                         onClick={() => setViewMode('collections')}
                     >
                         <Coins className="h-3.5 w-3.5" /> Collections
@@ -600,12 +599,12 @@ export default function HouseDetailPage() {
             {/* Desktop View: Grid Layout */}
             <div className="hidden lg:grid flex-1 w-full overflow-hidden grid-cols-4 h-full">
                 {/* Left Sidebar */}
-                <div className="col-span-1 border-r bg-white dark:bg-neutral-900 flex flex-col h-full overflow-hidden">
+                <div className="col-span-1 border-r bg-card flex flex-col h-full overflow-hidden">
                     <InfoSection />
                     <MembersList />
                 </div>
                 {/* Right Pane: Main Content */}
-                <div className="col-span-3 h-full relative bg-slate-50/50 dark:bg-black/20 overflow-hidden">
+                <div className="col-span-3 h-full relative bg-muted/40 overflow-hidden">
                     {viewMode === 'tree' ? (
                         <VisualTree />
                     ) : (
@@ -636,13 +635,13 @@ export default function HouseDetailPage() {
                     </TabsList>
 
                     <TabsContent value="overview" className="flex-1 flex flex-col overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden">
-                        <div className="flex flex-col h-full bg-white dark:bg-neutral-900">
+                        <div className="flex flex-col h-full bg-card">
                             <InfoSection />
                             <MembersList />
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="tree" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden relative bg-slate-50/50">
+                    <TabsContent value="tree" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden relative bg-muted/40">
                         <VisualTree />
                     </TabsContent>
 
@@ -688,7 +687,7 @@ export default function HouseDetailPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteMember} className="bg-red-600 hover:bg-red-700">Delete</AlertDialogAction>
+                        <AlertDialogAction onClick={handleDeleteMember} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
