@@ -233,23 +233,26 @@ export default function FamiliesPage() {
     }
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Families</h2>
-                    <p className="text-muted-foreground text-sm">Manage the root family units.</p>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Management · Families
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Families</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Manage the root family units.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleExport}>
-                        <Download className="mr-2 h-4 w-4" /> Export
+                    <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+                        <Download className="h-4 w-4" /> Export
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)}>
-                        <Upload className="mr-2 h-4 w-4" /> Import
+                    <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="gap-2">
+                        <Upload className="h-4 w-4" /> Import
                     </Button>
                     <Dialog open={isOpen} onOpenChange={setIsOpen}>
                         <DialogTrigger asChild>
-                            <Button size="sm">
-                                <Plus className="mr-2 h-4 w-4" /> Add Family
+                            <Button size="sm" className="gap-2">
+                                <Plus className="h-4 w-4" /> Add Family
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
@@ -390,34 +393,34 @@ export default function FamiliesPage() {
                         {importResult && (
                             <div className={cn(
                                 "rounded-md px-4 py-3 text-sm border",
-                                importResult.errorCount > 0 ? "bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-800" : "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-900"
+                                importResult.errorCount > 0 ? "bg-muted/40 border-border" : "bg-chart-1/10 border-chart-1/20"
                             )}>
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="font-semibold flex items-center gap-2 text-sm">
                                         {importResult.errorCount > 0 ? (
-                                            <span className="text-amber-600 dark:text-amber-500">Completed with Skips</span>
+                                            <span className="text-chart-2">Completed with Skips</span>
                                         ) : (
-                                            <span className="text-green-700 dark:text-green-400">Import Successful</span>
+                                            <span className="text-chart-1">Import Successful</span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-3 text-xs">
                                         <div className="flex items-center gap-1">
                                             <span className="text-muted-foreground">Added:</span>
-                                            <span className="font-mono font-bold text-green-600">{importResult.successCount || 0}</span>
+                                            <span className="font-mono font-bold text-chart-1">{importResult.successCount || 0}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <span className="text-muted-foreground">Skipped:</span>
-                                            <span className="font-mono font-bold text-amber-600">{importResult.errorCount || 0}</span>
+                                            <span className="font-mono font-bold text-chart-2">{importResult.errorCount || 0}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {importResult.errors?.length > 0 && (
-                                    <div className="border-t border-slate-100 dark:border-slate-800 pt-2 mt-2">
+                                    <div className="border-t border-border pt-2 mt-2">
                                         <div className="max-h-[100px] overflow-y-auto space-y-1 pr-1">
                                             {importResult.errors.map((e: string, i: number) => (
                                                 <div key={i} className="text-[11px] text-muted-foreground font-mono flex items-start gap-1.5 leading-tight">
-                                                    <span className="text-amber-500 mt-0.5">•</span>
+                                                    <span className="text-chart-2 mt-0.5">•</span>
                                                     <span>{e}</span>
                                                 </div>
                                             ))}
@@ -440,7 +443,7 @@ export default function FamiliesPage() {
             </Dialog>
 
             <Card className="border shadow-sm">
-                <CardHeader className="p-3  border-b bg-slate-50/50 dark:bg-slate-900/50">
+                <CardHeader className="p-4 border-b bg-muted/40">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <CardTitle className="text-base font-semibold">All Families</CardTitle>
@@ -449,24 +452,24 @@ export default function FamiliesPage() {
                             </CardDescription>
                         </div>
                         <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Search by name or ID..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-8 h-9 text-sm"
+                                className="h-9 bg-background pl-9 text-sm"
                             />
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                        <TableHeader className="bg-muted/40">
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="w-[80px] h-9 text-xs font-semibold">ID</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Name</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Description</TableHead>
-                                <TableHead className="text-right h-9 text-xs font-semibold w-[140px]">Actions</TableHead>
+                                <TableHead className="w-[80px] h-9 text-xs font-semibold uppercase tracking-wider">ID</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Name</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Description</TableHead>
+                                <TableHead className="text-right h-9 text-xs font-semibold w-[140px] uppercase tracking-wider">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -484,7 +487,7 @@ export default function FamiliesPage() {
                                 </TableRow>
                             ) : (
                                 families.map((family: any) => (
-                                    <TableRow key={family._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                                    <TableRow key={family._id} className="hover:bg-muted/50">
                                         <TableCell className="py-2 text-sm font-mono font-medium">{family.customId}</TableCell>
                                         <TableCell className="py-2 text-sm font-medium">{family.name}</TableCell>
                                         <TableCell className="py-2 text-sm text-muted-foreground">{family.description || "-"}</TableCell>
@@ -492,15 +495,15 @@ export default function FamiliesPage() {
                                             <div className="flex justify-end gap-1">
                                                 <Link href={`/dashboard/families/${family._id}`}>
                                                     <Button variant="ghost" size="icon" className="h-7 w-7">
-                                                        <Eye className="h-3.5 w-3.5 text-blue-500" />
+                                                        <Eye className="h-3.5 w-3.5 text-primary" />
                                                     </Button>
                                                 </Link>
                                                 <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEditDialog(family)}>
-                                                    <Pencil className="h-3.5 w-3.5 text-amber-500" />
+                                                    <Pencil className="h-3.5 w-3.5 text-chart-2" />
                                                 </Button>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:text-red-700">
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
                                                             <Trash2 className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </AlertDialogTrigger>
@@ -513,7 +516,7 @@ export default function FamiliesPage() {
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
                                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleDelete(family._id)} className="bg-red-600 hover:bg-red-700">
+                                                            <AlertDialogAction onClick={() => handleDelete(family._id)} className="bg-destructive hover:bg-destructive/90">
                                                                 Delete
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
@@ -527,7 +530,7 @@ export default function FamiliesPage() {
                         </TableBody>
                     </Table>
                 </CardContent>
-                <div className="p-4 border-t grid grid-cols-3 sm:grid-cols-3 items-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="p-4 border-t grid grid-cols-3 sm:grid-cols-3 items-center gap-4 bg-muted/40">
                     <div className="flex items-center gap-2 justify-center sm:justify-start">
                         <p className="text-xs text-muted-foreground whitespace-nowrap">
                             Rows
@@ -535,7 +538,7 @@ export default function FamiliesPage() {
                         <Input
                             type="number"
                             min="1"
-                            className="h-8 w-[70px]"
+                            className="h-8 w-[70px] bg-background"
                             value={limit}
                             onChange={(e) => {
                                 const val = parseInt(e.target.value)

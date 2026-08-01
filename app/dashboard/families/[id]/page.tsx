@@ -170,9 +170,9 @@ export default function FamilyDetailDashboard() {
                 data: { label: `${famData.name} (${famData.customId})` },
                 position: { x: 0, y: 0 },
                 style: {
-                    background: '#0f172a',
+                    background: '#065f46',
                     color: '#fff',
-                    border: '1px solid #1e293b',
+                    border: '1px solid #065f46',
                     width: 180,
                     borderRadius: 8,
                     padding: '8px',
@@ -191,7 +191,7 @@ export default function FamilyDetailDashboard() {
                     position: { x: 0, y: 0 },
                     style: {
                         background: '#ffffff',
-                        border: '1px solid #e2e8f0',
+                        border: '1px solid #d4d4d8',
                         width: 160,
                         borderRadius: 6,
                         padding: '6px',
@@ -206,7 +206,7 @@ export default function FamilyDetailDashboard() {
                     target: house._id,
                     type: 'smoothstep',
                     animated: true,
-                    style: { stroke: '#94a3b8' }
+                    style: { stroke: '#a1a1aa' }
                 })
             })
 
@@ -267,10 +267,10 @@ export default function FamilyDetailDashboard() {
                         source: parentId,
                         target: member._id,
                         type: 'smoothstep',
-                        style: { stroke: '#eab308', strokeWidth: 2 },
+                        style: { stroke: '#ca8a04', strokeWidth: 2 },
                         label: 'Head of House',
-                        labelStyle: { fill: '#b45309', fontWeight: 700, fontSize: 10 },
-                        labelBgStyle: { fill: '#fffbeb' }
+                        labelStyle: { fill: '#a16207', fontWeight: 700, fontSize: 10 },
+                        labelBgStyle: { fill: '#fef9c3' }
                     });
                     processedAnchors.add(member._id);
                     headsAssignedByParent.add(parentId);
@@ -284,9 +284,9 @@ export default function FamilyDetailDashboard() {
                         source: parentId,
                         target: member._id,
                         type: 'smoothstep',
-                        style: { stroke: '#cbd5e1', strokeDasharray: '5,5' },
+                        style: { stroke: '#a1a1aa' },
                         label: 'Resident',
-                        labelStyle: { fill: '#94a3b8', fontSize: 9 }
+                        labelStyle: { fill: '#a1a1aa', fontSize: 9 }
                     });
                     processedAnchors.add(member._id);
                     return;
@@ -324,7 +324,7 @@ export default function FamilyDetailDashboard() {
 
                         if (!houseHasHead && !member.spouse) { // First singleton becomes Head heuristic
                             label = 'Head of House';
-                            style = { stroke: '#eab308', strokeWidth: 2 };
+                            style = { stroke: '#ca8a04', strokeWidth: 2 };
                             headsAssignedByParent.add(parentId);
                             // Update local styling for consistent visual? (Node style was set above, this is Edge)
                         }
@@ -336,7 +336,7 @@ export default function FamilyDetailDashboard() {
                             type: 'smoothstep',
                             style: style,
                             label: label,
-                            labelStyle: { fill: '#64748b', fontSize: 9 }
+                            labelStyle: { fill: '#71717a', fontSize: 9 }
                         });
                         processedAnchors.add(member._id);
                     }
@@ -365,7 +365,7 @@ export default function FamilyDetailDashboard() {
                             style: {
                                 width: 10,
                                 height: 10,
-                                background: '#ec4899',
+                                background: '#a855f7',
                                 borderRadius: '50%',
                                 border: 'none'
                             },
@@ -379,9 +379,9 @@ export default function FamilyDetailDashboard() {
                             source: member._id,
                             target: marriageNodeId,
                             type: 'smoothstep',
-                            style: { stroke: '#ec4899', strokeWidth: 1.5 },
+                            style: { stroke: '#a855f7', strokeWidth: 1.5 },
                             label: member.gender === 'Male' ? 'Husband' : 'Wife',
-                            labelStyle: { fill: '#ec4899', fontSize: 9 }
+                            labelStyle: { fill: '#a855f7', fontSize: 9 }
                         })
                         // Wife -> Node
                         newEdges.push({
@@ -389,10 +389,10 @@ export default function FamilyDetailDashboard() {
                             source: sid,
                             target: marriageNodeId,
                             type: 'smoothstep',
-                            style: { stroke: '#ec4899', strokeWidth: 1.5 },
+                            style: { stroke: '#a855f7', strokeWidth: 1.5 },
                             // Determine label for the other spouse
                             label: membersList.find((m: any) => m._id === sid)?.gender === 'Male' ? 'Husband' : 'Wife',
-                            labelStyle: { fill: '#ec4899', fontSize: 9 }
+                            labelStyle: { fill: '#a855f7', fontSize: 9 }
                         })
                     }
                 }
@@ -420,9 +420,9 @@ export default function FamilyDetailDashboard() {
                                 source: marriageNodeId,
                                 target: member._id,
                                 type: 'smoothstep',
-                                style: { stroke: '#3b82f6', strokeWidth: 1.5 },
+                                style: { stroke: '#2563eb', strokeWidth: 1.5 },
                                 label: member.gender === 'Male' ? 'Son' : 'Daughter',
-                                labelStyle: { fill: '#3b82f6', fontSize: 9, fontWeight: 600 }
+                                labelStyle: { fill: '#2563eb', fontSize: 9, fontWeight: 600 }
                             })
                             connectedToMarriage = true
                         }
@@ -438,9 +438,9 @@ export default function FamilyDetailDashboard() {
                                     source: pid,
                                     target: member._id,
                                     type: 'smoothstep',
-                                    style: { stroke: '#3b82f6', strokeWidth: 1.5 },
+                                    style: { stroke: '#2563eb', strokeWidth: 1.5 },
                                     label: member.gender === 'Male' ? 'Son' : 'Daughter',
-                                    labelStyle: { fill: '#3b82f6', fontSize: 9 }
+                                    labelStyle: { fill: '#2563eb', fontSize: 9 }
                                 })
                             }
                         })
@@ -541,9 +541,9 @@ export default function FamilyDetailDashboard() {
     // Prepare content variables or just render inline
     const familyDirectoryContent = (
         <div className="flex-1 flex flex-col min-h-0 border-b overflow-hidden">
-            <div className="p-3 border-b bg-slate-50/80 dark:bg-neutral-800/50 flex items-center justify-between shrink-0">
+            <div className="p-3 border-b bg-muted/40 flex items-center justify-between shrink-0">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
-                    <Home className="h-3.5 w-3.5 text-slate-500" /> Structure ({houses.length} Houses)
+                    <Home className="h-3.5 w-3.5 text-muted-foreground" /> Structure ({houses.length} Houses)
                 </h3>
                 <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => {
                     setHouseForm({ name: "", address: "" })
@@ -559,7 +559,7 @@ export default function FamilyDetailDashboard() {
                         {houses.map(house => {
                             const houseMembers = membersByHouse[house._id] || []
                             return (
-                                <AccordionItem key={house._id} value={house._id} className="border rounded-md px-2 bg-white dark:bg-neutral-900">
+                                <AccordionItem key={house._id} value={house._id} className="border rounded-md px-2 bg-card">
                                     <div className="flex items-center justify-between py-2 group">
                                         <AccordionTrigger className="py-0 hover:no-underline flex-1 text-sm font-medium">
                                             <div className="flex flex-col items-start text-left">
@@ -577,7 +577,7 @@ export default function FamilyDetailDashboard() {
                                                     setIsEditHouseOpen(true)
                                                 }}
                                             >
-                                                <Pencil className="h-3 w-3 text-slate-500" />
+                                                <Pencil className="h-3 w-3 text-muted-foreground" />
                                             </Button>
                                             <Button
                                                 size="sm" variant="ghost" className="h-6 w-6 ml-1"
@@ -588,7 +588,7 @@ export default function FamilyDetailDashboard() {
                                                     setIsAddMemberOpen(true)
                                                 }}
                                             >
-                                                <Plus className="h-3 w-3 text-blue-500" />
+                                                <Plus className="h-3 w-3 text-primary" />
                                             </Button>
                                         </div>
                                     </div>
@@ -602,21 +602,21 @@ export default function FamilyDetailDashboard() {
 
                                                     const isMovedOut = member.status === 'Moved Out';
                                                     return (
-                                                        <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-neutral-50 dark:bg-neutral-900/50' : ''}`}>
+                                                        <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-muted/40' : ''}`}>
                                                             <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
-                                                                isHead ? "bg-yellow-100 text-yellow-700" :
-                                                                    isMovedOut ? "bg-slate-100 text-slate-500" : "bg-blue-100 text-blue-600")}>
+                                                                isHead ? "bg-chart-2/10 text-chart-2" :
+                                                                    isMovedOut ? "bg-muted text-muted-foreground" : "bg-primary/10 text-primary")}>
                                                                 {isHead ? <Crown className="h-3 w-3" /> : member.name.charAt(0)}
                                                             </div>
                                                             <span className={`truncate flex-1 ${isMovedOut ? 'line-through text-muted-foreground' : ''}`}>{member.name}</span>
                                                             {isMovedOut && (
-                                                                <span className="text-[10px] bg-red-100 text-red-700 px-1.5 rounded border border-red-200 transform scale-[0.85] origin-right">Moved Out</span>
+                                                                <span className="text-[10px] bg-destructive/10 text-destructive px-1.5 rounded border border-destructive/20 transform scale-[0.85] origin-right">Moved Out</span>
                                                             )}
                                                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100">
                                                                 {!isHead && !isMovedOut && (
                                                                     <Button size="icon" variant="ghost" className="h-5 w-5" title="Make Head of House"
                                                                         onClick={() => handleSetHeadOfHouse(house._id, member._id)}>
-                                                                        <Crown className="h-3 w-3 text-slate-400 hover:text-yellow-600" />
+                                                                        <Crown className="h-3 w-3 text-muted-foreground hover:text-chart-2" />
                                                                     </Button>
                                                                 )}
                                                                 <Button size="icon" variant="ghost" className="h-5 w-5"
@@ -624,7 +624,7 @@ export default function FamilyDetailDashboard() {
                                                                         setEditingMember(member)
                                                                         setIsAddMemberOpen(true)
                                                                     }}>
-                                                                    <Pencil className="h-3 w-3 text-slate-400 hover:text-blue-600" />
+                                                                    <Pencil className="h-3 w-3 text-muted-foreground hover:text-primary" />
                                                                 </Button>
                                                             </div>
                                                         </div>
@@ -639,9 +639,9 @@ export default function FamilyDetailDashboard() {
 
                         {/* Independent Members Section */}
                         {independentMembers.length > 0 && (
-                            <AccordionItem value="independent" className="border rounded-md px-2 bg-slate-50 dark:bg-neutral-800/50">
+                            <AccordionItem value="independent" className="border rounded-md px-2 bg-muted/40">
                                 <div className="flex items-center justify-between py-2">
-                                    <AccordionTrigger className="py-0 hover:no-underline flex-1 text-sm font-medium text-slate-600 dark:text-slate-400">
+                                    <AccordionTrigger className="py-0 hover:no-underline flex-1 text-sm font-medium text-muted-foreground">
                                         <div className="flex flex-col items-start text-left">
                                             <span>Independent Members</span>
                                             <span className="text-[10px] text-muted-foreground font-normal">{independentMembers.length} Members</span>
@@ -656,7 +656,7 @@ export default function FamilyDetailDashboard() {
                                             setIsAddMemberOpen(true)
                                         }}
                                     >
-                                        <Plus className="h-3.5 w-3.5 text-slate-500" />
+                                        <Plus className="h-3.5 w-3.5 text-muted-foreground" />
                                     </Button>
                                 </div>
                                 <AccordionContent className="pt-2 pb-2 border-t mt-1">
@@ -664,20 +664,20 @@ export default function FamilyDetailDashboard() {
                                         {independentMembers.map(member => {
                                             const isMovedOut = member.status === 'Moved Out';
                                             return (
-                                                <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-neutral-100' : ''}`}>
-                                                    <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isMovedOut ? "bg-slate-200 text-slate-500" : "bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400"}`}>
+                                                <div key={member._id} className={`flex items-center gap-2 p-1.5 rounded hover:bg-muted/50 transition-colors text-xs group ${isMovedOut ? 'opacity-60 bg-muted/40' : ''}`}>
+                                                    <div className={`h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isMovedOut ? "bg-muted text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
                                                         {member.name.charAt(0)}
                                                     </div>
                                                     <span className={`truncate flex-1 ${isMovedOut ? 'line-through text-muted-foreground' : ''}`}>{member.name}</span>
                                                     {isMovedOut && (
-                                                        <span className="text-[9px] bg-red-100 text-red-700 px-1 rounded border border-red-200">Moved Out</span>
+                                                        <span className="text-[9px] bg-destructive/10 text-destructive px-1 rounded border border-destructive/20">Moved Out</span>
                                                     )}
                                                     <Button size="icon" variant="ghost" className="h-5 w-5 opacity-0 group-hover:opacity-100"
                                                         onClick={() => {
                                                             setEditingMember(member)
                                                             setIsAddMemberOpen(true)
                                                         }}>
-                                                        <Pencil className="h-3 w-3 text-slate-400 hover:text-blue-600" />
+                                                        <Pencil className="h-3 w-3 text-muted-foreground hover:text-primary" />
                                                     </Button>
                                                 </div>
                                             )
@@ -693,18 +693,18 @@ export default function FamilyDetailDashboard() {
     );
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] bg-slate-50/50 dark:bg-black/10">
+        <div className="flex flex-col h-[calc(100vh-4rem)] bg-muted/40">
             {/* Header */}
-            <header className="flex items-center justify-between px-6 py-3 bg-white dark:bg-neutral-900 border-b shrink-0">
+            <header className="flex items-center justify-between px-6 py-3 bg-card border-b shrink-0">
                 <div className="flex items-center gap-3">
                     <Link href="/dashboard/families">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-slate-100 dark:hover:bg-neutral-800">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted/50">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
                     <div>
                         <h1 className="text-lg font-bold flex items-center gap-2">
-                            <Users className="h-4 w-4 text-blue-500" />
+                            <Users className="h-4 w-4 text-primary" />
                             {family?.name}
                         </h1>
                         <p className="text-xs text-muted-foreground font-mono transition-all">{family?.customId}</p>
@@ -715,11 +715,11 @@ export default function FamilyDetailDashboard() {
             {/* Desktop View: Grid Layout (Hidden on Mobile) */}
             <div className="hidden lg:grid flex-1 w-full overflow-hidden grid-cols-4 h-full">
                 {/* Left Sidebar */}
-                <div className="col-span-1 border-r bg-white dark:bg-neutral-900 flex flex-col h-full overflow-hidden">
+                <div className="col-span-1 border-r bg-card flex flex-col h-full overflow-hidden">
                     {familyDirectoryContent}
                 </div>
                 {/* Right Pane: Visual Tree */}
-                <div className="col-span-3 h-full relative bg-slate-50/50 dark:bg-black/20">
+                <div className="col-span-3 h-full relative bg-muted/40">
                     <ReactFlow
                         nodes={nodes}
                         edges={edges}
@@ -730,7 +730,7 @@ export default function FamilyDetailDashboard() {
                         fitView
                         attributionPosition="bottom-right"
                     >
-                        <Controls className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 shadow-sm" />
+                        <Controls className="bg-card border-border shadow-sm" />
                         <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
                     </ReactFlow>
                 </div>
@@ -749,12 +749,12 @@ export default function FamilyDetailDashboard() {
                     </TabsList>
 
                     <TabsContent value="overview" className="flex-1 flex flex-col overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden">
-                        <div className="flex flex-col h-full bg-white dark:bg-neutral-900">
+                        <div className="flex flex-col h-full bg-card">
                             {familyDirectoryContent}
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="tree" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden relative bg-slate-50/50">
+                    <TabsContent value="tree" className="flex-1 overflow-hidden m-0 p-0 h-full data-[state=inactive]:hidden relative bg-muted/40">
                         <ReactFlow
                             nodes={nodes}
                             edges={edges}
@@ -765,7 +765,7 @@ export default function FamilyDetailDashboard() {
                             fitView
                             attributionPosition="bottom-right"
                         >
-                            <Controls className="bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 shadow-sm" />
+                            <Controls className="bg-card border-border shadow-sm" />
                             <Background variant={BackgroundVariant.Dots} gap={16} size={1} color="#cbd5e1" />
                         </ReactFlow>
                     </TabsContent>
