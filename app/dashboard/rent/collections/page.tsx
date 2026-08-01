@@ -18,16 +18,21 @@ import { Label } from "@/components/ui/label"
 
 export default function RentCollectionsPage() {
     return (
-        <div className="flex flex-col h-full bg-slate-50/50 dark:bg-black/20 p-6 space-y-6">
-            <div>
-                <h2 className="text-2xl font-bold tracking-tight">Rent Collections</h2>
-                <p className="text-muted-foreground">Manage and monitor all collected rents.</p>
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Rent · Collections
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Rent Collections</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Manage and monitor all collected rents.</p>
+                </div>
             </div>
 
             <Tabs defaultValue="dues" className="space-y-4">
                 <TabsList>
                     <TabsTrigger value="dues" className="gap-2"><Calendar className="h-4 w-4" /> Rent Dues</TabsTrigger>
-                    <TabsTrigger value="arrears" className="gap-2 text-red-600 dark:text-red-400"><Bell className="h-4 w-4" /> Arrears Summary</TabsTrigger>
+                    <TabsTrigger value="arrears" className="gap-2 text-destructive"><Bell className="h-4 w-4" /> Arrears Summary</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="dues" className="space-y-4">
@@ -87,20 +92,20 @@ function RentDuesTable() {
     })
 
     return (
-        <Card>
-            <CardHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0">
+        <Card className="bg-card shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b bg-muted/40 p-4">
                 <div className="flex items-center gap-2">
                     <div className="relative">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             placeholder="Search tenant..."
-                            className="pl-8 h-9 w-[200px] lg:w-[300px]"
+                            className="h-9 w-full bg-background pl-9 sm:w-[200px] lg:w-[300px]"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
                     <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                        <SelectTrigger className="h-9 w-[130px]">
+                        <SelectTrigger className="h-9 bg-background w-[130px]">
                             <SelectValue placeholder="Period" />
                         </SelectTrigger>
                         <SelectContent>
@@ -111,7 +116,7 @@ function RentDuesTable() {
                         </SelectContent>
                     </Select>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="h-9 w-[130px]">
+                        <SelectTrigger className="h-9 bg-background w-[130px]">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -128,14 +133,14 @@ function RentDuesTable() {
             </CardHeader>
             <CardContent className="p-0">
                 <Table>
-                    <TableHeader className="bg-slate-50 dark:bg-neutral-900">
-                        <TableRow>
-                            <TableHead className="w-[100px]">Period</TableHead>
-                            <TableHead>Tenant</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Paid On</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
-                            <TableHead className="text-right">Collected</TableHead>
+                    <TableHeader className="bg-muted/40">
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="w-[100px] font-semibold text-xs uppercase tracking-wider">Period</TableHead>
+                            <TableHead className="font-semibold text-xs uppercase tracking-wider">Tenant</TableHead>
+                            <TableHead className="font-semibold text-xs uppercase tracking-wider">Status</TableHead>
+                            <TableHead className="hidden font-semibold text-xs uppercase tracking-wider sm:table-cell">Paid On</TableHead>
+                            <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Amount</TableHead>
+                            <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Collected</TableHead>
                             <TableHead className="w-[100px]"></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -162,7 +167,7 @@ function RentDuesTable() {
 
                                 return (
                                     <Fragment key={due._id}>
-                                        <TableRow className={cn("hover:bg-slate-50 dark:hover:bg-neutral-800/50", isExpanded && "bg-slate-50 dark:bg-neutral-800/50")}>
+                                        <TableRow className={cn("hover:bg-muted/50", isExpanded && "bg-muted/40")}>
                                             <TableCell className="font-medium">
                                                 <div className="flex items-center gap-2">
                                                     {isPartial && (
@@ -187,16 +192,16 @@ function RentDuesTable() {
                                             <TableCell>
                                                 <Badge variant="outline" className={cn(
                                                     "text-[10px] px-2 py-0.5 border-0 font-medium",
-                                                    due.status === 'PAID' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                                                        due.status === 'PARTIAL' ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" :
-                                                            "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                                    due.status === 'PAID' ? "bg-chart-1/10 text-chart-1" :
+                                                        due.status === 'PARTIAL' ? "bg-chart-2/10 text-chart-2" :
+                                                            "bg-muted/60 text-muted-foreground"
                                                 )}>
                                                     {due.status}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-xs text-muted-foreground font-mono">{paidDate}</TableCell>
                                             <TableCell className="text-right font-mono text-sm">₹{due.amount}</TableCell>
-                                            <TableCell className="text-right font-mono text-sm text-green-600 font-bold">
+                                            <TableCell className="text-right font-mono text-sm text-chart-1 font-bold">
                                                 {due.collectedAmount > 0 ? `₹${due.collectedAmount}` : '-'}
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -217,7 +222,7 @@ function RentDuesTable() {
                                             </TableCell>
                                         </TableRow>
                                         {isExpanded && (
-                                            <TableRow className="bg-slate-50/50 dark:bg-neutral-900/20">
+                                            <TableRow className="bg-muted/40">
                                                 <TableCell colSpan={7} className="p-0">
                                                     <div className="p-4 pl-12 border-b">
                                                         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2 mb-3">
@@ -234,7 +239,7 @@ function RentDuesTable() {
                                                             </TableHeader>
                                                             <TableBody>
                                                                 {due.transactions?.map((tx: any, idx: number) => (
-                                                                    <TableRow key={tx._id || idx} className="h-8 border-none hover:bg-slate-100 dark:hover:bg-neutral-800">
+                                                                    <TableRow key={tx._id || idx} className="h-8 border-none hover:bg-muted/50">
                                                                         <TableCell className="py-1 text-xs">{new Date(tx.date).toLocaleDateString('en-GB')}</TableCell>
                                                                         <TableCell className="py-1 text-xs font-mono text-muted-foreground">#{tx.receipt?.toString().slice(-6).toUpperCase() || '-'}</TableCell>
                                                                         <TableCell className="py-1 text-xs text-right font-mono font-medium">₹{tx.amount}</TableCell>
@@ -247,7 +252,7 @@ function RentDuesTable() {
                                                                                     onClick={() => window.open(`/api/receipts/${tx.receipt}/pdf`, '_blank')}
                                                                                     title="View Receipt"
                                                                                 >
-                                                                                    <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                                                    <ExternalLink className="h-3 w-3 text-muted-foreground" />
                                                                                 </Button>
                                                                             )}
                                                                         </TableCell>
@@ -307,10 +312,10 @@ function RentArrearsTable() {
     }
 
     return (
-        <Card className="border-red-100 dark:border-red-900/30">
-            <CardHeader className="p-4 border-b flex flex-row items-center justify-between space-y-0 bg-red-50/50 dark:bg-red-950/10">
+        <Card className="border-destructive/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b bg-destructive/5 p-4">
                 <div>
-                    <CardTitle className="text-lg flex items-center gap-2 text-red-700 dark:text-red-400">
+                    <CardTitle className="flex items-center gap-2 text-lg text-destructive">
                         <ShieldAlert className="h-5 w-5" /> Pending Rent Arrears Summary
                     </CardTitle>
                     <CardDescription>
@@ -320,12 +325,12 @@ function RentArrearsTable() {
             </CardHeader>
             <CardContent className="p-0">
                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Tenant</TableHead>
-                            <TableHead>Phone</TableHead>
-                            <TableHead className="text-center">Pending Months</TableHead>
-                            <TableHead className="text-right">Total Outstanding</TableHead>
+                    <TableHeader className="bg-muted/40">
+                        <TableRow className="hover:bg-transparent">
+                            <TableHead className="font-semibold text-xs uppercase tracking-wider">Tenant</TableHead>
+                            <TableHead className="font-semibold text-xs uppercase tracking-wider">Phone</TableHead>
+                            <TableHead className="text-center font-semibold text-xs uppercase tracking-wider">Pending Months</TableHead>
+                            <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Total Outstanding</TableHead>
                             <TableHead className="w-[150px]"></TableHead>
                         </TableRow>
                     </TableHeader>
@@ -360,14 +365,14 @@ function RentArrearsTable() {
                                             {item.pendingCount}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-right font-mono font-bold text-red-600">
+                                    <TableCell className="text-right font-mono font-bold text-destructive">
                                         ₹{item.totalAmount}
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className="h-8 gap-2 border-green-200 text-green-700 hover:bg-green-50 dark:border-green-900/30 dark:text-green-400 dark:hover:bg-green-950/20"
+                                            className="h-8 gap-2 border-chart-1/30 text-chart-1 hover:bg-chart-1/10"
                                             onClick={() => handleSendReminder(item)}
                                             disabled={remindingId === item.contractId}
                                         >
