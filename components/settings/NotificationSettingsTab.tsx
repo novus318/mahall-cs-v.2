@@ -31,7 +31,8 @@ const formSchema = z.object({
 });
 
 export default function NotificationSettingsTab() {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
     const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -51,6 +52,7 @@ export default function NotificationSettingsTab() {
     }, []);
 
     const loadContacts = async () => {
+        setIsFetching(true);
         try {
             const { data } = await api.get('/settings/alert-contacts');
             if (data && Array.isArray(data.data)) {
@@ -58,11 +60,13 @@ export default function NotificationSettingsTab() {
             }
         } catch (error) {
             toast.error("Failed to load contacts");
+        } finally {
+            setIsFetching(false);
         }
     };
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
-        setIsLoading(true);
+        setIsSaving(true);
         try {
             await api.put('/settings/alert-contacts', { contacts: values.contacts });
             toast.success("Notification contacts updated");
@@ -77,7 +81,7 @@ export default function NotificationSettingsTab() {
         } catch (error: any) {
             toast.error("Failed to save contacts");
         } finally {
-            setIsLoading(false);
+            setIsSaving(false);
         }
     };
 
@@ -96,12 +100,35 @@ export default function NotificationSettingsTab() {
                         <h3 className="text-sm font-semibold">Alert Contacts</h3>
                         <p className="text-xs text-muted-foreground">Recipients for critical alerts.</p>
                     </div>
-                    <Button onClick={() => append({ name: '', number: '' })} variant="outline" size="sm" className="h-8 text-xs">
+                    <Button onClick={() => append({ name: '', number: '' })} variant="outline" size="sm" className="h-8 text-xs" disabled={isFetching}>
                         <Plus className="mr-2 h-3.5 w-3.5" /> Add Contact
                     </Button>
                 </div>
 
                 <div className="p-4 sm:p-6">
+                    {isFetching ? (
+                        <div className="space-y-3" aria-busy="true">
+                            <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
+                                <Loader2 className="h-4 w-4 animate-spin" /> Loading contacts...
+                            </div>
+                            {[0, 1].map(i => (
+                                <div key={i} className="flex flex-col sm:flex-row gap-3 animate-pulse">
+                                    <div className="flex-1 space-y-1.5">
+                                        <div className="h-3 w-16 rounded bg-muted/70" />
+                                        <div className="h-9 rounded-md bg-muted/70" />
+                                    </div>
+                                    <div className="flex-1 space-y-1.5">
+                                        <div className="h-3 w-20 rounded bg-muted/70" />
+                                        <div className="h-9 rounded-md bg-muted/70" />
+                                    </div>
+                                    <div className="h-9 w-9 shrink-0 rounded-md bg-muted/70" />
+                                </div>
+                            ))}
+                            <div className="flex justify-end pt-3">
+                                <div className="h-9 w-40 rounded-md bg-muted/70 animate-pulse" />
+                            </div>
+                        </div>
+                    ) : (
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                             {fields.length === 0 && (
@@ -156,13 +183,14 @@ export default function NotificationSettingsTab() {
                             ))}
 
                             <div className="flex justify-end pt-3">
-                                <Button type="submit" disabled={isLoading} size="sm">
-                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                                    {isLoading ? "Saving..." : "Save Configuration"}
+                                <Button type="submit" disabled={isSaving} size="sm">
+                                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                    {isSaving ? "Saving..." : "Save Configuration"}
                                 </Button>
                             </div>
                         </form>
                     </Form>
+                    )}
                 </div>
             </div>
 
