@@ -40,11 +40,11 @@ export default function DeathRegisterViewPage({ params }: { params: Promise<{ id
     };
 
     if (loading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
-    if (!record) return <div className="p-8 text-center text-red-500">Death record not found.</div>;
+    if (!record) return <div className="p-8 text-center text-destructive">Death record not found.</div>;
 
     return (
-        <div className="container mx-auto py-6 px-4">
-            <div className="mb-6 flex justify-between items-center no-print bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="container mx-auto py-6 px-4 bg-muted/40 min-h-[calc(100vh-4rem)] flex-1">
+            <div className="mb-6 flex justify-between items-center no-print bg-card p-4 rounded-lg shadow-sm border border-border">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="icon" onClick={() => router.back()}>
                         <ChevronLeft className="h-4 w-4" />

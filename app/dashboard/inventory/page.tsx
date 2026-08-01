@@ -405,12 +405,13 @@ export default function InventoryPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Inventory</h2>
-                    <p className="text-muted-foreground text-sm">Manage assets and rentals.</p>
+                    <div className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">Management · Inventory</div>
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mt-2">Inventory</h2>
+                    <p className="text-muted-foreground text-sm mt-1">Manage assets and rentals.</p>
                 </div>
                 <div className="flex gap-2">
                     <Button onClick={() => {
@@ -440,7 +441,7 @@ export default function InventoryPage() {
 
                 <TabsContent value="items" className="space-y-4">
                     <Card className="border shadow-sm">
-                        <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
+                        <CardHeader className="p-3 border-b bg-muted/40">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
                                     <CardTitle className="text-base font-semibold">Inventory Items</CardTitle>
@@ -461,13 +462,13 @@ export default function InventoryPage() {
                         </CardHeader>
                         <CardContent className="p-0">
                             <Table>
-                                <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                                <TableHeader className="bg-muted/40">
                                     <TableRow className="hover:bg-transparent">
-                                        <TableHead className="h-9 text-xs font-semibold">Item Name</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Stock</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Avail</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Avg. Cost</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Rent Rate</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Item Name</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Stock</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Avail</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Avg. Cost</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Rent Rate</TableHead>
                                         <TableHead className="h-9 text-xs font-semibold w-[50px]"></TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -486,10 +487,10 @@ export default function InventoryPage() {
                                         </TableRow>
                                     ) : (
                                         items.map((item) => (
-                                            <TableRow key={item._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                                            <TableRow key={item._id} className="hover:bg-muted/50">
                                                 <TableCell className="py-2 text-sm font-medium">{item.name}</TableCell>
                                                 <TableCell className="py-2 text-sm text-right font-mono">{item.totalQuantity}</TableCell>
-                                                <TableCell className="py-2 text-sm text-right font-mono font-bold text-green-600">{item.availableQuantity}</TableCell>
+                                                <TableCell className="py-2 text-sm text-right font-mono font-bold text-chart-1">{item.availableQuantity}</TableCell>
                                                 <TableCell className="py-2 text-sm text-right text-muted-foreground font-mono">₹{item.averageValue.toFixed(0)}</TableCell>
                                                 <TableCell className="py-2 text-sm text-right font-mono">₹{item.rentalRate.toFixed(0)}</TableCell>
                                                 <TableCell className="py-2 text-center">
@@ -527,7 +528,7 @@ export default function InventoryPage() {
                                                             }}>
                                                                 <ArrowRightLeft className="mr-2 h-3 w-3" /> Issue / Rent
                                                             </DropdownMenuItem>
-                                                            <DropdownMenuItem className="text-xs text-red-600 focus:text-red-600" onClick={() => {
+                                                            <DropdownMenuItem className="text-xs text-destructive focus:text-destructive" onClick={() => {
                                                                 setSelectedItem(item);
                                                                 damageForm.reset({ quantity: 1, notes: '' });
                                                                 setIsDamageOpen(true);
@@ -548,7 +549,7 @@ export default function InventoryPage() {
                             </Table>
                             {/* Pagination Footer */}
                             {itemsTotalPages > 1 && (
-                                <div className="p-4 border-t flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-900/50">
+                                <div className="p-4 border-t flex items-center justify-end gap-2 bg-muted/40">
                                     <span className="text-xs text-muted-foreground mr-2">Page {itemsPage} of {itemsTotalPages}</span>
                                     <Button
                                         variant="outline"
@@ -576,7 +577,7 @@ export default function InventoryPage() {
 
                 <TabsContent value="rentals" className="space-y-4">
                     <Card className="border shadow-sm">
-                        <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
+                        <CardHeader className="p-3 border-b bg-muted/40">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
                                     <CardTitle className="text-base font-semibold">Active Rentals</CardTitle>
@@ -588,15 +589,15 @@ export default function InventoryPage() {
                         </CardHeader>
                         <CardContent className="p-0">
                             <Table>
-                                <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                                <TableHeader className="bg-muted/40">
                                     <TableRow className="hover:bg-transparent">
-                                        <TableHead className="h-9 text-xs font-semibold">Date</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold">Item</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold">Customer</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Qty</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Rent</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-center">Status</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Action</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Date</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Item</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Customer</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Qty</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Rent</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-center">Status</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -614,7 +615,7 @@ export default function InventoryPage() {
                                         </TableRow>
                                     ) : (
                                         transactions.map((tx) => (
-                                            <TableRow key={tx._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                                            <TableRow key={tx._id} className="hover:bg-muted/50">
                                                 <TableCell className="py-2 text-xs text-muted-foreground">{new Date(tx.issuedDate).toLocaleDateString()}</TableCell>
                                                 <TableCell className="py-2 text-sm font-medium">{tx.items?.map(i => i.itemId?.name).join(', ')}</TableCell>
                                                 <TableCell className="py-2 text-sm">
@@ -624,8 +625,8 @@ export default function InventoryPage() {
                                                 <TableCell className="py-2 text-sm text-right font-mono">{tx.items?.reduce((s, i) => s + i.quantity, 0)}</TableCell>
                                                 <TableCell className="py-2 text-right">
                                                     <div className="text-sm font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
-                                                    {(tx.paidAmount || 0) > 0 && <div className="text-[10px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
-                                                    {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[10px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
+                                                    {(tx.paidAmount || 0) > 0 && <div className="text-[10px] text-chart-1 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                    {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[10px] text-destructive font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
                                                 </TableCell>
                                                 <TableCell className="py-2 text-center">
                                                     <Badge variant={tx.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-[10px] h-5 px-2 font-medium">{tx.status}</Badge>
@@ -649,7 +650,7 @@ export default function InventoryPage() {
                             </Table>
                             {/* Pagination Footer - Transactions */}
                             {txMainTotalPages > 1 && (
-                                <div className="p-4 border-t flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-900/50">
+                                <div className="p-4 border-t flex items-center justify-end gap-2 bg-muted/40">
                                     <span className="text-xs text-muted-foreground mr-2">Page {txMainPage} of {txMainTotalPages}</span>
                                     <Button
                                         variant="outline"
@@ -677,7 +678,7 @@ export default function InventoryPage() {
 
                 <TabsContent value="history" className="space-y-4">
                     <Card className="border shadow-sm">
-                        <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
+                        <CardHeader className="p-3 border-b bg-muted/40">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
                                     <CardTitle className="text-base font-semibold">Rental History</CardTitle>
@@ -689,15 +690,15 @@ export default function InventoryPage() {
                         </CardHeader>
                         <CardContent className="p-0">
                             <Table>
-                                <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                                <TableHeader className="bg-muted/40">
                                     <TableRow className="hover:bg-transparent">
-                                        <TableHead className="h-9 text-xs font-semibold">Date</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold">Item</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold">Customer</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Qty</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Rent</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-center">Status</TableHead>
-                                        <TableHead className="h-9 text-xs font-semibold text-right">Action</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Date</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Item</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Customer</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Qty</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Rent</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-center">Status</TableHead>
+                                        <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider text-right">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -715,10 +716,10 @@ export default function InventoryPage() {
                                         </TableRow>
                                     ) : (
                                         allRentals.map((tx) => (
-                                            <TableRow key={tx._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                                            <TableRow key={tx._id} className="hover:bg-muted/50">
                                                 <TableCell className="py-2 text-xs text-muted-foreground">
                                                     <div>{new Date(tx.issuedDate).toLocaleDateString()}</div>
-                                                    {tx.returnedDate && <div className="text-[10px] text-green-600">Ret: {new Date(tx.returnedDate).toLocaleDateString()}</div>}
+                                                    {tx.returnedDate && <div className="text-[10px] text-chart-1">Ret: {new Date(tx.returnedDate).toLocaleDateString()}</div>}
                                                 </TableCell>
                                                 <TableCell className="py-2 text-sm font-medium">{tx.items?.map(i => i.itemId?.name).join(', ')}</TableCell>
                                                 <TableCell className="py-2 text-sm">
@@ -728,8 +729,8 @@ export default function InventoryPage() {
                                                 <TableCell className="py-2 text-sm text-right font-mono">{tx.items?.reduce((s, i) => s + i.quantity, 0)}</TableCell>
                                                 <TableCell className="py-2 text-right">
                                                     <div className="text-sm font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
-                                                    {(tx.paidAmount || 0) > 0 && <div className="text-[10px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
-                                                    {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[10px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
+                                                    {(tx.paidAmount || 0) > 0 && <div className="text-[10px] text-chart-1 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                    {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[10px] text-destructive font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
                                                 </TableCell>
                                                 <TableCell className="py-2 text-center">
                                                     <Badge variant={tx.status === 'ACTIVE' ? 'default' : 'secondary'} className="text-[10px] h-5 px-2 font-medium">{tx.status}</Badge>
@@ -752,7 +753,7 @@ export default function InventoryPage() {
                                 </TableBody>
                             </Table>
                             {allRentalsTotalPages > 1 && (
-                                <div className="p-4 border-t flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-slate-900/50">
+                                <div className="p-4 border-t flex items-center justify-end gap-2 bg-muted/40">
                                     <span className="text-xs text-muted-foreground mr-2">Page {allRentalsPage} of {allRentalsTotalPages}</span>
                                     <Button
                                         variant="outline"
@@ -794,7 +795,7 @@ export default function InventoryPage() {
                             </div>
                             <div className="rounded border bg-background p-2 text-center">
                                 <div className="text-xs text-muted-foreground">Available</div>
-                                <div className="text-sm font-bold text-green-600 font-mono">{selectedItemHistory?.availableQuantity}</div>
+                                <div className="text-sm font-bold text-chart-1 font-mono">{selectedItemHistory?.availableQuantity}</div>
                             </div>
                             <div className="rounded border bg-background p-2 text-center">
                                 <div className="text-xs text-muted-foreground">Rental Rate</div>
@@ -833,7 +834,7 @@ export default function InventoryPage() {
                                                 <TableRow key={tx._id} className="h-10">
                                                     <TableCell className="text-xs">
                                                         <div>{new Date(tx.issuedDate).toLocaleDateString()}</div>
-                                                        {tx.returnedDate && <div className="text-[10px] text-green-600">Ret: {new Date(tx.returnedDate).toLocaleDateString()}</div>}
+                                                        {tx.returnedDate && <div className="text-[10px] text-chart-1">Ret: {new Date(tx.returnedDate).toLocaleDateString()}</div>}
                                                     </TableCell>
                                                     <TableCell className="text-xs">
                                                         <div className="font-medium truncate max-w-[80px] sm:max-w-[100px]">{tx.customerName}</div>
@@ -841,8 +842,8 @@ export default function InventoryPage() {
                                                     </TableCell>
                                                     <TableCell className="text-xs text-right">
                                                         <div className="font-mono text-muted-foreground">₹{tx.totalRentAmount}</div>
-                                                        {(tx.paidAmount || 0) > 0 && <div className="text-[9px] text-green-600 font-mono">Pd: ₹{tx.paidAmount}</div>}
-                                                        {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[9px] text-red-600 font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
+                                                        {(tx.paidAmount || 0) > 0 && <div className="text-[9px] text-chart-1 font-mono">Pd: ₹{tx.paidAmount}</div>}
+                                                        {(tx.totalRentAmount - (tx.paidAmount || 0)) > 0 && <div className="text-[9px] text-destructive font-mono">Due: ₹{tx.totalRentAmount - (tx.paidAmount || 0)}</div>}
                                                     </TableCell>
                                                     <TableCell className="text-xs text-right font-medium font-mono">{tx.items?.reduce((s, i) => s + i.quantity, 0)}</TableCell>
                                                     <TableCell className="text-xs text-right">
@@ -960,7 +961,7 @@ export default function InventoryPage() {
             <Dialog open={isDamageOpen} onOpenChange={setIsDamageOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-red-600">
+                        <DialogTitle className="flex items-center gap-2 text-destructive">
                             <AlertTriangle className="h-5 w-5" /> Report Damage
                         </DialogTitle>
                         <DialogDescription>
@@ -969,9 +970,9 @@ export default function InventoryPage() {
                     </DialogHeader>
                     <Form {...damageForm}>
                         <form onSubmit={damageForm.handleSubmit(onDamage)} className="space-y-4">
-                            <div className="p-3 bg-red-50 border border-red-100 rounded-md">
-                                <div className="text-xs text-red-800 font-medium">Item: {selectedItem?.name}</div>
-                                <div className="text-xs text-red-600">Available Stock: {selectedItem?.availableQuantity}</div>
+                            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                                <div className="text-xs text-destructive font-medium">Item: {selectedItem?.name}</div>
+                                <div className="text-xs text-destructive">Available Stock: {selectedItem?.availableQuantity}</div>
                             </div>
 
                             <FormField control={damageForm.control} name="quantity" render={({ field }) => (<FormItem><FormLabel className="text-xs">Quantity Damaged</FormLabel><FormControl><Input type="number" {...field} max={selectedItem?.availableQuantity} className="h-8 text-xs" /></FormControl><FormMessage /></FormItem>)} />
@@ -1016,7 +1017,7 @@ export default function InventoryPage() {
                                         return (
                                             <div key={field.id} className="p-3 bg-muted/30 border rounded-md relative flex flex-col gap-2">
                                                 {rentItems.length > 1 && (
-                                                    <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 text-red-500 hover:text-red-700" onClick={() => removeRentItem(index)}>
+                                                    <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 text-destructive hover:text-destructive" onClick={() => removeRentItem(index)}>
                                                         <AlertTriangle className="h-4 w-4" /> {/* Close/Remove Icon Placeholder */}
                                                         <span className="sr-only">Remove</span>
                                                     </Button>
@@ -1121,7 +1122,7 @@ export default function InventoryPage() {
                                 <Separator />
                                 <div className="flex justify-between text-xs font-bold">
                                     <span>Balance Due:</span>
-                                    <span className={((selectedReturnTx?.totalRentAmount || 0) - (selectedReturnTx?.paidAmount || 0)) > 0 ? "text-red-600" : "text-green-600"}>
+                                    <span className={((selectedReturnTx?.totalRentAmount || 0) - (selectedReturnTx?.paidAmount || 0)) > 0 ? "text-destructive" : "text-chart-1"}>
                                         ₹{Math.max(0, (selectedReturnTx?.totalRentAmount || 0) - (selectedReturnTx?.paidAmount || 0))}
                                     </span>
                                 </div>
@@ -1170,7 +1171,7 @@ export default function InventoryPage() {
                                 ) : (
                                     <div className="space-y-2">
                                         {ledgerData.payments.map((payment: any, index: number) => (
-                                            <div key={index} className="flex flex-col gap-1 p-2 border rounded-md text-xs bg-slate-50 dark:bg-slate-900">
+                                            <div key={index} className="flex flex-col gap-1 p-2 border rounded-md text-xs bg-muted/40">
                                                 <div className="flex justify-between font-medium">
                                                     <span>Payment {ledgerData.payments.length - index}</span>
                                                     <span>₹{payment.amount}</span>
@@ -1186,12 +1187,12 @@ export default function InventoryPage() {
                             </ScrollArea>
 
                             {ledgerData.receipt && (
-                                <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900 rounded-md flex items-center justify-between">
+                                <div className="p-3 bg-chart-1/10 border border-chart-1/20 rounded-md flex items-center justify-between">
                                     <div className="text-xs">
-                                        <span className="font-semibold text-green-700 dark:text-green-400">Fully Paid</span>
-                                        <div className="text-[10px] text-green-600 dark:text-green-500">Official Receipt Generated</div>
+                                        <span className="font-semibold text-chart-1">Fully Paid</span>
+                                        <div className="text-[10px] text-chart-1">Official Receipt Generated</div>
                                     </div>
-                                    <Button size="sm" variant="outline" className="h-7 text-xs bg-white dark:bg-slate-950" onClick={() => handleDownloadPdf(ledgerData.receipt._id)}>
+                                    <Button size="sm" variant="outline" className="h-7 text-xs bg-card" onClick={() => handleDownloadPdf(ledgerData.receipt._id)}>
                                         <Download className="mr-1 h-3 w-3" /> Download PDF
                                     </Button>
                                 </div>

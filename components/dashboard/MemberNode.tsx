@@ -20,26 +20,26 @@ export default memo(({ data, isConnectable }: any) => {
     };
 
     const age = getAge(dateOfBirth);
-    const borderColor = isHead ? 'border-yellow-500' : (isResident ? 'border-slate-300 border-dashed' : 'border-slate-200');
-    const roleColor = isHead ? 'text-yellow-700 bg-yellow-50' : (isResident ? 'text-slate-500 bg-slate-50' : 'text-blue-600 bg-blue-50');
+    const borderColor = isHead ? 'border-chart-2' : (isResident ? 'border-muted-foreground/30 border-dashed' : 'border-border');
+    const roleColor = isHead ? 'text-chart-2 bg-chart-2/10' : (isResident ? 'text-muted-foreground bg-muted/40' : 'text-primary bg-primary/10');
 
     // Gender Strip
-    const genderStripColor = gender === 'Male' ? 'bg-blue-400' : (gender === 'Female' ? 'bg-pink-400' : 'bg-slate-300');
+    const genderStripColor = gender === 'Male' ? 'bg-primary' : (gender === 'Female' ? 'bg-chart-3' : 'bg-muted-foreground/30');
 
     // Status logic
     const isMovedOut = status === 'Moved Out';
 
     return (
         <div className={cn(
-            "flex flex-col w-[200px] bg-white dark:bg-neutral-900 rounded-lg shadow-sm border-2 overflow-hidden transition-all hover:shadow-md",
+            "flex flex-col w-[200px] bg-card rounded-lg shadow-sm border-2 overflow-hidden transition-all hover:shadow-md",
             borderColor,
-            isHead && "shadow-yellow-100 dark:shadow-none",
+            isHead && "shadow-chart-2/10",
             isMovedOut && "opacity-60 grayscale-[0.5]" // Visual dimming for moved out
         )}>
-            <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="!bg-slate-400 !w-3 !h-1 !rounded-[2px]" />
+            <Handle type="target" position={Position.Top} isConnectable={isConnectable} className="!bg-muted-foreground !w-3 !h-1 !rounded-[2px]" />
 
             {/* Header Strip */}
-            <div className={cn("h-1.5 w-full", isMovedOut ? "bg-slate-400" : genderStripColor)} />
+            <div className={cn("h-1.5 w-full", isMovedOut ? "bg-muted-foreground/50" : genderStripColor)} />
 
             <div className="p-3 flex flex-col gap-2">
                 {/* Header: Role & Avatar */}
@@ -51,7 +51,7 @@ export default memo(({ data, isConnectable }: any) => {
                         </div>
                     ) : (
                         isMovedOut ? (
-                            <div className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-red-100 text-red-700 border border-red-200">
+                            <div className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-destructive/10 text-destructive border border-destructive/20">
                                 Moved Out
                             </div>
                         ) : <div className="h-5"></div>
@@ -64,13 +64,13 @@ export default memo(({ data, isConnectable }: any) => {
                 <div className="flex flex-col">
                     <span className={cn("font-bold text-sm text-foreground truncate", isMovedOut && "line-through text-muted-foreground")} title={label}>{label}</span>
                     <div className="flex items-center gap-1 text-[10px] text-muted-foreground mt-0.5">
-                        {gender === 'Male' ? <User className="h-3 w-3" /> : (gender === 'Female' ? <User className="h-3 w-3 text-pink-400" /> : null)}
+                        {gender === 'Male' ? <User className="h-3 w-3" /> : (gender === 'Female' ? <User className="h-3 w-3 text-chart-3" /> : null)}
                         <span className="opacity-80">{gender}</span>
                     </div>
                 </div>
             </div>
 
-            <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} className="!bg-slate-400 !w-3 !h-1 !rounded-[2px]" />
+            <Handle type="source" position={Position.Bottom} isConnectable={isConnectable} className="!bg-muted-foreground !w-3 !h-1 !rounded-[2px]" />
         </div>
     );
 });

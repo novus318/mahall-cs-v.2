@@ -147,26 +147,26 @@ export default function CreatePaymentPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0 max-w-5xl w-full">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)] max-w-5xl w-full">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h2 className="text-xl font-bold tracking-tight text-rose-700">Expense Payment</h2>
-                        <p className="text-muted-foreground text-sm">Create a new expense entry.</p>
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-destructive">Expense Payment</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Create a new expense entry.</p>
                     </div>
                 </div>
                 {nextReceipt && (
                     <div className="flex flex-col items-end px-4">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest border-b border-dashed border-border mb-0.5">Voucher No</span>
-                        <span className="text-xl font-mono font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-sm border border-rose-200">{nextReceipt}</span>
+                        <span className="text-xl font-mono font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-sm border border-destructive/20">{nextReceipt}</span>
                     </div>
                 )}
             </div>
 
-            <Card className="border-rose-100 shadow-sm bg-rose-50/30">
+            <Card className="border-destructive/10 shadow-sm bg-destructive/5">
                 {/* Header Section: Voucher Details */}
                 <div className="bg-muted/30 p-6 border-b border-border">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -220,7 +220,7 @@ export default function CreatePaymentPage() {
                                 <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
                                 <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
                                     <DialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-5 w-5 -mr-1 text-rose-600 hover:text-rose-700 hover:bg-rose-50">
+                                        <Button variant="ghost" size="icon" className="h-5 w-5 -mr-1 text-destructive hover:text-destructive hover:bg-destructive/10">
                                             <Plus className="h-3 w-3" />
                                         </Button>
                                     </DialogTrigger>
@@ -338,7 +338,7 @@ export default function CreatePaymentPage() {
                                             variant="ghost"
                                             size="sm"
                                             onClick={handleAddItem}
-                                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 -ml-2"
+                                            className="text-destructive hover:text-destructive hover:bg-destructive/10 -ml-2"
                                         >
                                             <Plus className="h-4 w-4 mr-1" /> Add Expected Line
                                         </Button>
@@ -379,18 +379,18 @@ export default function CreatePaymentPage() {
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <span className={`text-xs font-medium ${!isPaid ? 'text-amber-600' : 'text-muted-foreground'}`}>Pending</span>
+                            <span className={`text-xs font-medium ${!isPaid ? 'text-chart-2' : 'text-muted-foreground'}`}>Pending</span>
                             <Switch
                                 checked={isPaid}
                                 onCheckedChange={setIsPaid}
-                                className="data-[state=checked]:bg-green-500"
+                                className="data-[state=checked]:bg-primary"
                             />
-                            <span className={`text-xs font-medium ${isPaid ? 'text-green-600' : 'text-muted-foreground'}`}>Completed</span>
+                            <span className={`text-xs font-medium ${isPaid ? 'text-chart-1' : 'text-muted-foreground'}`}>Completed</span>
                         </div>
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        <Button size="lg" className="min-w-37.5 shadow-sm bg-rose-600 hover:bg-rose-700" onClick={handleSubmit} disabled={loading}>
+                        <Button size="lg" className="min-w-37.5 shadow-sm bg-primary hover:bg-primary/90" onClick={handleSubmit} disabled={loading}>
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             {isPaid ? 'Complete Payment' : 'Save as Pending'}
                         </Button>

@@ -162,15 +162,15 @@ export default function RentSettingsTab() {
                 </CardFooter>
             </Card>
 
-            <Card className="border-orange-200 dark:border-orange-900 bg-orange-50/10 py-3">
+            <Card className="border-chart-2/20 bg-chart-2/5 py-3">
                 <CardHeader>
-                    <CardTitle className="text-orange-700 dark:text-orange-400">Manual Trigger</CardTitle>
+                    <CardTitle className="text-chart-2">Manual Trigger</CardTitle>
                     <CardDescription>
                         Manually trigger the bulk rent generation process immediately.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                    <Alert variant="default" className="bg-white dark:bg-black">
+                    <Alert variant="default" className="bg-card">
                         <AlertCircle className="h-4 w-4" />
                         <AlertTitle>Note</AlertTitle>
                         <AlertDescription>

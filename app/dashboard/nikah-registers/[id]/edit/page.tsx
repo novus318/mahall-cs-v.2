@@ -31,7 +31,7 @@ export default function EditNikahRegisterPage() {
                 </Button>
                 <div>
                     <h1 className="text-2xl font-bold">Edit Nikah Register</h1>
-                    <p className="text-gray-500">Update the nikah register details. Certificate will reflect updated data.</p>
+                    <p className="text-muted-foreground">Update the nikah register details. Certificate will reflect updated data.</p>
                 </div>
             </div>
 
@@ -43,7 +43,7 @@ export default function EditNikahRegisterPage() {
             ) : record ? (
                 <NikahRegisterForm initialData={record} />
             ) : (
-                <div className="text-center py-12 text-gray-500">Nikah register not found.</div>
+                <div className="text-center py-12 text-muted-foreground">Nikah register not found.</div>
             )}
         </div>
     );

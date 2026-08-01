@@ -284,9 +284,9 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md md:max-w-xl overflow-hidden p-0 gap-0">
-                <DialogHeader className="px-6 py-4 border-b bg-slate-50/50 dark:bg-neutral-900/50">
+                <DialogHeader className="px-6 py-4 border-b bg-muted/40">
                     <DialogTitle className="text-xl flex items-center gap-2">
-                        {step === 1 ? <User className="h-5 w-5 text-blue-500" /> : step === 2 ? <Briefcase className="h-5 w-5 text-green-500" /> : <Users className="h-5 w-5 text-purple-500" />}
+                        {step === 1 ? <User className="h-5 w-5 text-primary" /> : step === 2 ? <Briefcase className="h-5 w-5 text-chart-1" /> : <Users className="h-5 w-5 text-chart-2" />}
                         {step === 1 ? (memberToEdit ? "Edit Profile" : "New Member") : step === 2 ? "Additional Details" : "Family Connection"}
                     </DialogTitle>
                     <DialogDescription>
@@ -307,22 +307,22 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
                                                 value={houseSearchCode}
                                                 onChange={(e) => setHouseSearchCode(e.target.value)}
                                                 onBlur={(e) => validateHouseCode(e.target.value)}
-                                                className={houseValidationStatus === 'invalid' ? "border-red-500 pr-10" : "pr-10"}
+                                                className={houseValidationStatus === 'invalid' ? "border-destructive pr-10" : "pr-10"}
                                             />
                                             <div className="absolute right-3 top-1/2 -translate-y-1/2">
                                                 {houseValidationStatus === 'validating' && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                                                {houseValidationStatus === 'valid' && <Check className="h-4 w-4 text-green-500" />}
-                                                {houseValidationStatus === 'invalid' && <XCircle className="h-4 w-4 text-red-500" />}
+                                                {houseValidationStatus === 'valid' && <Check className="h-4 w-4 text-chart-1" />}
+                                                {houseValidationStatus === 'invalid' && <XCircle className="h-4 w-4 text-destructive" />}
                                             </div>
                                         </div>
                                     </div>
                                     {houseValidationStatus === 'valid' && (
-                                        <p className="text-sm text-green-600 font-medium mt-1">
+                                        <p className="text-sm text-chart-1 font-medium mt-1">
                                             ✓ Found: {validatedHouseName}
                                         </p>
                                     )}
                                     {houseValidationStatus === 'invalid' && (
-                                        <p className="text-sm text-red-500 mt-1">
+                                        <p className="text-sm text-destructive mt-1">
                                             House not found.
                                         </p>
                                     )}
@@ -331,18 +331,18 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2 col-span-2">
-                                    <Label>Full Name <span className="text-red-500">*</span></Label>
+                                    <Label>Full Name <span className="text-destructive">*</span></Label>
                                     <Input required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. John Doe" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Gender <span className="text-red-500">*</span></Label>
+                                    <Label>Gender <span className="text-destructive">*</span></Label>
                                     <Select value={formData.gender} onValueChange={val => setFormData({ ...formData, gender: val })}>
                                         <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                                         <SelectContent><SelectItem value="Male">Male</SelectItem><SelectItem value="Female">Female</SelectItem></SelectContent>
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Date of Birth <span className="text-red-500">*</span></Label>
+                                    <Label>Date of Birth <span className="text-destructive">*</span></Label>
                                     <Input type="date" required value={formData.dateOfBirth} onChange={e => setFormData({ ...formData, dateOfBirth: e.target.value })} />
                                 </div>
                                 <div className="space-y-2">
@@ -423,7 +423,7 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
 
                             <div className="space-y-2">
                                 <Label>Identification Cards</Label>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 border p-3 rounded-md bg-slate-50/50 dark:bg-neutral-900/50">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 border p-3 rounded-md bg-muted/40">
                                     {Object.entries(formData.idCards).map(([key, checked]) => (
                                         <div key={key} className="flex items-center space-x-2">
                                             <Checkbox
@@ -448,7 +448,7 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
                         <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                             {existingMembers.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-6 text-center space-y-2">
-                                    <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center mb-2">
+                                    <div className="h-12 w-12 rounded-full bg-chart-2/15 flex items-center justify-center mb-2">
                                         <span className="text-2xl">👑</span>
                                     </div>
                                     <h3 className="font-semibold text-lg">First Member</h3>
@@ -492,8 +492,8 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
                                                             onClick={() => setRelationshipData({ ...relationshipData, relationshipType: rel })}
                                                             className={`cursor-pointer border rounded-md p-3 flex items-center justify-center text-sm font-medium transition-all
                                                                 ${relationshipData.relationshipType === rel
-                                                                    ? 'bg-blue-50 border-blue-500 text-blue-700 ring-1 ring-blue-500 dark:bg-blue-900/20 dark:text-blue-400'
-                                                                    : 'hover:bg-slate-50 border-slate-200 dark:border-neutral-800 dark:hover:bg-neutral-800'
+                                                                    ? 'bg-primary/10 border-primary text-primary ring-1 ring-primary'
+                                                                    : 'hover:bg-muted/50 border-border'
                                                                 }`}
                                                         >
                                                             {rel}
@@ -504,7 +504,7 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
                                         )}
 
                                         {relationshipData.relatedMemberId === 'none' && (
-                                            <div className="rounded-md bg-slate-50 p-4 text-sm text-muted-foreground italic border border-dashed text-center">
+                                            <div className="rounded-md bg-muted/40 p-4 text-sm text-muted-foreground italic border border-dashed text-center">
                                                 Member will be added as a generic <strong>Resident</strong> without specific family links.
                                             </div>
                                         )}
@@ -515,7 +515,7 @@ export function MemberDialog({ open, onOpenChange, defaultFamilyId, defaultHouse
                     )}
                 </div>
 
-                <DialogFooter className="px-6 py-4 border-t bg-slate-50/50 dark:bg-neutral-900/50 flex justify-between sm:justify-between items-center">
+                <DialogFooter className="px-6 py-4 border-t bg-muted/40 flex justify-between sm:justify-between items-center">
                     {step > 1 ? (
                         <Button variant="outline" onClick={() => setStep(step - 1 as any)} disabled={loading}>
                             <ArrowLeft className="h-4 w-4 mr-2" /> Back

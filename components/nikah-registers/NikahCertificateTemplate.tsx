@@ -12,7 +12,7 @@ export default function NikahCertificateTemplate({ data }: NikahCertificateTempl
     const renderRow = (label: string, value: string, width?: string) => (
         <div className={`flex items-end ${width || 'w-full'}`}>
             <span className="mr-3 font-semibold whitespace-nowrap">{label}</span>
-            <div className="flex-1 border-b border-gray-400 text-center min-w-[50px] font-bold text-lg leading-tight pb-0.5">{value || '\u00A0'}</div>
+            <div className="flex-1 border-b border-foreground/40 text-center min-w-[50px] font-bold text-lg leading-tight pb-0.5">{value || '\u00A0'}</div>
         </div>
     );
 
@@ -34,7 +34,7 @@ export default function NikahCertificateTemplate({ data }: NikahCertificateTempl
                     {renderRow('Register No:', data.registerNo, 'w-1/2')}
 
                     <div className="mt-4">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Groom</h3>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Groom</h3>
                         {renderRow('Name:', data.groomName)}
                         {renderRow("Father's Name:", data.groomFatherName)}
                         {renderRow('Address:', data.groomAddress || '-', 'w-3/4')}
@@ -42,7 +42,7 @@ export default function NikahCertificateTemplate({ data }: NikahCertificateTempl
                     </div>
 
                     <div className="mt-4">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Bride</h3>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Bride</h3>
                         {renderRow('Name:', data.brideName)}
                         {renderRow("Father's Name:", data.brideFatherName)}
                         {renderRow('Address:', data.brideAddress || '-', 'w-3/4')}
@@ -50,7 +50,7 @@ export default function NikahCertificateTemplate({ data }: NikahCertificateTempl
                     </div>
 
                     <div className="mt-4">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Nikah Details</h3>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Nikah Details</h3>
                         <div className="flex gap-4">
                             {renderRow('Date:', data.nikahDate ? format(new Date(data.nikahDate), 'dd MMMM yyyy') : '', 'w-1/2')}
                             {renderRow('Time:', data.nikahTime || '-', 'w-1/2')}
@@ -61,7 +61,7 @@ export default function NikahCertificateTemplate({ data }: NikahCertificateTempl
                     </div>
 
                     <div className="mt-4">
-                        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Witnesses</h3>
+                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Witnesses</h3>
                         {renderRow('Witness 1:', data.witness1Name, 'w-3/4')}
                         {renderRow('Witness 2:', data.witness2Name, 'w-3/4')}
                     </div>
@@ -72,8 +72,8 @@ export default function NikahCertificateTemplate({ data }: NikahCertificateTempl
 
                     {data.remarks && (
                         <div className="mt-4">
-                            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Remarks</h3>
-                            <div className="text-sm italic text-gray-700">{data.remarks}</div>
+                            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Remarks</h3>
+                            <div className="text-sm italic text-foreground">{data.remarks}</div>
                         </div>
                     )}
                 </div>

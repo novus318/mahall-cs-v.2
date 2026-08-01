@@ -141,26 +141,26 @@ export default function CreateReceiptPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0 max-w-5xl w-full">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)] max-w-5xl w-full">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h2 className="text-xl font-semibold tracking-tight text-green-700">New Income Receipt</h2>
-                        <p className="text-muted-foreground text-sm">Record new income/donation entry.</p>
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-chart-1">New Income Receipt</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Record new income/donation entry.</p>
                     </div>
                 </div>
                 {nextReceipt && (
                     <div className="flex flex-col items-end px-4">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest border-b border-dashed border-border mb-0.5">Receipt No</span>
-                        <span className="text-xl font-mono font-bold text-foreground bg-green-50 text-green-700 px-2 py-0.5 rounded-sm border border-green-200">{nextReceipt}</span>
+                        <span className="text-xl font-mono font-bold bg-chart-1/10 text-chart-1 px-2 py-0.5 rounded-sm border border-chart-1/20">{nextReceipt}</span>
                     </div>
                 )}
             </div>
 
-            <Card className="border-green-100 shadow-sm bg-green-50/30">
+            <Card className="border-chart-1/10 shadow-sm bg-chart-1/5">
                 {/* Header Section: Voucher Details */}
                 <div className="bg-muted/30 p-6 border-b border-border">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -313,7 +313,7 @@ export default function CreateReceiptPage() {
                                             variant="ghost"
                                             size="sm"
                                             onClick={handleAddItem}
-                                            className="text-green-600 hover:text-green-700 hover:bg-green-50 -ml-2"
+                                            className="text-chart-1 hover:text-chart-1 hover:bg-chart-1/10 -ml-2"
                                         >
                                             <Plus className="h-4 w-4 mr-1" /> Add Line
                                         </Button>
@@ -346,7 +346,7 @@ export default function CreateReceiptPage() {
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        <Button size="lg" className="min-w-37.5 shadow-sm bg-green-600 hover:bg-green-700" onClick={handleSubmit} disabled={loading}>
+                        <Button size="lg" className="min-w-37.5 shadow-sm bg-primary hover:bg-primary/90" onClick={handleSubmit} disabled={loading}>
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             Save Receipt
                         </Button>

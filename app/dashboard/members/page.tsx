@@ -265,11 +265,14 @@ export default function MembersPage() {
     }
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Members</h2>
-                    <p className="text-muted-foreground text-sm">Directory of all community members.</p>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Management · Members
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Members</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Directory of all community members.</p>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => {
@@ -387,24 +390,24 @@ export default function MembersPage() {
                         {importResult && (
                             <div className={cn(
                                 "rounded-md px-4 py-3 text-sm border",
-                                (importResult.errorCount > 0 || (importResult.warnings && importResult.warnings.length > 0)) ? "bg-slate-50 border-slate-200 dark:bg-slate-900 dark:border-slate-800" : "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-900"
+                                (importResult.errorCount > 0 || (importResult.warnings && importResult.warnings.length > 0)) ? "bg-muted/40 border-border" : "bg-chart-1/10 border-chart-1/20"
                             )}>
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="font-semibold flex items-center gap-2 text-sm">
                                         {(importResult.errorCount > 0 || (importResult.warnings && importResult.warnings.length > 0)) ? (
-                                            <span className="text-amber-600 dark:text-amber-500">Completed with Issues</span>
+                                            <span className="text-chart-2">Completed with Issues</span>
                                         ) : (
-                                            <span className="text-green-700 dark:text-green-400">Import Successful</span>
+                                            <span className="text-chart-1">Import Successful</span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-3 text-xs">
                                         <div className="flex items-center gap-1">
                                             <span className="text-muted-foreground">Added:</span>
-                                            <span className="font-mono font-bold text-green-600">{importResult.successCount || 0}</span>
+                                            <span className="font-mono font-bold text-chart-1">{importResult.successCount || 0}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <span className="text-muted-foreground">Skipped:</span>
-                                            <span className="font-mono font-bold text-red-600">{importResult.errorCount || 0}</span>
+                                            <span className="font-mono font-bold text-destructive">{importResult.errorCount || 0}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -412,12 +415,12 @@ export default function MembersPage() {
                                 <ScrollArea className="h-[120px]">
                                     <div className="space-y-1">
                                         {importResult.errors?.map((e: string, i: number) => (
-                                            <div key={`err-${i}`} className="text-[11px] text-red-600 font-mono flex items-start gap-1.5 leading-tight">
+                                            <div key={`err-${i}`} className="text-[11px] text-destructive font-mono flex items-start gap-1.5 leading-tight">
                                                 <span>•</span> <span>{e}</span>
                                             </div>
                                         ))}
                                         {importResult.warnings?.map((w: string, i: number) => (
-                                            <div key={`warn-${i}`} className="text-[11px] text-amber-600 font-mono flex items-start gap-1.5 leading-tight">
+                                            <div key={`warn-${i}`} className="text-[11px] text-chart-2 font-mono flex items-start gap-1.5 leading-tight">
                                                 <span>•</span> <span>{w}</span>
                                             </div>
                                         ))}
@@ -449,7 +452,7 @@ export default function MembersPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
                             Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
@@ -457,7 +460,7 @@ export default function MembersPage() {
             </AlertDialog>
 
             <Card className="border shadow-sm">
-                <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
+                <CardHeader className="p-4 border-b bg-muted/40">
                     <div className="flex flex-col gap-4">
                         {/* Top row: Title and Search */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -468,12 +471,12 @@ export default function MembersPage() {
                                 </CardDescription>
                             </div>
                             <div className="relative w-full sm:w-64">
-                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     placeholder="Search by name, house..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="pl-8 h-9 text-sm"
+                                    className="h-9 bg-background pl-9 text-sm"
                                 />
                             </div>
                         </div>
@@ -482,7 +485,7 @@ export default function MembersPage() {
                         <div className="flex flex-wrap gap-2 items-center">
                             {/* Gender Filter */}
                             <Select value={genderFilter} onValueChange={setGenderFilter}>
-                                <SelectTrigger className="h-8 w-[100px] text-xs">
+                                <SelectTrigger className="h-8 w-[100px] text-xs bg-background">
                                     <SelectValue placeholder="Gender" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -494,7 +497,7 @@ export default function MembersPage() {
 
                             {/* Blood Group Filter */}
                             <Select value={bloodGroupFilter} onValueChange={setBloodGroupFilter}>
-                                <SelectTrigger className="h-8 w-[110px] text-xs">
+                                <SelectTrigger className="h-8 w-[110px] text-xs bg-background">
                                     <SelectValue placeholder="Blood Group" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -507,7 +510,7 @@ export default function MembersPage() {
 
                             {/* Education Filter */}
                             <Select value={educationFilter} onValueChange={setEducationFilter}>
-                                <SelectTrigger className="h-8 w-[110px] text-xs">
+                                <SelectTrigger className="h-8 w-[110px] text-xs bg-background">
                                     <SelectValue placeholder="Education" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -520,7 +523,7 @@ export default function MembersPage() {
 
                             {/* Marital Status Filter */}
                             <Select value={maritalStatusFilter} onValueChange={setMaritalStatusFilter}>
-                                <SelectTrigger className="h-8 w-[110px] text-xs">
+                                <SelectTrigger className="h-8 w-[110px] text-xs bg-background">
                                     <SelectValue placeholder="Marital Status" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -554,7 +557,7 @@ export default function MembersPage() {
 
                             {/* Subscription Filter */}
                             <Select value={frequencyFilter} onValueChange={setFrequencyFilter}>
-                                <SelectTrigger className="h-8 w-[120px] text-xs">
+                                <SelectTrigger className="h-8 w-[120px] text-xs bg-background">
                                     <SelectValue placeholder="Subscription" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -581,15 +584,15 @@ export default function MembersPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                        <TableHeader className="bg-muted/40">
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="w-[100px] h-9 text-xs font-semibold">ID</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Name</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">House</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Family</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Mobile</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Subscription</TableHead>
-                                <TableHead className="text-right h-9 text-xs font-semibold w-[140px]">Actions</TableHead>
+                                <TableHead className="w-[100px] h-9 text-xs font-semibold uppercase tracking-wider">ID</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Name</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">House</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Family</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Mobile</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Subscription</TableHead>
+                                <TableHead className="text-right h-9 text-xs font-semibold w-[140px] uppercase tracking-wider">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -611,14 +614,14 @@ export default function MembersPage() {
 
                                     return (
                                         <TableRow key={member._id} className={cn(
-                                            "hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors",
-                                            isMovedOut && "opacity-60 grayscale-[0.5] bg-slate-50 dark:bg-neutral-900/30"
+                                            "hover:bg-muted/50 transition-colors",
+                                            isMovedOut && "opacity-60 grayscale-[0.5] bg-muted/40"
                                         )}>
                                             <TableCell className="py-2 text-sm font-mono font-medium">{member.customId || "-"}</TableCell>
                                             <TableCell className="py-2">
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-2">
-                                                        <Link href={`/dashboard/members/${member._id}`} className={cn("text-sm font-medium hover:underline hover:text-blue-600 transition-colors", isMovedOut && "line-through text-muted-foreground")}>
+                                                        <Link href={`/dashboard/members/${member._id}`} className={cn("text-sm font-medium hover:underline hover:text-primary transition-colors", isMovedOut && "line-through text-muted-foreground")}>
                                                             {member.name}
                                                         </Link>
                                                         {isMovedOut && (
@@ -632,7 +635,7 @@ export default function MembersPage() {
                                             </TableCell>
                                             <TableCell className="py-2 text-sm text-muted-foreground">
                                                 {member.house ? (
-                                                    <Link href={`/dashboard/houses/${(member.house as any)._id}`} className="hover:underline hover:text-blue-600 transition-colors">
+                                                    <Link href={`/dashboard/houses/${(member.house as any)._id}`} className="hover:underline hover:text-primary transition-colors">
                                                         {member.house.name}
                                                     </Link>
                                                 ) : (
@@ -650,7 +653,7 @@ export default function MembersPage() {
                                                     <div className="flex flex-col">
                                                         <span className={cn(
                                                             "text-xs font-medium px-1.5 py-0.5 rounded w-fit",
-                                                            (member as any).subscription.frequency === 'Monthly' ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                                                            (member as any).subscription.frequency === 'Monthly' ? "bg-chart-3/10 text-chart-3" : "bg-chart-2/10 text-chart-2"
                                                         )}>
                                                             {(member as any).subscription.frequency}
                                                         </span>
@@ -672,7 +675,7 @@ export default function MembersPage() {
                                                         disabled={isMovedOut}
                                                         title="Configure Subscription"
                                                     >
-                                                        <Settings2 className="h-3.5 w-3.5 text-slate-500" />
+                                                        <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
@@ -685,17 +688,17 @@ export default function MembersPage() {
                                                         disabled={isMovedOut}
                                                         title="Edit Member"
                                                     >
-                                                        <Pencil className="h-3.5 w-3.5 text-amber-500" />
+                                                        <Pencil className="h-3.5 w-3.5 text-chart-2" />
                                                     </Button>
                                                     <Link href={`/dashboard/members/${member._id}`}>
-                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-500 hover:text-blue-700">
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:text-primary">
                                                             <Eye className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </Link>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
-                                                        className="h-7 w-7 text-red-500 hover:text-red-700"
+                                                        className="h-7 w-7 text-destructive hover:text-destructive"
                                                         onClick={() => confirmDelete(member._id)}
                                                         disabled={isMovedOut}
                                                         title="Delete Member"
@@ -761,7 +764,7 @@ export default function MembersPage() {
                 </Dialog>
 
                 {/* Pagination Footer */}
-                <div className="p-4 border-t grid grid-cols-3 sm:grid-cols-3 items-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="p-4 border-t grid grid-cols-3 sm:grid-cols-3 items-center gap-4 bg-muted/40">
                     <div className="flex items-center gap-2 justify-center sm:justify-start">
                         <p className="text-xs text-muted-foreground whitespace-nowrap">
                             Rows
@@ -769,7 +772,7 @@ export default function MembersPage() {
                         <Input
                             type="number"
                             min="1"
-                            className="h-8 w-[70px]"
+                            className="h-8 w-[70px] bg-background"
                             value={limit}
                             onChange={(e) => {
                                 const val = parseInt(e.target.value)

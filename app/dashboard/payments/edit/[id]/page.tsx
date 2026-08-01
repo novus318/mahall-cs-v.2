@@ -164,7 +164,7 @@ export default function EditPaymentPage() {
 
                 <Skeleton className="h-10 w-48" />
 
-                <Card className="border-rose-100 shadow-sm bg-rose-50/30">
+                <Card className="border-destructive/10 shadow-sm bg-destructive/5">
                     <div className="bg-muted/30 p-6 border-b border-border space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="space-y-2">
@@ -205,15 +205,15 @@ export default function EditPaymentPage() {
     }
 
     return (
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0 max-w-5xl  w-full">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)] max-w-5xl  w-full">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ArrowLeft className="h-5 w-5" />
                     </Button>
                     <div>
-                        <h2 className="text-xl font-bold tracking-tight text-rose-700">Edit Payment</h2>
-                        <p className="text-muted-foreground text-sm">Modify payment details.</p>
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-destructive">Edit Payment</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Modify payment details.</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -221,16 +221,16 @@ export default function EditPaymentPage() {
                     <Badge 
                         variant={paymentStatus === 'COMPLETED' ? 'default' : paymentStatus === 'PENDING' ? 'outline' : 'destructive'}
                         className={`px-3 py-1 text-sm ${
-                            paymentStatus === 'COMPLETED' ? 'bg-green-100 text-green-700 hover:bg-green-100' : 
-                            paymentStatus === 'PENDING' ? 'bg-amber-100 text-amber-700 hover:bg-amber-100' : 
-                            'bg-red-100 text-red-700 hover:bg-red-100'
+                            paymentStatus === 'COMPLETED' ? 'bg-chart-1/10 text-chart-1 hover:bg-chart-1/10' : 
+                            paymentStatus === 'PENDING' ? 'bg-chart-2/10 text-chart-2 hover:bg-chart-2/10' : 
+                            'bg-destructive/10 text-destructive hover:bg-destructive/10'
                         }`}
                     >
                         {paymentStatus === 'COMPLETED' ? '✓ Completed' : paymentStatus === 'PENDING' ? '⏳ Pending' : '🗑️ Deleted'}
                     </Badge>
                     <div className="flex flex-col items-end px-4">
                         <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest border-b border-dashed border-border mb-0.5">Voucher No</span>
-                        <span className="text-xl font-mono font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-sm border border-rose-200">{receiptNo || 'Loading...'}</span>
+                        <span className="text-xl font-mono font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-sm border border-destructive/20">{receiptNo || 'Loading...'}</span>
                     </div>
                 </div>
             </div>
@@ -239,17 +239,17 @@ export default function EditPaymentPage() {
             {paymentStatus !== 'DELETED' && (
                 <div className="flex gap-2">
                     {paymentStatus === 'PENDING' && (
-                        <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700" onClick={handleMarkAsPaid} disabled={actionLoading}>
+                        <Button variant="default" size="sm" className="bg-primary hover:bg-primary/90" onClick={handleMarkAsPaid} disabled={actionLoading}>
                             <CheckCircle className="h-4 w-4 mr-1" /> Mark as Paid
                         </Button>
                     )}
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-red-600" onClick={() => setIsDeleteDialogOpen(true)} disabled={actionLoading}>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-destructive" onClick={() => setIsDeleteDialogOpen(true)} disabled={actionLoading}>
                         <Trash2 className="h-4 w-4 mr-1" /> Delete
                     </Button>
                 </div>
             )}
 
-            <Card className="border-rose-100 shadow-sm bg-rose-50/30">
+            <Card className="border-destructive/10 shadow-sm bg-destructive/5">
                 {/* Header Section: Voucher Details */}
                 <div className="bg-muted/30 p-6 border-b border-border">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -303,7 +303,7 @@ export default function EditPaymentPage() {
                                 <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
                                 <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
                                     <DialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="h-5 w-5 -mr-1 text-rose-600 hover:text-rose-700 hover:bg-rose-50">
+                                        <Button variant="ghost" size="icon" className="h-5 w-5 -mr-1 text-destructive hover:text-destructive hover:bg-destructive/10">
                                             <Plus className="h-3 w-3" />
                                         </Button>
                                     </DialogTrigger>
@@ -433,7 +433,7 @@ export default function EditPaymentPage() {
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => setItems([...items, { description: '', amount: '' }])}
-                                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 -ml-2"
+                                            className="text-destructive hover:text-destructive hover:bg-destructive/10 -ml-2"
                                         >
                                             <Plus className="h-4 w-4 mr-1" /> Add Expected Line
                                         </Button>
@@ -466,7 +466,7 @@ export default function EditPaymentPage() {
                     </div>
 
                     <div className="flex justify-end pt-2">
-                        <Button size="lg" className="min-w-37.5 shadow-sm bg-rose-600 hover:bg-rose-700" onClick={async () => {
+                        <Button size="lg" className="min-w-37.5 shadow-sm bg-destructive hover:bg-destructive/90" onClick={async () => {
                             if (!date || !accountId || !categoryId) {
                                 toast.error("Please fill required fields (Date, Account, Category)");
                                 return;
@@ -518,7 +518,7 @@ export default function EditPaymentPage() {
                         <AlertDialogAction 
                             onClick={handleDeletePayment} 
                             disabled={actionLoading}
-                            className="bg-red-600 hover:bg-red-700"
+                            className="bg-destructive hover:bg-destructive/90"
                         >
                             {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                             Yes, Delete

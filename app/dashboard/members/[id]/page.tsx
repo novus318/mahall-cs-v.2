@@ -104,8 +104,8 @@ export default function MemberDetailPage() {
                     </Button>
                     <div className="flex items-center gap-2">
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0 border 
-                            ${member.relationshipToHead === 'Head' ? "bg-yellow-100 text-yellow-700 border-yellow-200" :
-                                (member.gender === 'Female' ? "bg-pink-100 text-pink-600 border-pink-200" : "bg-blue-100 text-blue-600 border-blue-200")}`}>
+                            ${member.relationshipToHead === 'Head' ? "bg-chart-2/15 text-chart-2 border-chart-2/30" :
+                                (member.gender === 'Female' ? "bg-chart-3/10 text-chart-3 border-chart-3/20" : "bg-primary/10 text-primary border-primary/20")}`}>
                             {member.relationshipToHead === 'Head' ? <Crown className="h-4 w-4" /> : member.name.charAt(0)}
                         </div>
                         <div className="flex flex-col">
@@ -130,7 +130,7 @@ export default function MemberDetailPage() {
                     <Button
                         variant="outline"
                         size="sm"
-                        className="h-7 text-xs gap-2 text-orange-600 border-orange-200 hover:bg-orange-50 hover:text-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-7 text-xs gap-2 text-chart-2 border-chart-2/30 hover:bg-chart-2/10 hover:text-chart-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={() => setIsMoveOutOpen(true)}
                         disabled={member.status === 'Moved Out'}
                     >
@@ -181,7 +181,7 @@ export default function MemberDetailPage() {
                                     <CardContent className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                         <Field icon={Calendar} label="Date of Birth" value={`${formatDate(member.dateOfBirth)} (${calculateAge(member.dateOfBirth)})`} />
                                         <Field icon={Heart} label="Marital Status" value={member.maritalStatus} />
-                                        <Field icon={Heart} label="Blood Group" value={member.bloodGroup} className="text-red-700 dark:text-red-400" />
+                                        <Field icon={Heart} label="Blood Group" value={member.bloodGroup} className="text-destructive" />
                                         <Field icon={User} label="Gender" value={member.gender} />
                                         <Field icon={Briefcase} label="Occupation" value={member.occupation} />
                                         <Field icon={GraduationCap} label="Education" value={member.education} />
@@ -272,7 +272,7 @@ export default function MemberDetailPage() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleMoveOut} className="bg-orange-600 hover:bg-orange-700">
+                        <AlertDialogAction onClick={handleMoveOut} className="bg-chart-2 text-foreground hover:bg-chart-2/90">
                             Confirm Move Out
                         </AlertDialogAction>
                     </AlertDialogFooter>

@@ -184,12 +184,13 @@ export default function BuildingsPage() {
     );
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 h-[calc(100vh-4rem)] overflow-hidden">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 h-[calc(100vh-4rem)] overflow-hidden bg-muted/40">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Buildings</h2>
-                    <p className="text-muted-foreground text-sm">Manage buildings and units.</p>
+                    <div className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">Management · Buildings</div>
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mt-2">Buildings</h2>
+                    <p className="text-muted-foreground text-sm mt-1">Manage buildings and units.</p>
                 </div>
                 <div className="flex gap-2">
                     <Button onClick={() => { buildingForm.reset({ buildingId: '', name: '', place: '' }); setIsAddBuildingOpen(true); }} size="sm" className="h-8">
@@ -209,8 +210,8 @@ export default function BuildingsPage() {
                 <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-10">
                     {loading ? <div className="col-span-full h-40 flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div> :
                         filteredBuildings.map((building) => (
-                            <Card key={building._id} className="group hover:shadow-md transition-all border-slate-200 dark:border-slate-800">
-                                <CardHeader className="p-4 pb-2 bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 flex flex-row items-start justify-between space-y-0">
+                            <Card key={building._id} className="group hover:shadow-md transition-all border-border">
+                                <CardHeader className="p-4 pb-2 bg-muted/40 border-b flex flex-row items-start justify-between space-y-0">
                                     <div>
                                         <div className="flex items-center gap-2">
                                             <CardTitle className="text-sm font-semibold">{building.name}</CardTitle>
@@ -226,7 +227,7 @@ export default function BuildingsPage() {
                                             <DropdownMenuItem onClick={() => { setSelectedBuilding(building); buildingForm.reset(building); setIsEditBuildingOpen(true); }} className="text-xs">
                                                 <Edit2 className="mr-2 h-3 w-3" /> Edit Details
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={(e) => onDeleteBuilding(building._id, e)} className="text-xs text-red-600 focus:text-red-600">
+                                            <DropdownMenuItem onClick={(e) => onDeleteBuilding(building._id, e)} className="text-xs text-destructive focus:text-destructive">
                                                 <Trash className="mr-2 h-3 w-3" /> Delete
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -234,9 +235,9 @@ export default function BuildingsPage() {
                                 </CardHeader>
                                 <CardContent className="p-4 flex items-center justify-between">
                                     <div className="text-xs text-muted-foreground font-medium">TOTAL UNITS</div>
-                                    <div className="text-xl font-bold font-mono text-slate-700 dark:text-slate-200">{building.rooms?.length || 0}</div>
+                                    <div className="text-xl font-bold font-mono text-foreground">{building.rooms?.length || 0}</div>
                                 </CardContent>
-                                <CardFooter className="p-2 border-t bg-slate-50/30 dark:bg-slate-900/30">
+                                <CardFooter className="p-2 border-t bg-muted/40">
                                     <Button variant="outline" size="sm" className="h-7 text-xs w-full" onClick={() => openManageRooms(building)}>
                                         Manage Units
                                     </Button>
@@ -249,7 +250,7 @@ export default function BuildingsPage() {
             {/* Manage Rooms Sheet */}
             <Sheet open={isManageRoomsOpen} onOpenChange={setIsManageRoomsOpen}>
                 <SheetContent side="right" className="w-[400px] sm:w-[500px] flex flex-col gap-0 p-0 shadow-2xl border-l">
-                    <div className="p-4 border-b bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10">
+                    <div className="p-4 border-b bg-muted/40 backdrop-blur-sm sticky top-0 z-10">
                         <SheetTitle className="text-base font-bold flex items-center justify-between">
                             <span>{selectedBuilding?.name}</span>
                             <span className="text-xs font-normal text-muted-foreground">{selectedBuilding?.buildingId}</span>
@@ -273,7 +274,7 @@ export default function BuildingsPage() {
                         </div>
                     </div>
 
-                    <ScrollArea className="flex-1 bg-slate-50/30">
+                    <ScrollArea className="flex-1 bg-muted/40">
                         <div className="p-4 grid grid-cols-2 gap-3 pb-8">
                             {roomsLoading ? <div className="col-span-full h-20 flex justify-center items-center"><Loader2 className="h-5 w-5 animate-spin" /></div> :
                                 rooms.map((room) => (
@@ -286,12 +287,12 @@ export default function BuildingsPage() {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuItem className="text-xs" onClick={() => { setSelectedRoom(room); editRoomForm.reset(room); setIsEditRoomOpen(true); }}><Pencil className="mr-2 h-3 w-3" /> Edit</DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-xs text-red-600" onClick={() => onDeleteRoom(room._id)}><Trash className="mr-2 h-3 w-3" /> Delete</DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-xs text-destructive" onClick={() => onDeleteRoom(room._id)}><Trash className="mr-2 h-3 w-3" /> Delete</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
                                         <div className="mt-2">
-                                            <Badge variant="outline" className={`text-[10px] h-4 px-1.5 font-normal border-0 ${room.status === 'VACANT' ? 'bg-green-100 text-green-700' : room.status === 'OCCUPIED' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'}`}>
+                                            <Badge variant="outline" className={`text-[10px] h-4 px-1.5 font-normal border-0 ${room.status === 'VACANT' ? 'bg-chart-1/10 text-chart-1' : room.status === 'OCCUPIED' ? 'bg-chart-3/10 text-chart-3' : 'bg-destructive/10 text-destructive'}`}>
                                                 {room.status}
                                             </Badge>
                                         </div>

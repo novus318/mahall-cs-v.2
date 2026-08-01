@@ -185,12 +185,12 @@ export default function OTPVerificationDialog({ open, onVerified, onClose }: OTP
                     </div>
                 ) : noContactsError ? (
                     <div className="space-y-6 py-4">
-                        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-md border border-red-100 dark:border-red-900/50">
-                            <div className="flex gap-2 text-sm text-red-800 dark:text-red-300">
+                        <div className="bg-destructive/10 p-4 rounded-md border border-destructive/20">
+                            <div className="flex gap-2 text-sm text-destructive">
                                 <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
                                 <div>
                                     <p className="font-medium mb-1">No Alert Contacts Configured</p>
-                                    <p className="text-xs text-red-700 dark:text-red-400">
+                                    <p className="text-xs text-destructive">
                                         You need to configure alert contacts before you can access settings. Please add at least one alert contact.
                                     </p>
                                 </div>
@@ -218,8 +218,8 @@ export default function OTPVerificationDialog({ open, onVerified, onClose }: OTP
                             </Button>
                         </div>
 
-                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-100 dark:border-blue-900/50">
-                            <div className="flex gap-2 text-xs text-blue-800 dark:text-blue-300">
+                        <div className="bg-chart-3/10 p-3 rounded-md border border-chart-3/20">
+                            <div className="flex gap-2 text-xs text-foreground">
                                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                                 <p>
                                     Click "Continue to Settings" to add alert contacts. Alert contacts are WhatsApp numbers that will receive OTP codes for security verification. After adding contacts, you'll need OTP verification for future access.
@@ -287,8 +287,8 @@ export default function OTPVerificationDialog({ open, onVerified, onClose }: OTP
                         </Button>
 
                         {/* Info */}
-                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-100 dark:border-blue-900/50">
-                            <div className="flex gap-2 text-xs text-blue-800 dark:text-blue-300">
+                        <div className="bg-chart-3/10 p-3 rounded-md border border-chart-3/20">
+                            <div className="flex gap-2 text-xs text-foreground">
                                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                                 <p>
                                     For security, OTP has been sent to all configured alert contacts. Check your WhatsApp.

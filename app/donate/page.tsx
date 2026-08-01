@@ -118,7 +118,7 @@ export default function DonatePage() {
     const finalAmount = selectedAmount || parseInt(customAmount) || 0;
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-950 dark:to-neutral-900">
+        <div className="min-h-screen bg-gradient-to-b from-muted to-background">
             <div className="max-w-lg mx-auto px-4 py-10">
                 <div className="mb-6">
                     <Link
@@ -130,8 +130,8 @@ export default function DonatePage() {
                     </Link>
                 </div>
 
-                <Card className="shadow-sm border-slate-200 dark:border-neutral-800 py-3">
-                    <CardHeader className="text-center pb-6 border-b border-slate-100 dark:border-neutral-800">
+                <Card className="shadow-sm border-border py-3">
+                    <CardHeader className="text-center pb-6 border-b border-border">
                         <CardTitle className="text-2xl font-amiri font-bold">Make a Donation</CardTitle>
                         <CardDescription className="text-muted-foreground">
                             Your generous contribution helps our community grow and thrive.

@@ -37,11 +37,11 @@ export default function NikahRegisterViewPage({ params }: { params: Promise<{ id
     };
 
     if (loading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
-    if (!record) return <div className="p-8 text-center text-red-500">Nikah register not found.</div>;
+    if (!record) return <div className="p-8 text-center text-destructive">Nikah register not found.</div>;
 
     return (
-        <div className="container mx-auto py-6 px-4">
-            <div className="mb-6 flex justify-between items-center no-print bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <div className="container mx-auto py-6 px-4 bg-muted/40 min-h-[calc(100vh-4rem)] flex-1">
+            <div className="mb-6 flex justify-between items-center no-print bg-card p-4 rounded-lg shadow-sm border border-border">
                 <div className="flex items-center gap-4">
                     <Button variant="outline" size="icon" onClick={() => router.back()}>
                         <ChevronLeft className="h-4 w-4" />
@@ -63,7 +63,7 @@ export default function NikahRegisterViewPage({ params }: { params: Promise<{ id
                 </div>
             </div>
 
-            <div className="flex justify-center w-full overflow-auto bg-gray-50 py-8 rounded-lg border border-gray-200 shadow-inner">
+            <div className="flex justify-center w-full overflow-auto bg-muted/40 py-8 rounded-lg border border-border shadow-inner">
                 <div id="print-section" className="shadow-lg">
                     <NikahCertificateTemplate data={record} />
                 </div>

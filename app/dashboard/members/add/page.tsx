@@ -95,21 +95,24 @@ export default function AddMemberPage() {
     }
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 max-w-4xl mx-auto w-full">
-            <div className="flex items-center gap-2">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)] max-w-4xl mx-auto w-full">
+            <div className="flex items-center gap-3">
                 <Link href="/dashboard/members">
-                    <Button variant="ghost" size="icon"><ArrowLeft className="h-4 w-4" /></Button>
+                    <Button variant="ghost" size="icon" className="hover:bg-muted/50"><ArrowLeft className="h-4 w-4" /></Button>
                 </Link>
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Add New Member</h2>
-                    <p className="text-muted-foreground">Quickly add a member to a family and house.</p>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Management · Members
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Add New Member</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Quickly add a member to a family and house.</p>
                 </div>
             </div>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Member Details</CardTitle>
-                    <CardDescription>Enter the personal details of the new member.</CardDescription>
+            <Card className="bg-card shadow-sm">
+                <CardHeader className="border-b bg-muted/40">
+                    <CardTitle className="text-base font-semibold">Member Details</CardTitle>
+                    <CardDescription className="text-xs">Enter the personal details of the new member.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-6">

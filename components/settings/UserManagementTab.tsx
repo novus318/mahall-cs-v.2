@@ -193,8 +193,8 @@ export default function UserManagementTab() {
                                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openPasswordDialog(user)} title="Reset Password">
                                                 <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-red-600" onClick={() => handleDeleteClick(user._id)} title="Delete User">
-                                                <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive" onClick={() => handleDeleteClick(user._id)} title="Delete User">
+                                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -326,7 +326,7 @@ export default function UserManagementTab() {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
                             Delete User
                         </AlertDialogAction>
                     </AlertDialogFooter>

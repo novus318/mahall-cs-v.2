@@ -68,7 +68,7 @@ const RentRow = ({ rent, isActive, onCollect }: { rent: RentDue, isActive: boole
                     </div>
                 </TableCell>
                 <TableCell className="text-xs py-1">₹{rent.amount}</TableCell>
-                <TableCell className="text-xs py-1 text-green-600">
+                <TableCell className="text-xs py-1 text-chart-1">
                     <div>₹{rent.collectedAmount}</div>
                     <div className="text-[10px] text-muted-foreground">
                         Bal: ₹{rent.amount - rent.collectedAmount}
@@ -76,7 +76,7 @@ const RentRow = ({ rent, isActive, onCollect }: { rent: RentDue, isActive: boole
                 </TableCell>
                 <TableCell className="text-xs py-1">
                     <Badge variant={rent.status === 'PAID' ? 'default' : rent.status === 'PARTIAL' ? 'secondary' : 'destructive'}
-                        className={`text-[10px] uppercase font-normal h-5 border-0 ${rent.status === 'PAID' ? 'bg-green-100 text-green-700' : rent.status === 'PENDING' ? 'bg-red-50 text-red-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                        className={`text-[10px] uppercase font-normal h-5 border-0 ${rent.status === 'PAID' ? 'bg-chart-1/10 text-chart-1' : rent.status === 'PENDING' ? 'bg-destructive/10 text-destructive' : 'bg-chart-2/10 text-chart-2'}`}>
                         {rent.status}
                     </Badge>
                 </TableCell>
@@ -89,19 +89,19 @@ const RentRow = ({ rent, isActive, onCollect }: { rent: RentDue, isActive: boole
                 </TableCell>
             </TableRow>
             {isOpen && hasHistory && (
-                <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
+                <TableRow className="bg-muted/40 hover:bg-muted/40">
                     <TableCell colSpan={5} className="p-0 border-b">
                         <div className="pl-8 pr-4 py-2">
                             <div className="text-[10px] font-semibold text-muted-foreground mb-1">Transaction History</div>
-                            <div className="max-h-[120px] overflow-y-auto space-y-1 pr-1 border rounded bg-white p-1">
+                            <div className="max-h-[120px] overflow-y-auto space-y-1 pr-1 border rounded bg-card p-1">
                                 {rent.transactions?.map((tx, idx) => (
-                                    <div key={idx} className="flex justify-between items-center px-2 py-1.5 text-xs border-b last:border-0 hover:bg-slate-50">
+                                    <div key={idx} className="flex justify-between items-center px-2 py-1.5 text-xs border-b last:border-0 hover:bg-muted/50">
                                         <div className="flex flex-col">
-                                            <span className="font-medium text-slate-700">Payment #{idx + 1}</span>
+                                            <span className="font-medium text-foreground">Payment #{idx + 1}</span>
                                             <span className="text-[10px] text-muted-foreground">{format(new Date(tx.date), 'dd MMM yyyy')} • {tx.notes || 'No notes'}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="font-mono font-bold text-green-700">+₹{tx.amount}</div>
+                                            <div className="font-mono font-bold text-chart-1">+₹{tx.amount}</div>
                                             {tx.receipt && (
                                                 <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${tx.receipt!._id}/pdf`, '_blank')}>
                                                     <FileText className="h-3 w-3" />
@@ -344,13 +344,13 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     const isActive = contract.status === 'ACTIVE';
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 h-[calc(100vh-4rem)] overflow-hidden">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
             {/* Header */}
             <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" /></Button>
                     <div>
-                        <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight flex items-center gap-2">
                             {contract.tenant.name}
                             <Badge variant={isActive ? 'default' : 'destructive'} className="text-[10px] h-5 px-1.5">{contract.status}</Badge>
                         </h2>
@@ -408,7 +408,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                             )}
                         </>
                     ) : (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-muted/60 rounded text-xs text-muted-foreground">
                             <AlertTriangle className="h-3 w-3" /> Contract Ended
                         </div>
                     )}
@@ -422,7 +422,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                     <div className="space-y-6">
                         <div className="grid md:grid-cols-2 gap-6">
                             <Card className="shadow-none border h-full">
-                                <CardHeader className="py-3 px-4 bg-slate-50 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4" /> Tenant Details</CardTitle></CardHeader>
+                                <CardHeader className="py-3 px-4 bg-muted/40 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4" /> Tenant Details</CardTitle></CardHeader>
                                 <CardContent className="p-4 grid grid-cols-1 gap-4">
                                     {isEditMode ? (
                                         <>
@@ -452,7 +452,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                 </CardContent>
                             </Card>
                             <Card className="shadow-none border h-full">
-                                <CardHeader className="py-3 px-4 bg-slate-50 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Contract Terms</CardTitle></CardHeader>
+                                <CardHeader className="py-3 px-4 bg-muted/40 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Contract Terms</CardTitle></CardHeader>
                                 <CardContent className="p-4 space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div><div className="text-xs">Monthly Rent</div><Input type="number" disabled={!isEditMode} className="h-8 text-xs font-bold" value={editForm.rentAmount} onChange={e => setEditForm(prev => ({ ...prev, rentAmount: Number(e.target.value) }))} /></div>
@@ -461,15 +461,15 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                         <div className="text-xs space-y-2">
                                             <div className="flex justify-between"><span>Start Date:</span> <span className="font-mono">{format(new Date(contract.startDate), 'dd MMM yyyy')}</span></div>
 
-                                            <div className="bg-slate-50 rounded border overflow-hidden">
+                                            <div className="bg-muted/40 rounded border overflow-hidden">
                                                 <div className="flex justify-between items-center p-2">
                                                     <span>Security Deposit:</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className="font-mono font-bold">₹{contract.depositAmount}</span>
                                                         {isDepositSettled ? (
-                                                            <Badge variant="outline" className="text-[10px] bg-green-50 text-green-700 border-green-200 gap-1"><CheckCircle2 className="h-3 w-3" /> Collected</Badge>
+                                                            <Badge variant="outline" className="text-[10px] bg-chart-1/10 text-chart-1 border-chart-1/20 gap-1"><CheckCircle2 className="h-3 w-3" /> Collected</Badge>
                                                         ) : (
-                                                            <Button type="button" size="sm" variant="outline" className="h-6 text-[10px] border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100 p-2" onClick={() => setIsCollectDepositOpen(true)} disabled={!isActive}>Collect Now</Button>
+                                                            <Button type="button" size="sm" variant="outline" className="h-6 text-[10px] border-chart-2/20 bg-chart-2/10 text-chart-2 hover:bg-chart-2/20 p-2" onClick={() => setIsCollectDepositOpen(true)} disabled={!isActive}>Collect Now</Button>
                                                         )}
                                                     </div>
                                                 </div>
@@ -478,7 +478,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                                         {deposits.map(d => (
                                                             <div key={d._id} className="flex justify-between items-center text-[10px] text-muted-foreground">
                                                                 <span className="flex items-center gap-1.5">
-                                                                    {d.type === 'DEPOSIT' ? <div className="w-1.5 h-1.5 rounded-full bg-green-500" /> : <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />}
+                                                                    {d.type === 'DEPOSIT' ? <div className="w-1.5 h-1.5 rounded-full bg-chart-1" /> : <div className="w-1.5 h-1.5 rounded-full bg-chart-2" />}
                                                                     {d.type === 'DEPOSIT' ? 'Collected' : 'Refunded'} on {format(new Date(d.paymentDate), 'dd MMM yyyy')}
                                                                 </span>
                                                                 <div className="flex items-center gap-2">
@@ -500,7 +500,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                         <div>
                                             <div className="text-xs font-semibold mb-2">Allocated Units</div>
                                             <div className="flex flex-wrap gap-2">
-                                                {contract.rooms.map(r => (<div key={r._id} className="border rounded px-3 py-1 text-xs bg-slate-50 flex items-center gap-2"><Building2 className="h-3 w-3 text-muted-foreground" /><span className="font-mono">{r.roomNumber}</span></div>))}
+                                                {contract.rooms.map(r => (<div key={r._id} className="border rounded px-3 py-1 text-xs bg-muted/40 flex items-center gap-2"><Building2 className="h-3 w-3 text-muted-foreground" /><span className="font-mono">{r.roomNumber}</span></div>))}
                                             </div>
                                         </div>
                                     </CardContent>
@@ -524,9 +524,9 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
 
                         <div className="border rounded bg-background overflow-hidden shadow-sm">
                             <Table>
-                                <TableHeader className="bg-slate-50">
+                                <TableHeader className="bg-muted/40">
                                     <TableRow>
-                                        <TableHead className="h-8 text-xs">Month-Year</TableHead>
+                                        <TableHead className="h-8 text-xs font-semibold uppercase tracking-wider">Month-Year</TableHead>
                                         <TableHead className="h-8 text-xs">Due Amount</TableHead>
                                         <TableHead className="h-8 text-xs">Collected</TableHead>
                                         <TableHead className="h-8 text-xs">Status</TableHead>
@@ -616,7 +616,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                             <DialogDescription className="text-xs">
                                 Total Deposit: <span className="font-bold text-foreground">₹{contract.depositAmount}</span>
                                 {contract.depositCollected && contract.depositCollected > 0 && (
-                                    <> • Remaining: <span className="font-bold text-orange-600">₹{contract.depositAmount - contract.depositCollected}</span></>
+                                    <> • Remaining: <span className="font-bold text-chart-2">₹{contract.depositAmount - contract.depositCollected}</span></>
                                 )}
                             </DialogDescription>
                         )}
@@ -656,7 +656,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
 
                     <div className="space-y-4 mt-2">
                         {depositHeld > 0 && (
-                            <div className="p-3 bg-orange-50 text-orange-800 text-xs rounded border border-orange-200">
+                            <div className="p-3 bg-chart-2/10 text-chart-2 text-xs rounded border border-chart-2/20">
                                 You are holding <strong>₹{depositHeld}</strong>. Do you want to record a refund now?
                             </div>
                         )}

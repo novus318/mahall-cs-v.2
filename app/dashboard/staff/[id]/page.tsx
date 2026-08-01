@@ -351,20 +351,20 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     const age = differenceInYears(new Date(), new Date(staff.dob));
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 overflow-hidden h-full">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
             {/* Header */}
             <div className="flex items-center justify-between gap-4 shrink-0">
                 <div className="flex items-center gap-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-5 w-5" /></Button>
                     <div>
-                        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-3">
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight flex items-center gap-3">
                             {staff.name}
-                            <Badge variant={staff.status === 'ACTIVE' ? 'default' : 'secondary'} className={staff.status === 'ACTIVE' ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}>{staff.status}</Badge>
+                            <Badge variant={staff.status === 'ACTIVE' ? 'default' : 'secondary'} className={staff.status === 'ACTIVE' ? "bg-chart-1/10 text-chart-1 hover:bg-chart-1/10" : ""}>{staff.status}</Badge>
                         </h2>
                         <div className="text-muted-foreground text-sm flex items-center gap-4 mt-1">
                             <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {staff.position}</span>
                             <span className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> {staff.department}</span>
-                            <span className="font-mono text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#{staff.employeeId}</span>
+                            <span className="font-mono text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">#{staff.employeeId}</span>
                         </div>
                     </div>
                 </div>
@@ -376,19 +376,19 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             <div className="grid lg:grid-cols-3 gap-3 h-full overflow-hidden">
                 {/* Left Column: Info & Stats */}
                 <div className="space-y-4 overflow-y-auto pb-10">
-                    <Card className="shadow-sm border-slate-200 py-3">
-                        <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Financial Overview</CardTitle></CardHeader>
+                    <Card className="shadow-sm border-border py-3">
+                        <CardHeader className=""><CardTitle className="text-base font-semibold text-foreground">Financial Overview</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
-                            <div className="flex justify-between items-center p-4 bg-slate-50 rounded-lg border border-slate-100">
-                                <span className="text-sm font-medium text-slate-600">Base Salary</span>
-                                <span className="font-bold text-xl text-slate-900">₹{staff.baseSalary.toLocaleString()}</span>
+                            <div className="flex justify-between items-center p-4 bg-muted/40 rounded-lg border border-border">
+                                <span className="text-sm font-medium text-muted-foreground">Base Salary</span>
+                                <span className="font-bold text-xl text-foreground">₹{staff.baseSalary.toLocaleString()}</span>
                             </div>
-                            <div className="flex justify-between items-center p-4 bg-orange-50/50 rounded-lg border border-orange-100">
+                            <div className="flex justify-between items-center p-4 bg-chart-2/10 rounded-lg border border-chart-2/20">
                                 <div>
-                                    <span className="text-sm font-medium text-orange-900">Advance Balance</span>
-                                    <p className="text-[11px] text-orange-600 mt-0.5">Deductible from future pay</p>
+                                    <span className="text-sm font-medium text-chart-2">Advance Balance</span>
+                                    <p className="text-[11px] text-chart-2 mt-0.5">Deductible from future pay</p>
                                 </div>
-                                <span className="font-bold text-xl text-orange-700">₹{staff.currentAdvance.toLocaleString()}</span>
+                                <span className="font-bold text-xl text-chart-2">₹{staff.currentAdvance.toLocaleString()}</span>
                             </div>
                             <Button className="w-full" variant="outline" onClick={() => setIsAdvanceOpen(true)}>
                                 <Wallet className="mr-2 h-4 w-4" /> Give Advance
@@ -396,25 +396,25 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                         </CardContent>
                     </Card>
 
-                    <Card className="shadow-sm border-slate-200 py-3">
-                        <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Employee Details</CardTitle></CardHeader>
+                    <Card className="shadow-sm border-border py-3">
+                        <CardHeader className=""><CardTitle className="text-base font-semibold text-foreground">Employee Details</CardTitle></CardHeader>
                         <CardContent className="text-sm space-y-2">
-                            <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Join Date</span><span className="font-medium text-slate-700">{format(new Date(staff.joinDate), 'dd MMM yyyy')}</span></div>
-                            <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Phone</span><span className="font-medium text-slate-700">{staff.phone}</span></div>
-                            <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Email</span><span className="font-medium text-slate-700">{staff.email || '-'}</span></div>
-                            <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">DOB</span><span className="font-medium text-slate-700">{format(new Date(staff.dob), 'dd MMM yyyy')} <span className="text-muted-foreground text-xs">({age} yrs)</span></span></div>
-                            {staff.aadhaarNumber && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Aadhaar / ID</span><span className="font-medium text-slate-700">{staff.aadhaarNumber}</span></div>}
-                            {staff.qualifications && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Qualifications</span><span className="font-medium text-slate-700">{staff.qualifications}</span></div>}
-                            {staff.religiousQualifications && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Religious Qualifications</span><span className="font-medium text-slate-700">{staff.religiousQualifications}</span></div>}
-                            {staff.otherAllowance > 0 && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Other Allowance</span><span className="font-medium text-slate-700">₹{staff.otherAllowance.toLocaleString()}</span></div>}
+                            <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Join Date</span><span className="font-medium text-foreground">{format(new Date(staff.joinDate), 'dd MMM yyyy')}</span></div>
+                            <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Phone</span><span className="font-medium text-foreground">{staff.phone}</span></div>
+                            <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Email</span><span className="font-medium text-foreground">{staff.email || '-'}</span></div>
+                            <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">DOB</span><span className="font-medium text-foreground">{format(new Date(staff.dob), 'dd MMM yyyy')} <span className="text-muted-foreground text-xs">({age} yrs)</span></span></div>
+                            {staff.aadhaarNumber && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Aadhaar / ID</span><span className="font-medium text-foreground">{staff.aadhaarNumber}</span></div>}
+                            {staff.qualifications && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Qualifications</span><span className="font-medium text-foreground">{staff.qualifications}</span></div>}
+                            {staff.religiousQualifications && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Religious Qualifications</span><span className="font-medium text-foreground">{staff.religiousQualifications}</span></div>}
+                            {staff.otherAllowance > 0 && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Other Allowance</span><span className="font-medium text-foreground">₹{staff.otherAllowance.toLocaleString()}</span></div>}
                         </CardContent>
                     </Card>
 
                     {(staff.address?.fullAddress || staff.address?.city) && (
-                        <Card className="shadow-sm border-slate-200 py-3">
-                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Address</CardTitle></CardHeader>
+                        <Card className="shadow-sm border-border py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-foreground">Address</CardTitle></CardHeader>
                             <CardContent className="text-sm space-y-2">
-                                {staff.address?.fullAddress && <p className="text-slate-700 leading-relaxed">{staff.address.fullAddress}</p>}
+                                {staff.address?.fullAddress && <p className="text-foreground leading-relaxed">{staff.address.fullAddress}</p>}
                                 <div className="flex gap-4 text-xs text-muted-foreground">
                                     {staff.address?.city && <span>{staff.address.city}</span>}
                                     {staff.address?.state && <span>{staff.address.state}</span>}
@@ -425,44 +425,44 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     )}
 
                     {staff.emergencyContact?.name && (
-                        <Card className="shadow-sm border-slate-200 py-3">
-                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Emergency Contact</CardTitle></CardHeader>
+                        <Card className="shadow-sm border-border py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-foreground">Emergency Contact</CardTitle></CardHeader>
                             <CardContent className="text-sm space-y-2">
-                                <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Name</span><span className="font-medium text-slate-700">{staff.emergencyContact.name}</span></div>
-                                {staff.emergencyContact.relationship && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Relationship</span><span className="font-medium text-slate-700">{staff.emergencyContact.relationship}</span></div>}
-                                {staff.emergencyContact.phone && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Phone</span><span className="font-medium text-slate-700">{staff.emergencyContact.phone}</span></div>}
-                                {staff.emergencyContact.alternatePhone && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Alt. Phone</span><span className="font-medium text-slate-700">{staff.emergencyContact.alternatePhone}</span></div>}
+                                <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Name</span><span className="font-medium text-foreground">{staff.emergencyContact.name}</span></div>
+                                {staff.emergencyContact.relationship && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Relationship</span><span className="font-medium text-foreground">{staff.emergencyContact.relationship}</span></div>}
+                                {staff.emergencyContact.phone && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Phone</span><span className="font-medium text-foreground">{staff.emergencyContact.phone}</span></div>}
+                                {staff.emergencyContact.alternatePhone && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Alt. Phone</span><span className="font-medium text-foreground">{staff.emergencyContact.alternatePhone}</span></div>}
                             </CardContent>
                         </Card>
                     )}
 
                     {(staff.bankAccount?.accountNumber || staff.bankAccount?.bankName) && (
-                        <Card className="shadow-sm border-slate-200 py-3">
-                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Bank Account Details</CardTitle></CardHeader>
+                        <Card className="shadow-sm border-border py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-foreground">Bank Account Details</CardTitle></CardHeader>
                             <CardContent className="text-sm space-y-2">
-                                {staff.bankAccount?.accountHolderName && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Account Holder</span><span className="font-medium text-slate-700">{staff.bankAccount.accountHolderName}</span></div>}
-                                {staff.bankAccount?.accountNumber && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Account Number</span><span className="font-medium text-slate-700 font-mono">{staff.bankAccount.accountNumber}</span></div>}
-                                {staff.bankAccount?.ifscCode && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">IFSC Code</span><span className="font-medium text-slate-700 font-mono">{staff.bankAccount.ifscCode}</span></div>}
-                                {staff.bankAccount?.bankName && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Bank Name</span><span className="font-medium text-slate-700">{staff.bankAccount.bankName}</span></div>}
-                                {staff.bankAccount?.branchName && <div className="flex justify-between py-1 border-b border-slate-50 last:border-0"><span className="text-muted-foreground">Branch</span><span className="font-medium text-slate-700">{staff.bankAccount.branchName}</span></div>}
+                                {staff.bankAccount?.accountHolderName && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Account Holder</span><span className="font-medium text-foreground">{staff.bankAccount.accountHolderName}</span></div>}
+                                {staff.bankAccount?.accountNumber && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Account Number</span><span className="font-medium text-foreground font-mono">{staff.bankAccount.accountNumber}</span></div>}
+                                {staff.bankAccount?.ifscCode && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">IFSC Code</span><span className="font-medium text-foreground font-mono">{staff.bankAccount.ifscCode}</span></div>}
+                                {staff.bankAccount?.bankName && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Bank Name</span><span className="font-medium text-foreground">{staff.bankAccount.bankName}</span></div>}
+                                {staff.bankAccount?.branchName && <div className="flex justify-between py-1 border-b border-border/60 last:border-0"><span className="text-muted-foreground">Branch</span><span className="font-medium text-foreground">{staff.bankAccount.branchName}</span></div>}
                             </CardContent>
                         </Card>
                     )}
 
                     {staff.jobDescription && (
-                        <Card className="shadow-sm border-slate-200 py-3">
-                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Job Description</CardTitle></CardHeader>
+                        <Card className="shadow-sm border-border py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-foreground">Job Description</CardTitle></CardHeader>
                             <CardContent className="text-sm">
-                                <p className="text-slate-700 leading-relaxed whitespace-pre-line">{staff.jobDescription}</p>
+                                <p className="text-foreground leading-relaxed whitespace-pre-line">{staff.jobDescription}</p>
                             </CardContent>
                         </Card>
                     )}
 
                     {staff.additionalInfo && (
-                        <Card className="shadow-sm border-slate-200 py-3">
-                            <CardHeader className=""><CardTitle className="text-base font-semibold text-slate-800">Additional Information</CardTitle></CardHeader>
+                        <Card className="shadow-sm border-border py-3">
+                            <CardHeader className=""><CardTitle className="text-base font-semibold text-foreground">Additional Information</CardTitle></CardHeader>
                             <CardContent className="text-sm">
-                                <p className="text-slate-700 leading-relaxed whitespace-pre-line">{staff.additionalInfo}</p>
+                                <p className="text-foreground leading-relaxed whitespace-pre-line">{staff.additionalInfo}</p>
                             </CardContent>
                         </Card>
                     )}
@@ -472,7 +472,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
                     <Tabs defaultValue="payslips" className="flex-1 flex flex-col overflow-hidden">
                         <div className="flex justify-between items-center mb-4 px-1">
-                            <TabsList className="bg-slate-100">
+                            <TabsList className="bg-muted">
                                 <TabsTrigger value="payslips">Payslips</TabsTrigger>
                                 <TabsTrigger value="transactions">Transactions</TabsTrigger>
                             </TabsList>
@@ -481,9 +481,9 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             </Button>
                         </div>
 
-                        <TabsContent value="payslips" className="flex-1 overflow-auto border rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+                        <TabsContent value="payslips" className="flex-1 overflow-auto border rounded-xl bg-card shadow-sm ring-1 ring-border">
                             <Table>
-                                <TableHeader className="bg-slate-50 sticky top-0 z-10">
+                                <TableHeader className="bg-muted/40 sticky top-0 z-10">
                                     <TableRow>
                                         <TableHead className="w-[120px]">Month</TableHead>
                                         <TableHead>Base</TableHead>
@@ -496,20 +496,20 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                 <TableBody>
                                     {payslips.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center h-32 text-muted-foreground">No payslips generated yet</TableCell></TableRow> :
                                         payslips.map(slip => (
-                                            <TableRow key={slip._id} className="hover:bg-slate-50/50">
+                                            <TableRow key={slip._id} className="hover:bg-muted/50">
                                                 <TableCell className="font-medium">{slip.monthYear}</TableCell>
                                                 <TableCell>₹{slip.baseSalary.toLocaleString()}</TableCell>
-                                                <TableCell className="text-xs text-red-600">
+                                                <TableCell className="text-xs text-destructive">
                                                     {slip.leaveDeduction > 0 && <div className="whitespace-nowrap">-₹{slip.leaveDeduction} (Leave)</div>}
                                                     {slip.advanceDeduction > 0 && <div className="whitespace-nowrap">-₹{slip.advanceDeduction} (Adv)</div>}
-                                                    {slip.leaveDeduction === 0 && slip.advanceDeduction === 0 && <span className="text-slate-400">-</span>}
+                                                    {slip.leaveDeduction === 0 && slip.advanceDeduction === 0 && <span className="text-muted-foreground">-</span>}
                                                 </TableCell>
-                                                <TableCell className="font-bold text-slate-800">₹{slip.finalAmount.toLocaleString()}</TableCell>
+                                                <TableCell className="font-bold text-foreground">₹{slip.finalAmount.toLocaleString()}</TableCell>
                                                 <TableCell>
                                                     <Badge variant={slip.status === 'PAID' ? 'default' : 'secondary'} className={
-                                                        slip.status === 'PAID' ? 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200' :
-                                                            slip.status === 'REJECTED' ? 'bg-red-100 text-red-700 hover:bg-red-100 border-red-200' :
-                                                                'bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200'
+                                                        slip.status === 'PAID' ? 'bg-chart-1/10 text-chart-1 hover:bg-chart-1/10 border-chart-1/20' :
+                                                            slip.status === 'REJECTED' ? 'bg-destructive/10 text-destructive hover:bg-destructive/10 border-destructive/20' :
+                                                                'bg-chart-2/10 text-chart-2 hover:bg-chart-2/10 border-chart-2/20'
                                                     }>{slip.status}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -525,9 +525,9 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             </Table>
                         </TabsContent>
 
-                        <TabsContent value="transactions" className="flex-1 overflow-auto border rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+                        <TabsContent value="transactions" className="flex-1 overflow-auto border rounded-xl bg-card shadow-sm ring-1 ring-border">
                             <Table>
-                                <TableHeader className="bg-slate-50 sticky top-0 z-10">
+                                <TableHeader className="bg-muted/40 sticky top-0 z-10">
                                     <TableRow>
                                         <TableHead>Date</TableHead>
                                         <TableHead>Type</TableHead>
@@ -538,15 +538,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                 <TableBody>
                                     {transactions.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center h-32 text-muted-foreground">No transactions found</TableCell></TableRow> :
                                         transactions.map(tx => (
-                                            <TableRow key={tx._id} className="group hover:bg-slate-50/50">
-                                                <TableCell className="text-xs font-mono text-muted-foreground group-hover:text-slate-600">{format(new Date(tx.date), 'dd MMM yyyy, HH:mm')}</TableCell>
+                                            <TableRow key={tx._id} className="group hover:bg-muted/50">
+                                                <TableCell className="text-xs font-mono text-muted-foreground group-hover:text-muted-foreground">{format(new Date(tx.date), 'dd MMM yyyy, HH:mm')}</TableCell>
                                                 <TableCell>
                                                     <Badge variant="outline" className="text-[10px] font-normal uppercase tracking-wider">
                                                         {tx.type.replace('_', ' ')}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate">{tx.notes}</TableCell>
-                                                <TableCell className={`text-right font-mono font-medium ${tx.type === 'ADVANCE_REPAID' ? 'text-green-600' : 'text-red-600'}`}>
+                                                <TableCell className={`text-right font-mono font-medium ${tx.type === 'ADVANCE_REPAID' ? 'text-chart-1' : 'text-destructive'}`}>
                                                     {tx.type === 'ADVANCE_REPAID' ? '+' : '-'}₹{tx.amount.toLocaleString()}
                                                 </TableCell>
                                             </TableRow>
@@ -607,12 +607,12 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     </DialogHeader>
                     <Form {...paymentForm}>
                         <form onSubmit={paymentForm.handleSubmit(handleConfirmPayment)} className="space-y-4">
-                            <div className="p-4 bg-slate-50 border rounded-lg space-y-3">
+                            <div className="p-4 bg-muted/40 border rounded-lg space-y-3">
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-muted-foreground">Base Salary</span>
                                     <span className="font-semibold">₹{staff.baseSalary.toLocaleString()}</span>
                                 </div>
-                                <div className="h-px bg-slate-200" />
+                                <div className="h-px bg-border" />
                                 <div className="space-y-3 pt-1">
                                     <FormField control={paymentForm.control} name="leaveDays" render={({ field: { value, onChange, ...fieldProps } }) => (
                                         <FormItem className="flex flex-row items-center justify-between space-y-0 gap-4">
@@ -622,15 +622,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                     )} />
                                     <FormField control={paymentForm.control} name="advanceDeduction" render={({ field: { value, onChange, ...fieldProps } }) => (
                                         <FormItem className="flex flex-row items-center justify-between space-y-0 gap-4">
-                                            <div className="space-y-0.5"><FormLabel className="text-base">Deduct Advance</FormLabel><p className="text-[11px] text-orange-600">Max Balance: ₹{staff.currentAdvance}</p></div>
+                                            <div className="space-y-0.5"><FormLabel className="text-base">Deduct Advance</FormLabel><p className="text-[11px] text-chart-2">Max Balance: ₹{staff.currentAdvance}</p></div>
                                             <FormControl><Input type="number" className="w-24 text-right" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : 0)} /></FormControl>
                                         </FormItem>
                                     )} />
                                 </div>
-                                <div className="h-px bg-slate-200" />
+                                <div className="h-px bg-border" />
                                 <div className="flex justify-between items-center pt-1">
                                     <span className="font-semibold text-lg">Net Payable</span>
-                                    <span className="font-bold text-2xl text-green-700">₹{estimatedNet.toLocaleString()}</span>
+                                    <span className="font-bold text-2xl text-chart-1">₹{estimatedNet.toLocaleString()}</span>
                                 </div>
                             </div>
 
@@ -655,12 +655,12 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             </div>
 
                             <DialogFooter className="flex justify-between sm:justify-between">
-                                <Button type="button" variant="outline" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={handleInitiateRejection} disabled={sendingOtp || isProcessingPayment}>
+                                <Button type="button" variant="outline" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleInitiateRejection} disabled={sendingOtp || isProcessingPayment}>
                                     {sendingOtp ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reject Payslip"}
                                 </Button>
                                 <div className="flex gap-2">
                                     <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)} disabled={isProcessingPayment}>Cancel</Button>
-                                    <Button type="submit" className="bg-green-600 hover:bg-green-700" disabled={!selectedAccount || isProcessingPayment}>
+                                    <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={!selectedAccount || isProcessingPayment}>
                                         {isProcessingPayment && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         {isProcessingPayment ? "Processing..." : "Confirm Payment"}
                                     </Button>
@@ -675,7 +675,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             <Dialog open={isOtpOpen} onOpenChange={setIsOtpOpen}>
                 <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-red-600">
+                        <DialogTitle className="flex items-center gap-2 text-destructive">
                             <ShieldAlert className="h-5 w-5" /> Reject Payslip
                         </DialogTitle>
                         <DialogDescription>

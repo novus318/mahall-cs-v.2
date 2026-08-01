@@ -161,11 +161,12 @@ export default function StaffPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Staff Management</h2>
-                    <p className="text-muted-foreground text-sm">Manage employees and payroll.</p>
+                    <div className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">Management · Staff</div>
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mt-2">Staff Management</h2>
+                    <p className="text-muted-foreground text-sm mt-1">Manage employees and payroll.</p>
                 </div>
                 <Button onClick={() => setIsAddOpen(true)} size="sm">
                     <Plus className="mr-2 h-4 w-4" /> Add Staff
@@ -173,7 +174,7 @@ export default function StaffPage() {
             </div>
 
             <Card className="border shadow-sm">
-                <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
+                <CardHeader className="p-3 border-b bg-muted/40">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <CardTitle className="text-base font-semibold">All Staff</CardTitle>
@@ -194,15 +195,15 @@ export default function StaffPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                        <TableHeader className="bg-muted/40">
                             <TableRow className="hover:bg-transparent">
-                                <TableHead className="w-[100px] h-9 text-xs font-semibold">ID</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Name</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Position</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Department</TableHead>
-                                <TableHead className="h-9 text-xs font-semibold">Contact</TableHead>
-                                <TableHead className="text-right h-9 text-xs font-semibold">Balance (Adv)</TableHead>
-                                <TableHead className="text-right h-9 text-xs font-semibold w-[80px]">Action</TableHead>
+                                <TableHead className="w-[100px] h-9 text-xs font-semibold uppercase tracking-wider">ID</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Name</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Position</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Department</TableHead>
+                                <TableHead className="h-9 text-xs font-semibold uppercase tracking-wider">Contact</TableHead>
+                                <TableHead className="text-right h-9 text-xs font-semibold uppercase tracking-wider">Balance (Adv)</TableHead>
+                                <TableHead className="text-right h-9 text-xs font-semibold uppercase tracking-wider w-[80px]">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -212,18 +213,18 @@ export default function StaffPage() {
                                 <TableRow><TableCell colSpan={7} className="h-24 text-center text-muted-foreground text-sm">No staff members found.</TableCell></TableRow>
                             ) : (
                                 staffList.map((staff) => (
-                                    <TableRow key={staff._id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                                    <TableRow key={staff._id} className="group hover:bg-muted/50">
                                         <TableCell className="font-mono text-xs py-2 font-medium">{staff.employeeId}</TableCell>
                                         <TableCell className="py-2 font-medium text-sm">{staff.name}</TableCell>
                                         <TableCell className="py-2 text-sm text-muted-foreground">{staff.position}</TableCell>
-                                        <TableCell className="py-2"><Badge variant="outline" className="font-normal text-xs bg-slate-50 text-slate-600 border-slate-200">{staff.department}</Badge></TableCell>
+                                        <TableCell className="py-2"><Badge variant="outline" className="font-normal text-xs bg-muted/60 text-muted-foreground border-border">{staff.department}</Badge></TableCell>
                                         <TableCell className="text-muted-foreground text-xs py-2">{staff.phone}</TableCell>
                                         <TableCell className="text-right font-mono text-xs py-2">
-                                            {staff.currentAdvance > 0 ? <span className="text-orange-600 font-medium">₹{staff.currentAdvance.toLocaleString()}</span> : <span className="text-slate-300">-</span>}
+                                            {staff.currentAdvance > 0 ? <span className="text-chart-2 font-medium">₹{staff.currentAdvance.toLocaleString()}</span> : <span className="text-muted-foreground/40">-</span>}
                                         </TableCell>
                                         <TableCell className="py-2 text-right">
                                             <Link href={`/dashboard/staff/${staff._id}`}>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-blue-600 hover:text-blue-700 hover:bg-blue-50">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10">
                                                     <Eye className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
@@ -236,7 +237,7 @@ export default function StaffPage() {
                 </CardContent>
 
                 {/* Pagination Footer */}
-                <div className="p-4 border-t grid grid-cols-3 sm:grid-cols-3 items-center gap-4 bg-slate-50/50 dark:bg-slate-900/50">
+                <div className="p-4 border-t grid grid-cols-3 sm:grid-cols-3 items-center gap-4 bg-muted/40">
                     <div className="flex items-center gap-2 justify-center sm:justify-start">
                         <p className="text-xs text-muted-foreground whitespace-nowrap">
                             Rows

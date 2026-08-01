@@ -664,7 +664,7 @@ export default function WhatsAppPage() {
                                                             </div>
                                                         ) : msg.type === 'document' ? (
                                                             <div className="bg-background border rounded-lg flex items-center gap-3 p-2 min-w-[200px] cursor-pointer mb-1" onClick={() => msg.mediaId && window.open(`${API_BASE_URL}/whatsapp/media/${msg.mediaId}`, '_blank')}>
-                                                                <div className="bg-red-100 p-2 rounded-lg text-red-600 shrink-0">
+                                                                <div className="bg-destructive/10 p-2 rounded-lg text-destructive shrink-0">
                                                                     <FileText className="h-5 w-5 md:h-6 md:w-6" />
                                                                 </div>
                                                                 <div className="flex flex-col overflow-hidden">
@@ -707,20 +707,20 @@ export default function WhatsAppPage() {
                             <div className="flex w-full items-end gap-2 md:gap-3 max-w-350 mx-auto">
                                 {isRecording ? (
                                     <div className="flex-1 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <div className="flex-1 bg-red-50 border border-red-100 rounded-full md:rounded-[22px] flex items-center px-3 md:px-4 py-2 gap-2 md:gap-3 text-red-500 relative overflow-hidden min-h-[44px]">
-                                            <div className="animate-pulse rounded-full bg-red-500 h-2 w-2 md:h-2.5 md:w-2.5 shrink-0"></div>
-                                            <span className="font-mono font-medium text-xs md:text-sm tabular-nums text-red-600 min-w-[40px] md:min-w-[50px]">
+                                        <div className="flex-1 bg-destructive/10 border border-destructive/20 rounded-full md:rounded-[22px] flex items-center px-3 md:px-4 py-2 gap-2 md:gap-3 text-destructive relative overflow-hidden min-h-[44px]">
+                                            <div className="animate-pulse rounded-full bg-destructive h-2 w-2 md:h-2.5 md:w-2.5 shrink-0"></div>
+                                            <span className="font-mono font-medium text-xs md:text-sm tabular-nums text-destructive min-w-[40px] md:min-w-[50px]">
                                                 {formatDuration(recordingDuration)}
                                             </span>
-                                            <span className="text-[10px] md:text-xs text-red-400 font-medium">Recording...</span>
+                                            <span className="text-[10px] md:text-xs text-destructive font-medium">Recording...</span>
 
                                             <div className="ml-auto flex items-center gap-1">
-                                                <Button variant="ghost" size="icon" onClick={cancelRecording} className="h-7 w-7 md:h-8 md:w-8 hover:bg-red-100 hover:text-red-600 text-red-400 rounded-full" title="Cancel">
+                                                <Button variant="ghost" size="icon" onClick={cancelRecording} className="h-7 w-7 md:h-8 md:w-8 hover:bg-destructive/10 hover:text-destructive text-destructive rounded-full" title="Cancel">
                                                     <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
                                                 </Button>
                                             </div>
                                         </div>
-                                        <Button size="icon" className="h-11 w-11 md:h-10 md:w-10 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md animate-pulse shrink-0" onClick={handleSendVoice} disabled={sending}>
+                                        <Button size="icon" className="h-11 w-11 md:h-10 md:w-10 rounded-full bg-destructive hover:bg-destructive/90 text-white shadow-md animate-pulse shrink-0" onClick={handleSendVoice} disabled={sending}>
                                             {sending ? <Loader2 className="h-4 w-4 md:h-5 md:w-5 animate-spin" /> : <Send className="h-4 w-4 md:h-5 md:w-5 pl-0.5" />}
                                         </Button>
                                     </div>
@@ -789,10 +789,10 @@ export default function WhatsAppPage() {
                     </>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground/50 p-4 md:p-8">
-                        <div className="bg-slate-100 dark:bg-slate-800 p-8 md:p-10 lg:p-12 rounded-full mb-6">
-                            <MessageIcon className="h-16 w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 text-slate-300 dark:text-slate-600" />
+                        <div className="bg-muted/60 p-8 md:p-10 lg:p-12 rounded-full mb-6">
+                            <MessageIcon className="h-16 w-16 md:h-20 md:w-20 lg:h-24 lg:w-24 text-muted-foreground/30" />
                         </div>
-                        <p className="text-base md:text-lg lg:text-xl font-medium text-slate-400 dark:text-slate-500 text-center">Select a chat to start messaging</p>
+                        <p className="text-base md:text-lg lg:text-xl font-medium text-muted-foreground/50 text-center">Select a chat to start messaging</p>
                         <p className="text-xs md:text-sm text-muted-foreground mt-2 text-center max-w-md">Choose a conversation from the list to view messages and send replies</p>
                     </div>
                 )}
@@ -803,8 +803,8 @@ export default function WhatsAppPage() {
                 <div className="w-80 lg:w-[340px] xl:w-[360px] border-l border-border bg-background p-0 hidden xl:flex flex-col overflow-hidden">
                     <ScrollArea className="flex-1 p-6 lg:p-8">
                         <div className="flex flex-col items-center mb-8">
-                            <Avatar className="h-24 w-24 lg:h-28 lg:w-28 mb-4 border-4 border-slate-50 dark:border-slate-800">
-                                <AvatarFallback className="text-2xl lg:text-3xl bg-slate-100 dark:bg-slate-800">{selectedContact.displayName?.substring(0, 2)}</AvatarFallback>
+                            <Avatar className="h-24 w-24 lg:h-28 lg:w-28 mb-4 border-4 border-border">
+                                <AvatarFallback className="text-2xl lg:text-3xl bg-muted/60">{selectedContact.displayName?.substring(0, 2)}</AvatarFallback>
                             </Avatar>
                             <h2 className="font-bold text-lg lg:text-xl text-center leading-tight">{selectedContact.displayName}</h2>
                             <p className="text-sm lg:text-base text-muted-foreground mt-1.5">{selectedContact.phoneNumber}</p>
@@ -813,21 +813,21 @@ export default function WhatsAppPage() {
 
                         <div className="space-y-6 lg:space-y-7">
                             {selectedContact.type !== 'UNKNOWN' && selectedContact.linkedEntityId ? (
-                                <Card className="p-4 lg:p-5 border shadow-sm bg-blue-50/50 dark:bg-blue-950/20 border-blue-100 dark:border-blue-900">
-                                    <div className="flex items-center gap-2 mb-3 text-blue-700 dark:text-blue-400 font-medium text-sm lg:text-base">
+                                <Card className="p-4 lg:p-5 border shadow-sm bg-chart-3/10 border-chart-3/20">
+                                    <div className="flex items-center gap-2 mb-3 text-chart-3 font-medium text-sm lg:text-base">
                                         <User className="h-4 w-4 lg:h-5 lg:w-5" />
                                         Linked Entity
                                     </div>
-                                    <div className="space-y-2.5 text-sm lg:text-base text-slate-600 dark:text-slate-400">
+                                    <div className="space-y-2.5 text-sm lg:text-base text-muted-foreground">
                                         <div className="flex justify-between">
                                             <span>Type</span>
-                                            <span className="font-medium text-slate-900 dark:text-slate-100">{selectedContact.linkedEntityModel}</span>
+                                            <span className="font-medium text-foreground">{selectedContact.linkedEntityModel}</span>
                                         </div>
                                         <div className="flex justify-between">
                                             <span>Status</span>
-                                            <span className="text-green-600 dark:text-green-400 font-medium">Active</span>
+                                            <span className="text-chart-1 font-medium">Active</span>
                                         </div>
-                                        <Button variant="outline" size="sm" className="w-full mt-3 h-9 lg:h-10 text-xs lg:text-sm bg-white dark:bg-slate-950">
+                                        <Button variant="outline" size="sm" className="w-full mt-3 h-9 lg:h-10 text-xs lg:text-sm bg-background">
                                             View Profile
                                         </Button>
                                     </div>
@@ -842,12 +842,12 @@ export default function WhatsAppPage() {
                             <div>
                                 <h4 className="text-xs lg:text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3 lg:mb-4">Quick Actions</h4>
                                 <div className="grid grid-cols-2 gap-2.5 lg:gap-3">
-                                    <Button variant="outline" size="sm" className="h-24 lg:h-28 flex flex-col gap-2.5 lg:gap-3 hover:bg-slate-50 dark:hover:bg-slate-900">
-                                        <FileText className="h-5 w-5 lg:h-6 lg:w-6 text-slate-500 dark:text-slate-400" />
+                                    <Button variant="outline" size="sm" className="h-24 lg:h-28 flex flex-col gap-2.5 lg:gap-3 hover:bg-muted/50">
+                                        <FileText className="h-5 w-5 lg:h-6 lg:w-6 text-muted-foreground" />
                                         <span className="text-xs lg:text-sm font-normal">Create Receipt</span>
                                     </Button>
-                                    <Button variant="outline" size="sm" className="h-24 lg:h-28 flex flex-col gap-2.5 lg:gap-3 hover:bg-slate-50 dark:hover:bg-slate-900">
-                                        <Phone className="h-5 w-5 lg:h-6 lg:w-6 text-slate-500 dark:text-slate-400" />
+                                    <Button variant="outline" size="sm" className="h-24 lg:h-28 flex flex-col gap-2.5 lg:gap-3 hover:bg-muted/50">
+                                        <Phone className="h-5 w-5 lg:h-6 lg:w-6 text-muted-foreground" />
                                         <span className="text-xs lg:text-sm font-normal">Call</span>
                                     </Button>
                                 </div>

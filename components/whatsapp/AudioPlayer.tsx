@@ -126,7 +126,7 @@ export default function AudioPlayer({ src, className, isOutbound = false }: Audi
                     disabled={error}
                 >
                     {error ? (
-                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        <AlertCircle className="h-4 w-4 text-destructive" />
                     ) : isPlaying ? (
                         <Pause className="h-4 w-4 fill-current" />
                     ) : (
@@ -143,11 +143,11 @@ export default function AudioPlayer({ src, className, isOutbound = false }: Audi
                     value={currentTime}
                     onChange={handleSeek}
                     className={cn(
-                        "w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-current",
-                        isOutbound ? "accent-white bg-white/30" : "accent-primary bg-primary/20",
+                        "w-full h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-current",
+                        isOutbound ? "accent-primary-foreground bg-primary-foreground/30" : "accent-primary bg-primary/20",
                         "[&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full",
                         isOutbound
-                            ? "[&::-webkit-slider-thumb]:bg-white"
+                            ? "[&::-webkit-slider-thumb]:bg-primary-foreground"
                             : "[&::-webkit-slider-thumb]:bg-primary"
                     )}
                 />

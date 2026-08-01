@@ -31,7 +31,7 @@ export default function EditDeathRegisterPage() {
                 </Button>
                 <div>
                     <h1 className="text-2xl font-bold">Edit Death Record</h1>
-                    <p className="text-gray-500">Update the details of the death entry.</p>
+                    <p className="text-muted-foreground">Update the details of the death entry.</p>
                 </div>
             </div>
 
@@ -43,7 +43,7 @@ export default function EditDeathRegisterPage() {
             ) : record ? (
                 <DeathRegisterForm initialData={record} />
             ) : (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12 text-muted-foreground">
                     Death record not found.
                 </div>
             )}

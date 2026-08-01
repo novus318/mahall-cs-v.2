@@ -153,11 +153,12 @@ export default function ContractsPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0 h-[calc(100vh-4rem)] overflow-hidden">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Contracts</h2>
-                    <p className="text-muted-foreground text-sm">Manage rental agreements and tenants.</p>
+                    <div className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">Rent · Contracts</div>
+                    <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mt-2">Contracts</h2>
+                    <p className="text-muted-foreground text-sm mt-1">Manage rental agreements and tenants.</p>
                 </div>
                 <div className="flex gap-2">
                     <Button onClick={openWizard} size="sm" className="h-8">
@@ -203,15 +204,15 @@ export default function ContractsPage() {
             <div className="flex-1 border rounded-md overflow-hidden bg-background flex flex-col">
                 <div className="flex-1 overflow-auto">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-900 sticky top-0 z-10">
+                        <TableHeader className="bg-muted/40 sticky top-0 z-10">
                             <TableRow className="pointer-events-none hover:bg-transparent">
-                                <TableHead className="w-[200px] text-xs font-semibold h-9">Tenant</TableHead>
-                                <TableHead className="text-xs font-semibold h-9">Contact</TableHead>
-                                <TableHead className="text-xs font-semibold h-9">Units</TableHead>
-                                <TableHead className="text-xs font-semibold h-9 text-right">Rent</TableHead>
-                                <TableHead className="text-xs font-semibold h-9 text-right">Start Date</TableHead>
-                                <TableHead className="text-xs font-semibold h-9 text-right">End Date</TableHead>
-                                <TableHead className="text-xs font-semibold h-9 text-center w-[100px]">Status</TableHead>
+                                <TableHead className="w-[200px] text-xs font-semibold uppercase tracking-wider h-9">Tenant</TableHead>
+                                <TableHead className="text-xs font-semibold uppercase tracking-wider h-9">Contact</TableHead>
+                                <TableHead className="text-xs font-semibold uppercase tracking-wider h-9">Units</TableHead>
+                                <TableHead className="text-xs font-semibold uppercase tracking-wider h-9 text-right">Rent</TableHead>
+                                <TableHead className="text-xs font-semibold uppercase tracking-wider h-9 text-right">Start Date</TableHead>
+                                <TableHead className="text-xs font-semibold uppercase tracking-wider h-9 text-right">End Date</TableHead>
+                                <TableHead className="text-xs font-semibold uppercase tracking-wider h-9 text-center w-[100px]">Status</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -223,7 +224,7 @@ export default function ContractsPage() {
                                 contracts.map((contract) => (
                                     <TableRow
                                         key={contract._id}
-                                        className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors h-10"
+                                        className="cursor-pointer hover:bg-muted/50 transition-colors h-10"
                                         onClick={() => router.push(`/dashboard/contracts/${contract._id}`)}
                                     >
                                         <TableCell className="font-medium text-xs py-2">
@@ -234,7 +235,7 @@ export default function ContractsPage() {
                                         <TableCell className="text-xs py-2">
                                             <div className="flex flex-wrap gap-1">
                                                 {contract.rooms.map(r => (
-                                                    <span key={r._id} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                                                    <span key={r._id} className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono bg-muted/60 text-muted-foreground">
                                                         {r.roomNumber}
                                                     </span>
                                                 ))}
@@ -244,8 +245,8 @@ export default function ContractsPage() {
                                         <TableCell className="text-xs py-2 text-right text-muted-foreground">{format(new Date(contract.startDate), 'dd MMM yyyy')}</TableCell>
                                         <TableCell className="text-xs py-2 text-right text-muted-foreground">{format(new Date(contract.endDate), 'dd MMM yyyy')}</TableCell>
                                         <TableCell className="text-xs py-2 text-center">
-                                            <Badge variant={contract.status === 'ACTIVE' ? 'default' : 'secondary'} className={`text-[10px] h-5 px-1.5 font-normal border-0 ${contract.status === 'ACTIVE' ? 'bg-green-100 text-green-700 hover:bg-green-100' :
-                                                contract.status === 'TERMINATED' ? 'bg-red-100 text-red-700 hover:bg-red-100' : ''
+                                            <Badge variant={contract.status === 'ACTIVE' ? 'default' : 'secondary'} className={`text-[10px] h-5 px-1.5 font-normal border-0 ${contract.status === 'ACTIVE' ? 'bg-chart-1/10 text-chart-1 hover:bg-chart-1/10' :
+                                                contract.status === 'TERMINATED' ? 'bg-destructive/10 text-destructive hover:bg-destructive/10' : ''
                                                 }`}>
                                                 {contract.status}
                                             </Badge>
@@ -286,7 +287,7 @@ export default function ContractsPage() {
                     <DialogHeader className="p-6 pb-2">
                         <DialogTitle>New Rental Contract</DialogTitle>
                         <DialogDescription>Step {step} of 3</DialogDescription>
-                        <div className="h-1 w-full bg-slate-100 rounded-full mt-2 overflow-hidden">
+                            <div className="h-1 w-full bg-muted rounded-full mt-2 overflow-hidden">
                             <div className={`h-full bg-primary transition-all duration-300 ${step === 1 ? 'w-1/3' : step === 2 ? 'w-2/3' : 'w-full'}`} />
                         </div>
                     </DialogHeader>
@@ -328,7 +329,7 @@ export default function ContractsPage() {
                                             <div className="grid grid-cols-3 gap-2">
                                                 {vacantRooms.map(r => (
                                                     <div key={r._id}
-                                                        className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors ${selectedRoomIds.includes(r._id) ? 'bg-primary/10 border-primary' : 'hover:bg-slate-50'}`}
+                                                        className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors ${selectedRoomIds.includes(r._id) ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'}`}
                                                         onClick={() => {
                                                             setSelectedRoomIds(prev => prev.includes(r._id) ? prev.filter(id => id !== r._id) : [...prev, r._id]);
                                                         }}
@@ -367,7 +368,7 @@ export default function ContractsPage() {
                                         )} />
                                     </div>
 
-                                    <div className="mt-4 p-3 bg-slate-50 border rounded-md text-xs space-y-1">
+                                    <div className="mt-4 p-3 bg-muted/40 border rounded-md text-xs space-y-1">
                                         <div className="font-semibold text-muted-foreground">Summary</div>
                                         <div className="flex justify-between"><span>Tenant:</span> <span className="font-medium">{tenantForm.watch('name')}</span></div>
                                         <div className="flex justify-between"><span>Units:</span> <span className="font-medium">{selectedRoomIds.length} Selected</span></div>
@@ -377,7 +378,7 @@ export default function ContractsPage() {
                         )}
                     </div>
 
-                    <DialogFooter className="p-4 border-t bg-slate-50/50">
+                    <DialogFooter className="p-4 border-t bg-muted/40">
                         {step > 1 && (
                             <Button variant="outline" size="sm" onClick={() => setStep(s => s - 1)}>Back</Button>
                         )}

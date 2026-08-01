@@ -105,7 +105,7 @@ export default function PayRentPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-50 to-white dark:from-neutral-950 dark:to-neutral-900">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-muted to-background">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
         );
@@ -113,15 +113,15 @@ export default function PayRentPage() {
 
     if (error) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-slate-50 to-white dark:from-neutral-950 dark:to-neutral-900">
-                <p className="text-sm text-red-500">{error}</p>
+            <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-muted to-background">
+                <p className="text-sm text-destructive">{error}</p>
                 <Link href="/" className="text-xs text-muted-foreground underline">Go home</Link>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-neutral-950 dark:to-neutral-900">
+        <div className="min-h-screen bg-gradient-to-b from-muted to-background">
             <div className="max-w-3xl mx-auto px-4 py-10">
                 <div className="mb-6">
                     <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -131,11 +131,11 @@ export default function PayRentPage() {
                 </div>
 
                 {contract && (
-                    <Card className="shadow-sm border-slate-200 dark:border-neutral-800 mb-6">
+                    <Card className="shadow-sm border-border mb-6">
                         <CardContent className="p-5">
                             <div className="flex items-start gap-4">
-                                <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
-                                    <Building2 className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                                <div className="h-10 w-10 rounded-full bg-chart-3/10 flex items-center justify-center shrink-0">
+                                    <Building2 className="h-5 w-5 text-chart-3" />
                                 </div>
                                 <div className="space-y-1.5 min-w-0 flex-1">
                                     <p className="font-semibold text-base truncate">{contract.tenant?.name || 'Tenant'}</p>
@@ -170,8 +170,8 @@ export default function PayRentPage() {
                     </Card>
                 )}
 
-                <Card className="shadow-sm border-slate-200 dark:border-neutral-800">
-                    <CardHeader className="pb-4 border-b border-slate-100 dark:border-neutral-800">
+                <Card className="shadow-sm border-border">
+                    <CardHeader className="pb-4 border-b border-border">
                         <CardTitle className="text-lg font-semibold">Rent Dues</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -179,7 +179,7 @@ export default function PayRentPage() {
                             <div className="text-center text-sm text-muted-foreground py-10">No rent dues found.</div>
                         ) : (
                             <Table>
-                                <TableHeader className="bg-slate-50/50 dark:bg-neutral-900">
+                                <TableHeader className="bg-muted/40">
                                     <TableRow className="hover:bg-transparent border-b">
                                         <TableHead className="h-9 text-xs font-semibold">Period</TableHead>
                                         <TableHead className="h-9 text-xs font-semibold">Status</TableHead>
@@ -194,23 +194,23 @@ export default function PayRentPage() {
                                         const receiptId = lastTx?.receipt || null;
 
                                         return (
-                                            <TableRow key={due._id} className="hover:bg-slate-50 dark:hover:bg-neutral-800/50 border-b last:border-0">
+                                            <TableRow key={due._id} className="hover:bg-muted/50 border-b last:border-0">
                                                 <TableCell className="py-2.5 text-xs font-medium">{due.monthYear}</TableCell>
                                                 <TableCell className="py-2.5">
                                                     <Badge variant="outline" className={cn(
                                                         "text-[10px] px-1.5 py-0 h-5 border-0 font-medium",
                                                         due.status === "PAID"
-                                                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                                            ? "bg-chart-1/10 text-chart-1"
                                                             : due.status === "PARTIAL"
-                                                                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                                                                : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                                                ? "bg-chart-2/10 text-chart-2"
+                                                                : "bg-muted text-muted-foreground"
                                                     )}>
                                                         {due.status}
                                                     </Badge>
                                                     {receiptId && (
                                                         <Button variant="ghost" size="icon" className="h-6 w-6 ml-1.5" title="View Receipt"
                                                             onClick={() => window.open(`/api/receipts/${receiptId}/pdf`, "_blank")}>
-                                                            <ExternalLink className="h-3 w-3 text-slate-500" />
+                                                            <ExternalLink className="h-3 w-3 text-muted-foreground" />
                                                         </Button>
                                                     )}
                                                 </TableCell>
@@ -221,7 +221,7 @@ export default function PayRentPage() {
                                                 <TableCell className="py-2.5 text-right">
                                                     {due.status !== "PAID" && (
                                                         <Button size="sm" variant="secondary"
-                                                            className="h-7 text-[10px] px-2 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                                                            className="h-7 text-[10px] px-2 bg-chart-3/10 text-chart-3 hover:bg-chart-3/20"
                                                             onClick={() => openPayDialog(due)}>
                                                             <CreditCard className="h-3 w-3 mr-1" /> Pay
                                                         </Button>
@@ -250,7 +250,7 @@ export default function PayRentPage() {
                                 {payingDue.collectedAmount > 0 && (
                                     <p><span className="text-muted-foreground">Collected:</span> <span className="font-medium">₹{payingDue.collectedAmount}</span></p>
                                 )}
-                                <p><span className="text-muted-foreground">Due:</span> <span className="font-semibold text-green-600">₹{payingDue.amount - (payingDue.collectedAmount || 0)}</span></p>
+                                <p><span className="text-muted-foreground">Due:</span> <span className="font-semibold text-chart-1">₹{payingDue.amount - (payingDue.collectedAmount || 0)}</span></p>
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-xs text-muted-foreground">Payment Amount</label>

@@ -63,7 +63,7 @@ export default function SettingsPage() {
             <Loader2 className="h-8 w-8 animate-spin" />
         </div>
     </div>;
-    if (!user) return <div className="p-8 text-center text-red-500">Failed to load user profile.</div>;
+    if (!user) return <div className="p-8 text-center text-destructive">Failed to load user profile.</div>;
 
     // Show OTP dialog for admin users who haven't verified
     if (user.role === 'admin' && !isVerified) {
@@ -71,14 +71,15 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="container max-w-screen-2xl mx-auto py-6 px-4 sm:px-6">
+        <div className="flex flex-1 container max-w-screen-2xl mx-auto py-6 px-4 sm:px-6 bg-muted/40 min-h-[calc(100vh-4rem)]">
             <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} orientation="vertical" className="flex flex-col md:flex-row gap-6 md:gap-8">
 
                 {/* Sidebar Navigation */}
                 <aside className="w-full md:w-56 lg:w-64 shrink-0 space-y-4">
                     <div className="px-1">
-                        <h1 className="text-xl font-semibold tracking-tight text-foreground">Settings</h1>
-                        <p className="text-sm text-muted-foreground">Manage system preferences.</p>
+                        <div className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">Settings</div>
+                        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mt-2">Settings</h1>
+                        <p className="text-sm text-muted-foreground mt-1">Manage system preferences.</p>
                     </div>
 
                     <TabsList className="flex flex-col h-auto w-full items-stretch bg-transparent p-0 gap-1 text-sm">
