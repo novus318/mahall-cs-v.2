@@ -8,10 +8,11 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Loader2, Pencil, Printer, ExternalLink } from 'lucide-react';
+import { Plus, Search, Loader2, Pencil, Printer, ExternalLink, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -124,11 +125,14 @@ export default function ReceiptsPage() {
     };
 
     return (
-        <div className="flex flex-1 flex-col gap-6 p-6 pt-0">
-            <div className="flex justify-between items-center">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Receipts (Income)</h2>
-                    <p className="text-muted-foreground text-sm">Manage income, donations, and fees.</p>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Finances · Receipts
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Receipts (Income)</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Manage income, donations, and fees.</p>
                 </div>
                 <Button onClick={() => router.push('/dashboard/receipts/create')}>
                     <Plus className="mr-2 h-4 w-4" /> Create Receipt
@@ -142,28 +146,26 @@ export default function ReceiptsPage() {
                 </TabsList>
 
                 <TabsContent value="history" className="space-y-4">
-                    <div className="flex items-center gap-2">
-                        <div className="relative flex-1 max-w-sm">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="Search receipt or payer..." className="pl-8" value={search} onChange={(e) => setSearch(e.target.value)} />
-                        </div>
+                    <div className="relative max-w-sm">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input placeholder="Search receipt or payer..." className="h-9 bg-background pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
                     </div>
 
-                    <Card>
-                        <CardHeader className="p-4 border-b bg-slate-50/50">
+                    <Card className="bg-card shadow-sm">
+                        <CardHeader className="border-b bg-muted/40 !pb-1 p-4">
                             <CardTitle className="text-base font-semibold">Recent Receipts</CardTitle>
                         </CardHeader>
                         <div className="p-0">
                             <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Receipt No</TableHead>
-                                        <TableHead>Date</TableHead>
-                                        <TableHead>Received From</TableHead>
-                                        <TableHead>Category</TableHead>
-                                        <TableHead>Deposit Account</TableHead>
-                                        <TableHead className="text-right">Amount</TableHead>
-                                        <TableHead className="w-[100px] text-right">Actions</TableHead>
+                                <TableHeader className="bg-muted/40">
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Receipt No</TableHead>
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Date</TableHead>
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Received From</TableHead>
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Category</TableHead>
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Deposit Account</TableHead>
+                                        <TableHead className="text-right font-semibold text-xs uppercase tracking-wider">Amount</TableHead>
+                                        <TableHead className="w-[100px] text-right font-semibold text-xs uppercase tracking-wider">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -175,24 +177,24 @@ export default function ReceiptsPage() {
                                         receipts.map((receipt) => (
                                             <TableRow
                                                 key={receipt._id}
-                                                className="cursor-pointer hover:bg-slate-50"
+                                                className="cursor-pointer hover:bg-muted/50"
                                                 onClick={() => router.push(`/dashboard/receipts/${receipt._id}`)}
                                             >
                                                 <TableCell className="font-mono font-medium">{receipt.receiptNo}</TableCell>
-                                                <TableCell className="text-muted-foreground text-xs">{format(new Date(receipt.date), 'dd MMM yyyy')}</TableCell>
+                                                <TableCell className="text-xs text-muted-foreground">{format(new Date(receipt.date), 'dd MMM yyyy')}</TableCell>
                                                 <TableCell className="font-medium">{receipt.payer}</TableCell>
-                                                <TableCell><Badge variant="secondary" className="font-normal border-transparent bg-green-50 text-green-700 hover:bg-green-100">{receipt.category?.name}</Badge></TableCell>
+                                                <TableCell><Badge variant="secondary" className="font-normal border-transparent bg-chart-1/10 text-chart-1">{receipt.category?.name}</Badge></TableCell>
                                                 <TableCell className="text-xs text-muted-foreground">{receipt.account?.name}</TableCell>
-                                                <TableCell className="text-right font-bold text-green-700">+₹{receipt.amount?.toLocaleString()}</TableCell>
+                                                <TableCell className="text-right font-bold tabular-nums text-chart-1">+₹{receipt.amount?.toLocaleString()}</TableCell>
                                                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                                     <div className="flex justify-end gap-1">
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${receipt._id}/pdf`, '_blank')} title="View PDF">
-                                                            <ExternalLink className="h-3.5 w-3.5 text-primary" />
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-3/10 hover:text-chart-3" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${receipt._id}/pdf`, '_blank')} title="View PDF">
+                                                            <ExternalLink className="h-3.5 w-3.5" />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleThermalPrint(receipt)} title="Print via Bluetooth">
-                                                            <Printer className="h-3.5 w-3.5 text-primary" />
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-4/10 hover:text-chart-4" onClick={() => handleThermalPrint(receipt)} title="Print via Bluetooth">
+                                                            <Printer className="h-3.5 w-3.5" />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => router.push(`/dashboard/receipts/edit/${receipt._id}`)}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-2/10 hover:text-chart-2" onClick={() => router.push(`/dashboard/receipts/edit/${receipt._id}`)}>
                                                             <Pencil className="h-3.5 w-3.5" />
                                                         </Button>
                                                     </div>
@@ -206,12 +208,14 @@ export default function ReceiptsPage() {
                     </Card>
                 </TabsContent>
 
-                <TabsContent value="categories" className="animate-in fade-in-50">
-                    <Card className="border-border shadow-sm">
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border bg-muted/20">
+                <TabsContent value="categories" className="space-y-4">
+                    <Card className="bg-card shadow-sm">
+                        <CardHeader className="flex flex-row items-center justify-between gap-4 border-b bg-muted/40 p-4">
                             <div>
                                 <CardTitle className="text-base font-semibold">Categories</CardTitle>
-                                <p className="text-xs text-muted-foreground mt-1">Manage income classification types.</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    {categories.length > 0 ? `${categories.length} income categories` : "Manage income classification types."}
+                                </p>
                             </div>
                             <Button size="sm" onClick={() => handleOpenCatDialog()}>
                                 <Plus className="mr-2 h-3.5 w-3.5" /> Add Category
@@ -219,31 +223,49 @@ export default function ReceiptsPage() {
                         </CardHeader>
                         <div className="p-0">
                             <Table>
-                                <TableHeader className="bg-muted/50">
-                                    <TableRow>
-                                        <TableHead className="w-12.5 font-semibold text-xs uppercase tracking-wider">#</TableHead>
-                                        <TableHead className="w-25 font-semibold text-xs uppercase tracking-wider">Date</TableHead>
-                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Payer</TableHead>
+                                <TableHeader className="bg-muted/40">
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableHead className="w-50 font-semibold text-xs uppercase tracking-wider">Name</TableHead>
+                                        <TableHead className="font-semibold text-xs uppercase tracking-wider">Description</TableHead>
+                                        <TableHead className="w-37.5 text-right font-semibold text-xs uppercase tracking-wider">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {categories.map((cat) => (
-                                        <TableRow key={cat._id} className="hover:bg-muted/50">
-                                            <TableCell className="font-medium">{cat.name}</TableCell>
-                                            <TableCell className="text-muted-foreground">{cat.description || '-'}</TableCell>
-                                            <TableCell className="text-right">
-                                                <div className="flex justify-end gap-2">
-                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => handleOpenCatDialog(cat)}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" /><path d="m15 5 4 4" /></svg>
-                                                        <span className="sr-only">Edit</span>
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteCategory(cat._id)}>
-                                                        Remove
-                                                    </Button>
+                                    {categories.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="h-32 text-center">
+                                                <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                                                    <Tag className="h-8 w-8 text-muted-foreground/40" />
+                                                    <p className="text-sm">No categories yet. Add your first one.</p>
                                                 </div>
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    ) : (
+                                        categories.map((cat) => (
+                                            <TableRow key={cat._id} className="hover:bg-muted/50">
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-chart-2/10 text-chart-2">
+                                                            <Tag className="h-3.5 w-3.5" />
+                                                        </div>
+                                                        <span className="font-medium">{cat.name}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="max-w-md truncate text-muted-foreground">{cat.description || '-'}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-chart-2/10 text-chart-2 hover:bg-chart-2/20 hover:text-chart-2" onClick={() => handleOpenCatDialog(cat)}>
+                                                            <Pencil className="h-3.5 w-3.5" />
+                                                            <span className="sr-only">Edit</span>
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" className="h-8 bg-destructive/10 px-2 text-destructive hover:bg-destructive/20 hover:text-destructive" onClick={() => handleDeleteCategory(cat._id)}>
+                                                            Remove
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>
