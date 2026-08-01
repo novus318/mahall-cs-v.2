@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Plus, Wallet, Building2, Banknote, IndianRupee, Loader2, Search, Pencil, Trash2, ArrowRightLeft, Star } from 'lucide-react';
+import { Plus, Wallet, Building2, Banknote, Loader2, Search, Pencil, Trash2, ArrowRightLeft, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { StatsCard } from '@/components/dashboard/StatsCard';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -190,11 +191,14 @@ export default function AccountsPage() {
     );
 
     return (
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Accounts & Finance</h2>
-                    <p className="text-muted-foreground text-sm">Manage accounts, track balances, and transfer funds.</p>
+                    <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                        Finances · Accounts
+                    </span>
+                    <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Accounts & Finance</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">Manage accounts, track balances, and transfer funds.</p>
                 </div>
                 <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={() => setIsTransferOpen(true)}>
@@ -206,20 +210,51 @@ export default function AccountsPage() {
                 </div>
             </div>
 
-            <Card className="border shadow-sm">
-                <CardHeader className="p-3 border-b bg-slate-50/50 dark:bg-slate-900/50">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <StatsCard
+                    title="Total Balance"
+                    value={`₹${accounts.reduce((s, a) => s + (a.balance || 0), 0).toLocaleString()}`}
+                    icon={Wallet}
+                    tone="primary"
+                    description="Across all accounts"
+                />
+                <StatsCard
+                    title="Bank Accounts"
+                    value={accounts.filter(a => a.type === 'BANK').length}
+                    icon={Building2}
+                    tone="chart-3"
+                    description={`₹${accounts.filter(a => a.type === 'BANK').reduce((s, a) => s + (a.balance || 0), 0).toLocaleString()} in bank`}
+                />
+                <StatsCard
+                    title="Cash on Hand"
+                    value={accounts.filter(a => a.type === 'CASH').length}
+                    icon={Banknote}
+                    tone="chart-1"
+                    description={`₹${accounts.filter(a => a.type === 'CASH').reduce((s, a) => s + (a.balance || 0), 0).toLocaleString()} in cash`}
+                />
+                <StatsCard
+                    title="Primary Account"
+                    value={accounts.find(a => a.isPrimary)?.name || '—'}
+                    icon={Star}
+                    tone="chart-2"
+                    description="Default for transactions"
+                />
+            </div>
+
+            <Card className="border bg-card shadow-sm">
+                <CardHeader className="p-4 border-b bg-muted/40">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <CardTitle className="text-base font-semibold">All Accounts</CardTitle>
-                            <CardDescription className="text-xs">
+                            <CardDescription className="mt-1 text-xs">
                                 Showing {filteredAccounts.length} active accounts
                             </CardDescription>
                         </div>
                         <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder="Search accounts..."
-                                className="pl-8 h-9 text-sm"
+                                className="h-9 bg-background pl-9 text-sm"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
@@ -228,7 +263,7 @@ export default function AccountsPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-slate-50 dark:bg-slate-900/50">
+                        <TableHeader className="bg-muted/40">
                             <TableRow className="hover:bg-transparent">
                                 <TableHead className="w-[50px] h-9"></TableHead>
                                 <TableHead className="w-12.5 font-semibold text-xs uppercase tracking-wider">#</TableHead>
@@ -245,39 +280,39 @@ export default function AccountsPage() {
                                 <TableRow><TableCell colSpan={6} className="h-24 text-center text-muted-foreground text-sm">No accounts found.</TableCell></TableRow>
                             ) : (
                                 filteredAccounts.map((acc) => (
-                                    <TableRow key={acc._id} className="group hover:bg-slate-50/50 dark:hover:bg-slate-900/50 cursor-pointer" onClick={() => router.push(`/dashboard/accounts/${acc._id}`)}>
-                                        <TableCell className="py-2 text-center" onClick={(e) => e.stopPropagation()}>
-                                            <div className={`p-1.5 w-fit rounded-md mx-auto ${acc.type === 'BANK' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'}`}>
+                                    <TableRow key={acc._id} className="group hover:bg-muted/50 cursor-pointer" onClick={() => router.push(`/dashboard/accounts/${acc._id}`)}>
+                                        <TableCell className="py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                                            <div className={`mx-auto flex h-9 w-9 items-center justify-center rounded-lg ${acc.type === 'BANK' ? 'bg-chart-3/10 text-chart-3' : 'bg-chart-1/10 text-chart-1'}`}>
                                                 {acc.type === 'BANK' ? <Building2 className="h-4 w-4" /> : <Banknote className="h-4 w-4" />}
                                             </div>
                                         </TableCell>
-                                        <TableCell className="py-2">
+                                        <TableCell className="py-3">
                                             <div className="flex flex-col">
-                                                <span className="font-medium text-sm flex items-center gap-1">
+                                                <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
                                                     {acc.name}
-                                                    {acc.isPrimary && <Star className="h-3 w-3 text-amber-500 fill-amber-500" />}
+                                                    {acc.isPrimary && <Star className="h-3.5 w-3.5 fill-chart-2 text-chart-2" />}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground">{acc.type}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="py-2 text-sm text-muted-foreground">{acc.holderName}</TableCell>
-                                        <TableCell className="py-2 text-xs text-muted-foreground">
+                                        <TableCell className="py-3 text-sm text-muted-foreground">{acc.holderName}</TableCell>
+                                        <TableCell className="py-3 text-xs text-muted-foreground">
                                             {acc.type === 'BANK' ? (
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium text-slate-700">{acc.bankName}</span>
-                                                    <span className="font-mono">{acc.accountNumber}</span>
+                                                    <span className="font-medium text-foreground">{acc.bankName}</span>
+                                                    <span className="font-mono text-muted-foreground">{acc.accountNumber}</span>
                                                 </div>
                                             ) : '-'}
                                         </TableCell>
-                                        <TableCell className={`text-right py-2 font-bold text-sm ${acc.balance < 0 ? 'text-red-500' : 'text-slate-700'}`}>
+                                        <TableCell className={`text-right py-3 text-sm font-semibold tabular-nums ${acc.balance < 0 ? 'text-destructive' : 'text-foreground'}`}>
                                             ₹{acc.balance.toLocaleString()}
                                         </TableCell>
-                                        <TableCell className="py-2 text-right">
+                                        <TableCell className="py-3 text-right">
                                             <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+                                                    className="h-8 w-8 bg-chart-2/10 text-chart-2 hover:bg-chart-2/20 hover:text-chart-2"
                                                     onClick={() => handleEditStart(acc)}
                                                 >
                                                     <Pencil className="h-3.5 w-3.5" />
@@ -285,7 +320,7 @@ export default function AccountsPage() {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                    className="h-8 w-8 bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive"
                                                     onClick={() => confirmDelete(acc._id)}
                                                 >
                                                     <Trash2 className="h-3.5 w-3.5" />
@@ -377,7 +412,7 @@ export default function AccountsPage() {
                                     <FormLabel>Opening Balance</FormLabel>
                                     <FormControl>
                                         <div className="relative">
-                                            <span className="absolute left-3 top-2.5 text-slate-500">₹</span>
+                                            <span className="absolute left-3 top-2.5 text-muted-foreground">₹</span>
                                             <Input type="number" className="pl-7 font-bold" {...field} value={(field.value as number) ?? ''} />
                                         </div>
                                     </FormControl>
@@ -520,7 +555,7 @@ export default function AccountsPage() {
                                     <FormLabel>Amount</FormLabel>
                                     <FormControl>
                                         <div className="relative">
-                                            <span className="absolute left-3 top-2.5 text-slate-500">₹</span>
+                                            <span className="absolute left-3 top-2.5 text-muted-foreground">₹</span>
                                             <Input type="number" className="pl-7 font-bold" {...field} value={(field.value as number) || ''} />
                                         </div>
                                     </FormControl>
