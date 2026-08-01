@@ -15,7 +15,6 @@ import {
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
@@ -28,143 +27,157 @@ import {
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
 
-// This is sample data.
 const data = {
   user: {
     name: "User",
     email: "user@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  navMain: [
+  groups: [
     {
-      title: "Dashboard",
-      url: "/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      title: "Finances",
-      url: "#",
-      icon: Wallet,
+      label: "Overview",
       items: [
         {
-          title: "Accounts",
-          url: "/dashboard/accounts",
+          title: "Dashboard",
+          url: "/dashboard",
+          icon: LayoutDashboard,
         },
         {
-          title: "Payments",
-          url: "/dashboard/payments",
-        },
-        {
-          title: "Receipts (Income)",
-          url: "/dashboard/receipts",
-        },
-        {
-          title: "Collections (Dues)",
-          url: "/dashboard/collections",
-        },
-        {
-          title: "Rent Collections",
-          url: "/dashboard/rent/collections",
-        },
-        {
-          title: "Transactions",
-          url: "/dashboard/transactions",
-        },
-        {
-          title: "Payables (Loans)",
-          url: "/dashboard/payables",
-        }
-      ]
-    },
-    {
-      title: "Family Management",
-      url: "#",
-      icon: SquareTerminal,
-      items: [
-        {
-          title: "Families",
-          url: "/dashboard/families",
-        },
-        {
-          title: "Houses",
-          url: "/dashboard/houses",
-        },
-        {
-          title: "Members",
-          url: "/dashboard/members",
-        },
-        {
-          title: "Nikah Register",
-          url: "/dashboard/nikah-registers",
-        },
-        {
-          title: "Death Register",
-          url: "/dashboard/death-registers",
-          icon: Heart
+          title: "WhatsApp Inbox",
+          url: "/dashboard/whatsapp",
+          icon: MessageCircle,
         },
       ],
     },
     {
-      title: "Property Management",
-      url: "#",
-      icon: Building2,
+      label: "Management",
       items: [
         {
-          title: "Inventory (Assets)",
-          url: "/dashboard/inventory",
-          icon: Package
+          title: "Finances",
+          url: "#",
+          icon: Wallet,
+          items: [
+            {
+              title: "Accounts",
+              url: "/dashboard/accounts",
+            },
+            {
+              title: "Payments",
+              url: "/dashboard/payments",
+            },
+            {
+              title: "Receipts (Income)",
+              url: "/dashboard/receipts",
+            },
+            {
+              title: "Collections (Dues)",
+              url: "/dashboard/collections",
+            },
+            {
+              title: "Rent Collections",
+              url: "/dashboard/rent/collections",
+            },
+            {
+              title: "Transactions",
+              url: "/dashboard/transactions",
+            },
+            {
+              title: "Payables (Loans)",
+              url: "/dashboard/payables",
+            }
+          ]
         },
         {
-          title: "Buildings & Rooms",
-          url: "/dashboard/buildings",
-          icon: Building2
+          title: "Family Management",
+          url: "#",
+          icon: SquareTerminal,
+          items: [
+            {
+              title: "Families",
+              url: "/dashboard/families",
+            },
+            {
+              title: "Houses",
+              url: "/dashboard/houses",
+            },
+            {
+              title: "Members",
+              url: "/dashboard/members",
+            },
+            {
+              title: "Nikah Register",
+              url: "/dashboard/nikah-registers",
+            },
+            {
+              title: "Death Register",
+              url: "/dashboard/death-registers",
+              icon: Heart
+            },
+          ],
         },
         {
-          title: "Rental Contracts",
-          url: "/dashboard/contracts",
-          icon: FileText
+          title: "Property Management",
+          url: "#",
+          icon: Building2,
+          items: [
+            {
+              title: "Inventory (Assets)",
+              url: "/dashboard/inventory",
+              icon: Package
+            },
+            {
+              title: "Buildings & Rooms",
+              url: "/dashboard/buildings",
+              icon: Building2
+            },
+            {
+              title: "Rental Contracts",
+              url: "/dashboard/contracts",
+              icon: FileText
+            },
+          ]
         },
-      ]
-    },
-    {
-      title: "Staff Management",
-      url: "#",
-      icon: User,
-      items: [
         {
-          title: "Staff Directory",
-          url: "/dashboard/staff",
+          title: "Staff Management",
+          url: "#",
           icon: User,
+          items: [
+            {
+              title: "Staff Directory",
+              url: "/dashboard/staff",
+              icon: User,
+            }
+          ]
+        },
+      ],
+    },
+    {
+      label: "Administration",
+      items: [
+        {
+          title: "Settings",
+          url: "/dashboard/settings",
+          icon: Settings2,
         }
-      ]
+      ],
     },
-    {
-      title: "WhatsApp Inbox",
-      url: "/dashboard/whatsapp",
-      icon: MessageCircle,
-    },
-    {
-      title: "Settings",
-      url: "/dashboard/settings",
-      icon: Settings2,
-    }
   ]
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="border-b border-sidebar-border py-3">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="/dashboard">
+              <a href="/dashboard" className="gap-3">
                 <div className="flex aspect-square size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <img src="/logo-white.png" alt="TMJ" className="size-6 rounded" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Mahall Management</span>
-                  <span className="truncate text-xs">TMJ Committee</span>
+                  <span className="truncate text-xs text-sidebar-foreground/60">TMJ Committee</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -172,7 +185,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain groups={data.groups} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
