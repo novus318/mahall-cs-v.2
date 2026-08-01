@@ -42,6 +42,7 @@ export function NavUser({
   const { isMobile } = useSidebar()
   const router = useRouter()
   const [userData, setUserData] = useState(user)
+  const [initials, setInitials] = useState("U")
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -51,8 +52,11 @@ export function NavUser({
         setUserData({
           ...user,
           name: parsed.username || user.name,
-          email: parsed.role || user.email // Showing role as email for now, or fetch actual email if available
-        })
+          email: parsed.role || user.email
+        });
+        if (parsed.username) {
+          setInitials(parsed.username.slice(0, 2).toUpperCase());
+        }
       } catch (e) {
         console.error("Failed to parse user data", e);
       }
@@ -78,7 +82,7 @@ export function NavUser({
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={userData.avatar} alt={userData.name} />
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{userData.name}</span>
@@ -97,7 +101,7 @@ export function NavUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
                   <AvatarImage src={userData.avatar} alt={userData.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                  <AvatarFallback className="rounded-lg bg-primary text-primary-foreground text-xs">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{userData.name}</span>

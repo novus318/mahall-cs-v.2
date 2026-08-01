@@ -18,7 +18,7 @@ export function FinancialBreakdownChart({ title, data }: FinancialBreakdownChart
     const total = data.reduce((sum, item) => sum + item.value, 0);
 
     return (
-        <Card className="overflow-hidden backdrop-blur-sm bg-white/50 dark:bg-slate-950/50">
+        <Card className="overflow-hidden bg-card">
             <CardHeader>
                 <CardTitle className="text-lg font-semibold">{title}</CardTitle>
             </CardHeader>
@@ -45,7 +45,7 @@ export function FinancialBreakdownChart({ title, data }: FinancialBreakdownChart
                         <Legend />
                     </PieChart>
                 </ResponsiveContainer>
-                <div className="mt-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-900/50">
+                <div className="mt-4 rounded-lg border bg-muted/40 p-4">
                     <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
                     <p className="text-2xl font-bold">₹{total.toLocaleString()}</p>
                 </div>

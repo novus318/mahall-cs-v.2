@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { format } from "date-fns";
 import { ArrowDownLeft, ArrowUpRight, ArrowRightLeft, Wallet } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Transaction {
     _id: string;
@@ -23,21 +23,23 @@ interface RecentTransactionsProps {
     transactions: Transaction[];
 }
 
+const CREDIT_TYPES = ['INCOME', 'TRANSFER_IN', 'OPENING_BALANCE', 'LOAN_RECEIVED'];
+
 export function RecentTransactions({ transactions }: RecentTransactionsProps) {
     const getIconAndColor = (type: string) => {
         switch (type) {
             case 'INCOME':
             case 'TRANSFER_IN':
             case 'LOAN_RECEIVED':
-                return { icon: ArrowDownLeft, color: "text-green-600", bg: "bg-green-100 dark:bg-green-900/20" };
+                return { icon: ArrowDownLeft, color: "text-chart-1", bg: "bg-chart-1/10" };
             case 'EXPENSE':
             case 'TRANSFER_OUT':
             case 'LOAN_REPAYMENT':
-                return { icon: ArrowUpRight, color: "text-red-600", bg: "bg-red-100 dark:bg-red-900/20" };
+                return { icon: ArrowUpRight, color: "text-destructive", bg: "bg-destructive/10" };
             case 'OPENING_BALANCE':
-                return { icon: Wallet, color: "text-blue-600", bg: "bg-blue-100 dark:bg-blue-900/20" };
+                return { icon: Wallet, color: "text-chart-3", bg: "bg-chart-3/10" };
             default:
-                return { icon: ArrowRightLeft, color: "text-gray-600", bg: "bg-gray-100 dark:bg-gray-800" };
+                return { icon: ArrowRightLeft, color: "text-muted-foreground", bg: "bg-muted/50" };
         }
     };
 
@@ -52,50 +54,70 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
     };
 
     return (
-        <Card className="backdrop-blur-sm bg-white/50 dark:bg-slate-950/50 py-3 min-h-[468px]">
-            <CardHeader>
-                <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>Latest financial activity across all accounts</CardDescription>
+        <Card className="flex h-full flex-col bg-card py-3">
+            <CardHeader className="flex flex-row items-start justify-between gap-2 px-6">
+                <div>
+                    <CardTitle>Recent Transactions</CardTitle>
+                    <CardDescription className="mt-1">Latest financial activity across all accounts</CardDescription>
+                </div>
+                <Link
+                    href="/dashboard/transactions"
+                    className="shrink-0 pt-1 text-sm font-medium text-primary hover:underline"
+                >
+                    View all
+                </Link>
             </CardHeader>
-            <CardContent className="p-6">
-                <div className="space-y-4">
-                    {transactions.length === 0 ? (
-                        <div className="text-sm text-muted-foreground text-center py-4">No recent activity</div>
-                    ) : (
-                        transactions.map((transaction) => {
+            <CardContent className="flex-1 p-6 pt-2">
+                {transactions.length === 0 ? (
+                    <div className="flex h-full min-h-[300px] flex-col items-center justify-center gap-2 text-center">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/40">
+                            <ArrowRightLeft className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">No recent activity</p>
+                    </div>
+                ) : (
+                    <ul className="divide-y divide-border">
+                        {transactions.slice(0, 6).map((transaction) => {
                             const { icon: Icon, color, bg } = getIconAndColor(transaction.type);
                             const link = getLink(transaction);
+                            const isCredit = CREDIT_TYPES.includes(transaction.type);
 
                             return (
-                                <Link href={link} key={transaction._id} className="block group">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
-                                            <Avatar className="h-9 w-9 group-hover:scale-105 transition-transform">
-                                                <AvatarFallback className={bg}>
-                                                    <Icon className={`h-4 w-4 ${color}`} />
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="space-y-1">
-                                                <p className="text-sm font-medium leading-none group-hover:text-primary transition-colors">
+                                <li key={transaction._id}>
+                                    <Link href={link} className="group flex items-center justify-between gap-3 py-3">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full", bg)}>
+                                                <Icon className={cn("h-4 w-4", color)} />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="truncate text-sm font-medium text-foreground transition-colors group-hover:text-primary">
                                                     {transaction.description || transaction.type.replace('_', ' ')}
                                                 </p>
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                    <span>{transaction.account?.name}</span>
-                                                    <span>•</span>
-                                                    <span>{format(new Date(transaction.date), 'MMM d, h:mm a')}</span>
-                                                </div>
+                                                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                                    {transaction.account?.name && (
+                                                        <>
+                                                            <span className="font-medium">{transaction.account.name}</span>
+                                                            <span className="mx-1.5">·</span>
+                                                        </>
+                                                    )}
+                                                    {format(new Date(transaction.date), 'MMM d, h:mm a')}
+                                                </p>
                                             </div>
                                         </div>
-                                        <div className={`font-medium ${color}`}>
-                                            {(transaction.type === 'INCOME' || transaction.type === 'TRANSFER_IN' || transaction.type === 'OPENING_BALANCE' || transaction.type === 'LOAN_RECEIVED') ? '+' : '-'}
-                                            ₹{transaction.amount.toLocaleString()}
+                                        <div className="shrink-0 text-right">
+                                            <p className={cn(
+                                                "text-sm font-semibold tabular-nums",
+                                                isCredit ? "text-chart-1" : "text-destructive"
+                                            )}>
+                                                {isCredit ? "+" : "−"}₹{transaction.amount.toLocaleString()}
+                                            </p>
                                         </div>
-                                    </div>
-                                </Link>
+                                    </Link>
+                                </li>
                             );
-                        })
-                    )}
-                </div>
+                        })}
+                    </ul>
+                )}
             </CardContent>
         </Card>
     );

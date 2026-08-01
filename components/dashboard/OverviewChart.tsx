@@ -11,7 +11,7 @@ export function OverviewChart({ data }: OverviewChartProps) {
     const formattedData = data || [];
 
     return (
-        <Card className="col-span-4 backdrop-blur-sm bg-white/50 dark:bg-slate-950/50 py-3">
+        <Card className="col-span-4 bg-card py-3">
             <CardHeader>
                 <CardTitle>Financial Overview</CardTitle>
                 <CardDescription>Income vs Expenses over the last 6 months</CardDescription>

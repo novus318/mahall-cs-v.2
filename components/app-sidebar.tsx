@@ -2,26 +2,16 @@
 
 import * as React from "react"
 import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
   LayoutDashboard,
   Package,
   Building2,
   FileText,
   User,
   Wallet,
-  IndianRupee,
-  Landmark,
+  SquareTerminal,
   MessageCircle,
-  HandCoins,
-  Heart
+  Heart,
+  Settings2
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -168,13 +158,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <Command className="size-4" />
+              <a href="/dashboard">
+                <div className="flex aspect-square size-9 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <img src="/logo-white.png" alt="TMJ" className="size-6 rounded" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Mahall V2</span>
-                  <span className="truncate text-xs">Management System</span>
+                  <span className="truncate font-semibold">Mahall Management</span>
+                  <span className="truncate text-xs">TMJ Committee</span>
                 </div>
               </a>
             </SidebarMenuButton>
