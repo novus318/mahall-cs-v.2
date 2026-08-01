@@ -20,6 +20,9 @@ import { toast } from 'sonner';
 import { format, differenceInYears } from 'date-fns';
 import api from '@/lib/axios';
 
+// Login-page style underline input (Uber-like)
+const underlineInput = "h-auto rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 text-base shadow-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0 md:text-base";
+
 // Schemas
 const advanceSchema = z.object({
     amount: z.coerce.number().min(1, "Amount required"),
@@ -353,29 +356,32 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     return (
         <div className="flex flex-1 flex-col gap-4 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
             {/* Header */}
-            <div className="flex items-center justify-between gap-4 shrink-0">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-5 w-5" /></Button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+                <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="mt-1 sm:mt-0"><ArrowLeft className="h-5 w-5" /></Button>
                     <div>
-                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight flex items-center gap-3">
-                            {staff.name}
-                            <Badge variant={staff.status === 'ACTIVE' ? 'default' : 'secondary'} className={staff.status === 'ACTIVE' ? "bg-chart-1/10 text-chart-1 hover:bg-chart-1/10" : ""}>{staff.status}</Badge>
-                        </h2>
-                        <div className="text-muted-foreground text-sm flex items-center gap-4 mt-1">
+                        <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                            Staff Profile
+                        </span>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-2">
+                            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">{staff.name}</h2>
+                            <Badge variant={staff.status === 'ACTIVE' ? 'default' : 'secondary'} className={staff.status === 'ACTIVE' ? "bg-chart-1/10 text-chart-1 hover:bg-chart-1/10 border-chart-1/20" : "border-border"}>{staff.status}</Badge>
+                        </div>
+                        <div className="text-muted-foreground text-sm flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
                             <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" /> {staff.position}</span>
                             <span className="flex items-center gap-1.5"><Building2 className="h-3.5 w-3.5" /> {staff.department}</span>
                             <span className="font-mono text-xs text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">#{staff.employeeId}</span>
                         </div>
                     </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={openEditDialog}>
+                <Button variant="outline" size="sm" onClick={openEditDialog} className="w-full sm:w-auto">
                     <Edit className="mr-2 h-4 w-4" /> Edit Details
                 </Button>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-3 h-full overflow-hidden">
+            <div className="grid lg:grid-cols-3 gap-3 lg:h-full lg:overflow-hidden">
                 {/* Left Column: Info & Stats */}
-                <div className="space-y-4 overflow-y-auto pb-10">
+                <div className="space-y-4 lg:overflow-y-auto lg:pb-10">
                     <Card className="shadow-sm border-border py-3">
                         <CardHeader className=""><CardTitle className="text-base font-semibold text-foreground">Financial Overview</CardTitle></CardHeader>
                         <CardContent className="space-y-3">
@@ -469,20 +475,20 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
 
                 {/* Right Column: Payroll & History */}
-                <div className="lg:col-span-2 flex flex-col h-full overflow-hidden">
-                    <Tabs defaultValue="payslips" className="flex-1 flex flex-col overflow-hidden">
-                        <div className="flex justify-between items-center mb-4 px-1">
-                            <TabsList className="bg-muted">
+                <div className="lg:col-span-2 flex flex-col lg:h-full lg:overflow-hidden">
+                    <Tabs defaultValue="payslips" className="flex-1 flex flex-col lg:overflow-hidden">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 px-1">
+                            <TabsList className="bg-muted w-full sm:w-auto">
                                 <TabsTrigger value="payslips">Payslips</TabsTrigger>
                                 <TabsTrigger value="transactions">Transactions</TabsTrigger>
                             </TabsList>
-                            <Button size="sm" onClick={() => setIsPayslipOpen(true)} className="shadow-sm">
+                            <Button size="sm" onClick={() => setIsPayslipOpen(true)} className="shadow-sm w-full sm:w-auto">
                                 <FileText className="mr-2 h-4 w-4" /> Generate Payslip
                             </Button>
                         </div>
 
                         <TabsContent value="payslips" className="flex-1 overflow-auto border rounded-xl bg-card shadow-sm ring-1 ring-border">
-                            <Table>
+                            <Table className="min-w-[640px]">
                                 <TableHeader className="bg-muted/40 sticky top-0 z-10">
                                     <TableRow>
                                         <TableHead className="w-[120px]">Month</TableHead>
@@ -526,7 +532,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                         </TabsContent>
 
                         <TabsContent value="transactions" className="flex-1 overflow-auto border rounded-xl bg-card shadow-sm ring-1 ring-border">
-                            <Table>
+                            <Table className="min-w-[560px]">
                                 <TableHeader className="bg-muted/40 sticky top-0 z-10">
                                     <TableRow>
                                         <TableHead>Date</TableHead>
@@ -560,14 +566,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
 
             {/* Give Advance Dialog */}
             <Dialog open={isAdvanceOpen} onOpenChange={(open) => !isGivingAdvance && setIsAdvanceOpen(open)}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[420px]">
                     <DialogHeader><DialogTitle>Give Salary Advance</DialogTitle><DialogDescription>Valid only if funds are disbursed.</DialogDescription></DialogHeader>
                     <Form {...advanceForm}>
                         <form onSubmit={advanceForm.handleSubmit(handleGiveAdvance)} className="space-y-4">
-                            <FormField control={advanceForm.control} name="amount" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" className="font-bold" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /></FormControl><FormMessage /></FormItem>)} />
-                            <FormField control={advanceForm.control} name="notes" render={({ field }) => (<FormItem><FormLabel>Notes</FormLabel><FormControl><Input placeholder="Reason..." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                            <DialogFooter>
-                                <Button type="submit" disabled={isGivingAdvance}>
+                            <FormField control={advanceForm.control} name="amount" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Amount</FormLabel><FormControl><Input type="number" className={`${underlineInput} font-semibold text-foreground`} {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /></FormControl><FormMessage /></FormItem>)} />
+                            <FormField control={advanceForm.control} name="notes" render={({ field }) => (<FormItem><FormLabel>Notes</FormLabel><FormControl><Input placeholder="Reason..." className={underlineInput} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                            <DialogFooter className="sm:justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => setIsAdvanceOpen(false)} disabled={isGivingAdvance}>Cancel</Button>
+                                <Button type="submit" disabled={isGivingAdvance} className="w-full sm:w-auto">
                                     {isGivingAdvance && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {isGivingAdvance ? "Processing..." : "Confirm Advance"}
                                 </Button>
@@ -583,12 +590,13 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     <DialogHeader><DialogTitle>Generate Payslip</DialogTitle><DialogDescription>Create a pending payslip for {staff.name}.</DialogDescription></DialogHeader>
                     <Form {...generateForm}>
                         <form onSubmit={generateForm.handleSubmit(handleGeneratePayslip)} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <FormField control={generateForm.control} name="month" render={({ field }) => (<FormItem><FormLabel>Month</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className='w-full'><SelectValue /></SelectTrigger></FormControl><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-                                <FormField control={generateForm.control} name="year" render={({ field }) => (<FormItem><FormLabel>Year</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>)} />
+                                <FormField control={generateForm.control} name="year" render={({ field }) => (<FormItem><FormLabel>Year</FormLabel><FormControl><Input {...field} className={underlineInput} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
-                            <DialogFooter>
-                                <Button type="submit" disabled={isGenerating}>
+                            <DialogFooter className="sm:justify-end gap-2">
+                                <Button type="button" variant="outline" onClick={() => setIsPayslipOpen(false)} disabled={isGenerating}>Cancel</Button>
+                                <Button type="submit" disabled={isGenerating} className="w-full sm:w-auto">
                                     {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {isGenerating ? "Generating..." : "Generate Draft"}
                                 </Button>
@@ -615,15 +623,15 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                 <div className="h-px bg-border" />
                                 <div className="space-y-3 pt-1">
                                     <FormField control={paymentForm.control} name="leaveDays" render={({ field: { value, onChange, ...fieldProps } }) => (
-                                        <FormItem className="flex flex-row items-center justify-between space-y-0 gap-4">
+                                        <FormItem className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1.5 sm:space-y-0 gap-1 sm:gap-4">
                                             <div className="space-y-0.5"><FormLabel className="text-base">Unpaid Leave Days</FormLabel><p className="text-[11px] text-muted-foreground">Daily Rate: ₹{Math.round(staff.baseSalary / 30)}</p></div>
-                                            <FormControl><Input type="number" className="w-24 text-right" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : 0)} /></FormControl>
+                                            <FormControl><Input type="number" className={`${underlineInput} w-full sm:w-24 text-left sm:text-right`} {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : 0)} /></FormControl>
                                         </FormItem>
                                     )} />
                                     <FormField control={paymentForm.control} name="advanceDeduction" render={({ field: { value, onChange, ...fieldProps } }) => (
-                                        <FormItem className="flex flex-row items-center justify-between space-y-0 gap-4">
+                                        <FormItem className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1.5 sm:space-y-0 gap-1 sm:gap-4">
                                             <div className="space-y-0.5"><FormLabel className="text-base">Deduct Advance</FormLabel><p className="text-[11px] text-chart-2">Max Balance: ₹{staff.currentAdvance}</p></div>
-                                            <FormControl><Input type="number" className="w-24 text-right" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : 0)} /></FormControl>
+                                            <FormControl><Input type="number" className={`${underlineInput} w-full sm:w-24 text-left sm:text-right`} {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : 0)} /></FormControl>
                                         </FormItem>
                                     )} />
                                 </div>
@@ -654,13 +662,13 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                 </Select>
                             </div>
 
-                            <DialogFooter className="flex justify-between sm:justify-between">
-                                <Button type="button" variant="outline" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={handleInitiateRejection} disabled={sendingOtp || isProcessingPayment}>
+                            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-between gap-2">
+                                <Button type="button" variant="outline" className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full sm:w-auto" onClick={handleInitiateRejection} disabled={sendingOtp || isProcessingPayment}>
                                     {sendingOtp ? <Loader2 className="h-4 w-4 animate-spin" /> : "Reject Payslip"}
                                 </Button>
-                                <div className="flex gap-2">
-                                    <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)} disabled={isProcessingPayment}>Cancel</Button>
-                                    <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={!selectedAccount || isProcessingPayment}>
+                                <div className="flex flex-col-reverse sm:flex-row gap-2 w-full sm:w-auto">
+                                    <Button type="button" variant="outline" onClick={() => setIsPayOpen(false)} disabled={isProcessingPayment} className="w-full sm:w-auto">Cancel</Button>
+                                    <Button type="submit" className="bg-primary hover:bg-primary/90 w-full sm:w-auto" disabled={!selectedAccount || isProcessingPayment}>
                                         {isProcessingPayment && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         {isProcessingPayment ? "Processing..." : "Confirm Payment"}
                                     </Button>
@@ -686,9 +694,9 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     <div className="grid gap-4 py-4">
                         <div className="space-y-2">
                             <div className="relative">
-                                <LockKeyhole className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <LockKeyhole className="absolute left-0 top-3.5 h-4 w-4 text-muted-foreground" />
                                 <Input
-                                    className="pl-9 font-mono tracking-widest"
+                                    className={`${underlineInput} pl-6 font-mono tracking-widest`}
                                     placeholder="000000"
                                     maxLength={6}
                                     value={otp}
@@ -725,7 +733,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     <Form {...editForm}>
                         <form onSubmit={editForm.handleSubmit(handleUpdateStaff)} className="space-y-4">
                             <Tabs defaultValue="basic" className="w-full">
-                                <TabsList className="grid w-full grid-cols-4">
+                                <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
                                     <TabsTrigger value="basic">Basic</TabsTrigger>
                                     <TabsTrigger value="contact">Contact</TabsTrigger>
                                     <TabsTrigger value="job">Job Details</TabsTrigger>
@@ -734,63 +742,63 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
 
                                 {/* Basic Information Tab */}
                                 <TabsContent value="basic" className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={editForm.control} name="employeeId" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Employee ID *</FormLabel><FormControl><Input placeholder="EMP001" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                        <FormField control={editForm.control} name="joinDate" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Join Date *</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="employeeId" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Employee ID *</FormLabel><FormControl><Input className={underlineInput} placeholder="EMP001" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="joinDate" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Join Date *</FormLabel><FormControl><Input className={underlineInput} type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={editForm.control} name="name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                        <FormField control={editForm.control} name="dob" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Date of Birth *</FormLabel><FormControl><Input type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Name *</FormLabel><FormControl><Input className={underlineInput} {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="dob" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Date of Birth *</FormLabel><FormControl><Input className={underlineInput} type="date" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={editForm.control} name="qualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Qualifications</FormLabel><FormControl><Input placeholder="e.g., High School, Diploma..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                        <FormField control={editForm.control} name="aadhaarNumber" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Aadhaar / Identity Number</FormLabel><FormControl><Input placeholder="Optional" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="qualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Qualifications</FormLabel><FormControl><Input className={underlineInput} placeholder="e.g., High School, Diploma..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="aadhaarNumber" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Aadhaar / Identity Number</FormLabel><FormControl><Input className={underlineInput} placeholder="Optional" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={editForm.control} name="religiousQualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religious Qualifications</FormLabel><FormControl><Input placeholder="e.g., Hafiz, Alim, Certificates..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="religiousQualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religious Qualifications</FormLabel><FormControl><Input className={underlineInput} placeholder="e.g., Hafiz, Alim, Certificates..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                         <FormField control={editForm.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="ACTIVE">Active</SelectItem><SelectItem value="INACTIVE">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                                     </div>
                                 </TabsContent>
 
                                 {/* Contact Details Tab */}
                                 <TabsContent value="contact" className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={editForm.control} name="phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Phone *</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                        <FormField control={editForm.control} name="email" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Phone *</FormLabel><FormControl><Input className={underlineInput} {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="email" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input className={underlineInput} type="email" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
 
                                     <div className="space-y-2">
                                         <h4 className="text-sm font-medium">Address</h4>
                                         <FormField control={editForm.control} name="address.fullAddress" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Full Address</FormLabel><FormControl><Textarea placeholder="Complete address" {...fieldProps} value={String(value || '')} rows={2} /></FormControl><FormMessage /></FormItem>)} />
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField control={editForm.control} name="address.city" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                            <FormField control={editForm.control} name="address.state" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="address.city" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>City</FormLabel><FormControl><Input className={underlineInput} {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="address.state" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>State</FormLabel><FormControl><Input className={underlineInput} {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                         </div>
-                                        <FormField control={editForm.control} name="address.pincode" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Pincode</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="address.pincode" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Pincode</FormLabel><FormControl><Input className={underlineInput} {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
 
                                     <div className="space-y-2">
                                         <h4 className="text-sm font-medium">Emergency Contact</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField control={editForm.control} name="emergencyContact.name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Contact Name</FormLabel><FormControl><Input placeholder="Full name" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                            <FormField control={editForm.control} name="emergencyContact.relationship" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Relationship</FormLabel><FormControl><Input placeholder="e.g., Spouse, Parent" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="emergencyContact.name" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Contact Name</FormLabel><FormControl><Input className={underlineInput} placeholder="Full name" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="emergencyContact.relationship" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Relationship</FormLabel><FormControl><Input className={underlineInput} placeholder="e.g., Spouse, Parent" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField control={editForm.control} name="emergencyContact.phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Primary Phone</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                            <FormField control={editForm.control} name="emergencyContact.alternatePhone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Alternate Phone</FormLabel><FormControl><Input {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="emergencyContact.phone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Primary Phone</FormLabel><FormControl><Input className={underlineInput} {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="emergencyContact.alternatePhone" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Alternate Phone</FormLabel><FormControl><Input className={underlineInput} {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                         </div>
                                     </div>
                                 </TabsContent>
 
                                 {/* Job Details Tab */}
                                 <TabsContent value="job" className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={editForm.control} name="department" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Department *</FormLabel><FormControl><Input placeholder="Cleaning, Security..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                        <FormField control={editForm.control} name="position" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Position *</FormLabel><FormControl><Input placeholder="Supervisor..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField control={editForm.control} name="department" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Department *</FormLabel><FormControl><Input className={underlineInput} placeholder="Cleaning, Security..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="position" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Position *</FormLabel><FormControl><Input className={underlineInput} placeholder="Supervisor..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <FormField control={editForm.control} name="baseSalary" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Monthly Salary *</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
-                                        <FormField control={editForm.control} name="otherAllowance" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Other Allowance</FormLabel><FormControl><div className="relative"><Input type="number" className="pl-6" {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                         <FormField control={editForm.control} name="baseSalary" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Monthly Salary *</FormLabel><FormControl><div className="relative"><Input type="number" className={`${underlineInput} pl-4`} {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-0 top-3 text-sm text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="otherAllowance" render={({ field: { value, onChange, ...fieldProps } }) => (<FormItem><FormLabel>Other Allowance</FormLabel><FormControl><div className="relative"><Input type="number" className={`${underlineInput} pl-4`} {...fieldProps} value={String(value || '')} onChange={(e) => onChange(e.target.value ? parseFloat(e.target.value) : '')} /><span className="absolute left-0 top-3 text-sm text-muted-foreground">₹</span></div></FormControl><FormMessage /></FormItem>)} />
                                     </div>
                                     <FormField control={editForm.control} name="jobDescription" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Job Description / Duties & Responsibilities</FormLabel><FormControl><Textarea placeholder="Describe the role and responsibilities..." {...fieldProps} value={String(value || '')} rows={4} /></FormControl><FormMessage /></FormItem>)} />
                                 </TabsContent>
@@ -799,23 +807,23 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                 <TabsContent value="additional" className="space-y-4">
                                     <div className="space-y-2">
                                         <h4 className="text-sm font-medium">Bank Account Details</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField control={editForm.control} name="bankAccount.accountHolderName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Account Holder Name</FormLabel><FormControl><Input placeholder="As per bank records" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                            <FormField control={editForm.control} name="bankAccount.accountNumber" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Account Number</FormLabel><FormControl><Input placeholder="Account number" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="bankAccount.accountHolderName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Account Holder Name</FormLabel><FormControl><Input className={underlineInput} placeholder="As per bank records" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="bankAccount.accountNumber" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Account Number</FormLabel><FormControl><Input className={underlineInput} placeholder="Account number" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <FormField control={editForm.control} name="bankAccount.ifscCode" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>IFSC Code</FormLabel><FormControl><Input placeholder="e.g., SBIN0001234" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                            <FormField control={editForm.control} name="bankAccount.bankName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input placeholder="e.g., State Bank of India" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <FormField control={editForm.control} name="bankAccount.ifscCode" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>IFSC Code</FormLabel><FormControl><Input className={underlineInput} placeholder="e.g., SBIN0001234" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                            <FormField control={editForm.control} name="bankAccount.bankName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Bank Name</FormLabel><FormControl><Input className={underlineInput} placeholder="e.g., State Bank of India" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                         </div>
-                                        <FormField control={editForm.control} name="bankAccount.branchName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Branch Name</FormLabel><FormControl><Input placeholder="Branch location" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="bankAccount.branchName" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Branch Name</FormLabel><FormControl><Input className={underlineInput} placeholder="Branch location" {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
                                     </div>
                                     <FormField control={editForm.control} name="additionalInfo" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Additional Information</FormLabel><FormControl><Textarea placeholder="Any other relevant information..." {...fieldProps} value={String(value || '')} rows={4} /></FormControl><FormMessage /></FormItem>)} />
                                 </TabsContent>
                             </Tabs>
 
-                            <DialogFooter>
-                                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} disabled={isUpdating}>Cancel</Button>
-                                <Button type="submit" disabled={isUpdating}>
+                            <DialogFooter className="gap-2 sm:justify-end">
+                                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} disabled={isUpdating} className="w-full sm:w-auto">Cancel</Button>
+                                <Button type="submit" disabled={isUpdating} className="w-full sm:w-auto">
                                     {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                     {isUpdating ? "Updating..." : "Update Staff Member"}
                                 </Button>
