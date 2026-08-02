@@ -15,7 +15,8 @@ import { cn } from '@/lib/utils';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
+
+const underlineInput = "h-auto rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 text-base shadow-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0 md:text-base";
 
 export default function EditReceiptPage() {
     const router = useRouter();
@@ -147,41 +148,42 @@ export default function EditReceiptPage() {
         }
     };
 
-    if (initialLoading) return <div className="p-10 flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    if (initialLoading) return <div className="flex flex-1 items-center justify-center p-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
     return (
         <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)] max-w-5xl w-full">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="mt-1 sm:mt-0"><ArrowLeft className="h-5 w-5" /></Button>
                     <div>
-                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-chart-1">Edit Receipt</h2>
-                        <p className="text-muted-foreground text-sm mt-1">Update existing receipt entry.</p>
+                        <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                            Income · Edit Receipt
+                        </span>
+                        <h2 className="text-2xl sm:text-4xl font-bold tracking-tight mt-2">Update Receipt</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Edit the existing income entry.</p>
                     </div>
                 </div>
-                <div className="flex flex-col items-end px-4">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest border-b border-dashed border-border mb-0.5">Receipt No</span>
-                    <span className="text-xl font-mono font-bold bg-chart-1/10 text-chart-1 px-2 py-0.5 rounded-sm border border-chart-1/20">{receiptNo}</span>
+                <div className="flex flex-col items-start sm:items-end gap-1">
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Receipt No</span>
+                    <span className="text-xl font-mono font-bold bg-chart-1/10 text-chart-1 px-3 py-1 rounded-md border border-chart-1/20">{receiptNo}</span>
                 </div>
             </div>
 
-            <Card className="border-chart-1/10 shadow-sm bg-chart-1/5">
-                <div className="bg-muted/30 p-6 border-b border-border">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="space-y-1.5">
+            <Card className="border-border shadow-sm bg-card">
+                <div className="bg-muted/30 p-4 sm:p-6 border-b border-border">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5">
+                        <div className="space-y-1">
                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Receipt Date</Label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
-                                        variant={"outline"}
+                                        variant={"ghost"}
                                         className={cn(
-                                            "w-full justify-start text-left font-normal bg-background border-input h-9",
+                                            "w-full justify-start text-left font-normal rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 h-auto shadow-none",
                                             !date && "text-muted-foreground"
                                         )}
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                                         {date ? format(date, "PPP") : <span>Pick a date</span>}
                                     </Button>
                                 </PopoverTrigger>
@@ -196,10 +198,10 @@ export default function EditReceiptPage() {
                             </Popover>
                         </div>
 
-                        <div className="space-y-1.5 md:col-span-2">
+                        <div className="space-y-1 md:col-span-2">
                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Deposit To</Label>
                             <Select value={accountId} onValueChange={setAccountId}>
-                                <SelectTrigger className="w-full bg-background border-input h-9">
+                                <SelectTrigger className="w-full rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 h-auto shadow-none">
                                     <SelectValue placeholder="Select Account" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -215,11 +217,11 @@ export default function EditReceiptPage() {
                             </Select>
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="space-y-1">
                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
                             <div className="flex gap-2">
                                 <Select value={categoryId} onValueChange={setCategoryId}>
-                                    <SelectTrigger className="w-full bg-background border-input h-9">
+                                    <SelectTrigger className="w-full rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 h-auto shadow-none">
                                         <SelectValue placeholder="Category" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -229,9 +231,9 @@ export default function EditReceiptPage() {
                                     </SelectContent>
                                 </Select>
                                 <Button
-                                    variant="outline"
+                                    variant="ghost"
                                     size="icon"
-                                    className="h-9 w-9 shrink-0"
+                                    className="h-10 w-9 shrink-0 self-start text-muted-foreground hover:text-primary"
                                     onClick={() => setIsCatDialogOpen(true)}
                                     type="button"
                                 >
@@ -241,22 +243,22 @@ export default function EditReceiptPage() {
                         </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-border">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-1.5">
+                    <div className="mt-5 pt-4 border-t border-border">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <div className="space-y-1">
                                 <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Received From</Label>
                                 <Input
                                     placeholder="Enter Name..."
-                                    className="bg-background border-input h-9 font-medium"
+                                    className={underlineInput}
                                     value={payer}
                                     onChange={(e) => setPayer(e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contact Number</Label>
                                 <Input
                                     placeholder="Enter Mobile Number..."
-                                    className="bg-background border-input h-9 font-medium"
+                                    className={underlineInput}
                                     value={payerContact}
                                     onChange={(e) => setPayerContact(e.target.value)}
                                 />
@@ -267,20 +269,20 @@ export default function EditReceiptPage() {
 
                 <div className="p-0">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
+                        <table className="w-full text-sm text-left min-w-[560px]">
                             <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                                 <tr>
-                                    <th className="px-6 py-3 w-12 text-center">#</th>
-                                    <th className="px-6 py-3">Particulars</th>
-                                    <th className="px-6 py-3 w-48 text-right">Amount (₹)</th>
-                                    <th className="px-6 py-3 w-16"></th>
+                                    <th className="px-4 sm:px-6 py-3 w-12 text-center">#</th>
+                                    <th className="px-4 sm:px-6 py-3">Particulars</th>
+                                    <th className="px-4 sm:px-6 py-3 w-48 text-right">Amount (₹)</th>
+                                    <th className="px-4 sm:px-6 py-3 w-16"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {items.map((item, index) => (
                                     <tr key={index} className="group hover:bg-muted/30 transition-colors">
-                                        <td className="px-6 py-2 text-center text-muted-foreground font-mono text-xs">{index + 1}</td>
-                                        <td className="px-6 py-2">
+                                        <td className="px-4 sm:px-6 py-2 text-center text-muted-foreground font-mono text-xs">{index + 1}</td>
+                                        <td className="px-4 sm:px-6 py-2">
                                             <Input
                                                 placeholder="Description..."
                                                 className="border-0 bg-transparent shadow-none px-2 h-8 rounded-sm"
@@ -288,7 +290,7 @@ export default function EditReceiptPage() {
                                                 onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                                             />
                                         </td>
-                                        <td className="px-6 py-2">
+                                        <td className="px-4 sm:px-6 py-2">
                                             <Input
                                                 type="number"
                                                 placeholder="0.00"
@@ -297,7 +299,7 @@ export default function EditReceiptPage() {
                                                 onChange={(e) => handleItemChange(index, 'amount', e.target.value)}
                                             />
                                         </td>
-                                        <td className="px-6 py-2 text-right">
+                                        <td className="px-4 sm:px-6 py-2 text-right">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -312,12 +314,12 @@ export default function EditReceiptPage() {
                             </tbody>
                             <tfoot className="bg-muted/20 border-t border-border">
                                 <tr>
-                                    <td colSpan={2} className="px-6 py-3">
+                                    <td colSpan={2} className="px-4 sm:px-6 py-3">
                                         <Button variant="ghost" size="sm" onClick={handleAddItem} className="text-chart-1 hover:text-chart-1 hover:bg-chart-1/10 -ml-2">
                                             <Plus className="h-4 w-4 mr-1" /> Add Line
                                         </Button>
                                     </td>
-                                    <td className="px-6 py-3 text-right">
+                                    <td className="px-4 sm:px-6 py-3 text-right">
                                         <div className="flex flex-col">
                                             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Total Amount</span>
                                             <span className="text-lg font-bold text-foreground font-mono">
@@ -332,19 +334,22 @@ export default function EditReceiptPage() {
                     </div>
                 </div>
 
-                <div className="bg-muted/30 p-6 border-t border-border space-y-4">
-                    <div className="space-y-1.5">
+                <div className="bg-muted/30 p-4 sm:p-6 border-t border-border space-y-4">
+                    <div className="space-y-1">
                         <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Remarks</Label>
                         <Input
                             placeholder="Notes..."
-                            className="bg-background border-input"
+                            className={underlineInput}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
 
-                    <div className="flex justify-end pt-2">
-                        <Button size="lg" className="min-w-37.5 shadow-sm bg-primary hover:bg-primary/90" onClick={handleSubmit} disabled={loading}>
+                    <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
+                        <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={() => router.back()} disabled={loading}>
+                            Cancel
+                        </Button>
+                        <Button size="lg" className="w-full sm:w-auto shadow-sm bg-primary hover:bg-primary/90" onClick={handleSubmit} disabled={loading}>
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             Update Receipt
                         </Button>
@@ -353,22 +358,23 @@ export default function EditReceiptPage() {
             </Card>
 
             <Dialog open={isCatDialogOpen} onOpenChange={setIsCatDialogOpen}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[420px]">
                     <DialogHeader>
                         <DialogTitle>Add New Category</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4 py-4">
-                        <div className="space-y-2">
+                    <div className="space-y-5 py-4">
+                        <div className="space-y-1">
                             <Label>Name</Label>
-                            <Input placeholder="e.g. Donation" value={newCatName} onChange={(e) => setNewCatName(e.target.value)} />
+                            <Input placeholder="e.g. Donation" className={underlineInput} value={newCatName} onChange={(e) => setNewCatName(e.target.value)} />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-1">
                             <Label>Description</Label>
-                            <Textarea placeholder="Optional description" value={newCatDesc} onChange={(e) => setNewCatDesc(e.target.value)} />
+                            <Input placeholder="Optional description" className={underlineInput} value={newCatDesc} onChange={(e) => setNewCatDesc(e.target.value)} />
                         </div>
                     </div>
-                    <DialogFooter>
-                        <Button onClick={handleCreateCategory}>Create Category</Button>
+                    <DialogFooter className="gap-2 sm:justify-end">
+                        <Button variant="outline" onClick={() => setIsCatDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleCreateCategory} className="w-full sm:w-auto">Create Category</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
