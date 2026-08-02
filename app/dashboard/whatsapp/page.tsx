@@ -88,7 +88,7 @@ interface Message {
     replyTo?: Message;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.tmj.org.in/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export default function WhatsAppPage() {
     const [contacts, setContacts] = useState<Contact[]>([]);

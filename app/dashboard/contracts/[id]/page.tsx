@@ -108,7 +108,7 @@ const RentRow = ({ rent, isActive, onCollect }: { rent: RentDue, isActive: boole
                                         <div className="flex items-center gap-2">
                                             <div className="font-mono font-bold text-chart-1">+₹{tx.amount}</div>
                                             {tx.receipt && (
-                                                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${tx.receipt!._id}/pdf`, '_blank')}>
+                                                <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => window.open(`http://localhost:5000/api/receipts/${tx.receipt!._id}/pdf`, '_blank')}>
                                                     <FileText className="h-3 w-3" />
                                                 </Button>
                                             )}
@@ -528,7 +528,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                                                 <div className="flex items-center gap-2">
                                                                     <span className="font-mono">{d.type === 'REFUND' ? '-' : ''}₹{d.amount}</span>
                                                                     {d.receipt && (
-                                                                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${d.receipt!._id}/pdf`, '_blank')}>
+                                                                        <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => window.open(`http://localhost:5000/api/receipts/${d.receipt!._id}/pdf`, '_blank')}>
                                                                             <FileText className="h-3 w-3" />
                                                                         </Button>
                                                                     )}
