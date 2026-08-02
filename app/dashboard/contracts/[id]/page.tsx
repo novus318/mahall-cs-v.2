@@ -16,6 +16,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
+import { cn } from '@/lib/utils';
+
+const underlineInput = "h-auto rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 text-base shadow-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0 md:text-base";
+const selectTriggerClass = "w-full rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 h-auto shadow-none";
+const fieldLabelClass = "text-xs font-semibold text-muted-foreground uppercase tracking-wider";
 
 // --- Types ---
 type Contract = {
@@ -339,32 +344,35 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     const depositHeld = totalDepositPaid - totalRefunds;
     const isDepositSettled = depositHeld >= (contract?.depositAmount || 0);
 
-    if (loading) return <div className="flex items-center justify-center h-full"><Loader2 className="animate-spin text-muted-foreground" /></div>;
-    if (!contract) return <div>Contract not found</div>;
+    if (loading) return <div className="flex flex-1 items-center justify-center p-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    if (!contract) return <div className="flex flex-1 items-center justify-center p-10 text-center text-muted-foreground">Contract not found</div>;
     const isActive = contract.status === 'ACTIVE';
 
     return (
         <div className="flex flex-1 flex-col gap-4 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
             {/* Header */}
-            <div className="flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft className="h-4 w-4" /></Button>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center justify-between">
+                <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="mt-1 sm:mt-0"><ArrowLeft className="h-5 w-5" /></Button>
                     <div>
-                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight flex items-center gap-2">
+                        <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                            Rentals · Contract
+                        </span>
+                        <h2 className="text-2xl sm:text-4xl font-bold tracking-tight mt-2 flex items-center gap-2 flex-wrap">
                             {contract.tenant.name}
                             <Badge variant={isActive ? 'default' : 'destructive'} className="text-[10px] h-5 px-1.5">{contract.status}</Badge>
                         </h2>
-                        <div className="text-muted-foreground text-xs flex items-center gap-2">
+                        <div className="text-muted-foreground text-xs flex items-center gap-2 mt-1 flex-wrap">
                             <span className="font-mono">{contract.rooms.map(r => r.roomNumber).join(', ')}</span> • {contract.tenant.phone}
                         </div>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                     {isActive ? (
                         <>
                             {isEditMode ? (
-                                <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => {
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <Button variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => {
                                         if (contract) {
                                             setEditForm({
                                                 'tenant.name': contract.tenant.name,
@@ -378,14 +386,14 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                         }
                                         setIsEditMode(false);
                                     }} disabled={isUpdating}>Cancel</Button>
-                                    <Button size="sm" onClick={handleUpdate} disabled={isUpdating}>
+                                    <Button size="sm" className="w-full sm:w-auto" onClick={handleUpdate} disabled={isUpdating}>
                                         {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         {isUpdating ? "Saving..." : "Save Changes"}
                                     </Button>
                                 </div>
                             ) : (
                                 <>
-                                    <Button variant="outline" size="sm" className="h-8" onClick={() => {
+                                    <Button variant="outline" size="sm" className="h-8 w-full sm:w-auto" onClick={() => {
                                         if (contract) {
                                             setEditForm({
                                                 'tenant.name': contract.tenant.name,
@@ -401,14 +409,14 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                     }}>
                                         <Edit2 className="mr-2 h-3.5 w-3.5" /> Edit
                                     </Button>
-                                    <Button variant="destructive" size="sm" className="h-8" onClick={() => { setTerminateForm(prev => ({ ...prev, returnAmount: depositHeld > 0 ? depositHeld : 0 })); setIsTerminateOpen(true); }}>
+                                    <Button variant="destructive" size="sm" className="h-8 w-full sm:w-auto" onClick={() => { setTerminateForm(prev => ({ ...prev, returnAmount: depositHeld > 0 ? depositHeld : 0 })); setIsTerminateOpen(true); }}>
                                         <Trash2 className="mr-2 h-3.5 w-3.5" /> Terminate
                                     </Button>
                                 </>
                             )}
                         </>
                     ) : (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-muted/60 rounded text-xs text-muted-foreground">
+                        <div className="flex items-center justify-center gap-2 px-3 py-1 bg-muted/60 rounded text-xs text-muted-foreground">
                             <AlertTriangle className="h-3 w-3" /> Contract Ended
                         </div>
                     )}
@@ -420,52 +428,88 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
 
                     {/* --- DETAILS SECTION --- */}
                     <div className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Card className="shadow-none border h-full">
-                                <CardHeader className="py-3 px-4 bg-muted/40 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4" /> Tenant Details</CardTitle></CardHeader>
-                                <CardContent className="p-4 grid grid-cols-1 gap-4">
+                                <CardHeader className="py-3 px-4 bg-muted/40 border-b !pb-1"><CardTitle className="text-sm font-semibold flex items-center gap-2"><User className="h-4 w-4" /> Tenant Details</CardTitle></CardHeader>
+                                <CardContent className="p-4 sm:p-5 grid grid-cols-1 gap-4">
                                     {isEditMode ? (
                                         <>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div><div className="text-xs mb-1">Name</div><Input className="h-8 text-xs" value={editForm['tenant.name']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.name': e.target.value }))} /></div>
-                                                <div><div className="text-xs mb-1">Phone</div><Input className="h-8 text-xs" value={editForm['tenant.phone']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.phone': e.target.value }))} /></div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                                <div className="space-y-1">
+                                                    <div className={fieldLabelClass}>Name</div>
+                                                    <Input className={underlineInput} value={editForm['tenant.name']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.name': e.target.value }))} />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <div className={fieldLabelClass}>Phone</div>
+                                                    <Input className={underlineInput} value={editForm['tenant.phone']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.phone': e.target.value }))} />
+                                                </div>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div><div className="text-xs mb-1">Aadhaar</div><Input className="h-8 text-xs" value={editForm['tenant.adhaar']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.adhaar': e.target.value }))} /></div>
-                                                <div><div className="text-xs mb-1">Shop Name</div><Input className="h-8 text-xs" value={editForm['tenant.shopName']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.shopName': e.target.value }))} /></div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                                <div className="space-y-1">
+                                                    <div className={fieldLabelClass}>Aadhaar</div>
+                                                    <Input className={underlineInput} value={editForm['tenant.adhaar']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.adhaar': e.target.value }))} />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <div className={fieldLabelClass}>Shop Name</div>
+                                                    <Input className={underlineInput} value={editForm['tenant.shopName']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.shopName': e.target.value }))} />
+                                                </div>
                                             </div>
-                                            <div><div className="text-xs mb-1">Address</div><Input className="h-8 text-xs" value={editForm['tenant.place']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.place': e.target.value }))} /></div>
+                                            <div className="space-y-1">
+                                                <div className={fieldLabelClass}>Address</div>
+                                                <Input className={underlineInput} value={editForm['tenant.place']} onChange={e => setEditForm(prev => ({ ...prev, 'tenant.place': e.target.value }))} />
+                                            </div>
                                         </>
                                     ) : (
                                         <>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div><div className="text-xs text-muted-foreground mb-1">Name</div><div className="text-xs font-medium">{contract.tenant.name}</div></div>
-                                                <div><div className="text-xs text-muted-foreground mb-1">Phone</div><div className="text-xs font-medium">{contract.tenant.phone}</div></div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                                <div>
+                                                    <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Name</div>
+                                                    <div className="text-sm font-medium mt-1">{contract.tenant.name}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Phone</div>
+                                                    <div className="text-sm font-medium mt-1">{contract.tenant.phone}</div>
+                                                </div>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div><div className="text-xs text-muted-foreground mb-1">Aadhaar</div><div className="text-xs font-medium">{contract.tenant.adhaar}</div></div>
-                                                <div><div className="text-xs text-muted-foreground mb-1">Shop Name</div><div className="text-xs font-medium">{contract.tenant.shopName || '-'}</div></div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                                <div>
+                                                    <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Aadhaar</div>
+                                                    <div className="text-sm font-medium mt-1">{contract.tenant.adhaar}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Shop Name</div>
+                                                    <div className="text-sm font-medium mt-1">{contract.tenant.shopName || '-'}</div>
+                                                </div>
                                             </div>
-                                            <div><div className="text-xs text-muted-foreground mb-1">Address</div><div className="text-xs font-medium">{contract.tenant.place}</div></div>
+                                            <div>
+                                                <div className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Address</div>
+                                                <div className="text-sm font-medium mt-1">{contract.tenant.place}</div>
+                                            </div>
                                         </>
                                     )}
                                 </CardContent>
                             </Card>
                             <Card className="shadow-none border h-full">
-                                <CardHeader className="py-3 px-4 bg-muted/40 border-b"><CardTitle className="text-sm font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Contract Terms</CardTitle></CardHeader>
-                                <CardContent className="p-4 space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div><div className="text-xs">Monthly Rent</div><Input type="number" disabled={!isEditMode} className="h-8 text-xs font-bold" value={editForm.rentAmount} onChange={e => setEditForm(prev => ({ ...prev, rentAmount: Number(e.target.value) }))} /></div>
-                                        <div><div className="text-xs">End Date</div><Input type="date" disabled={!isEditMode} className="h-8 text-xs" value={editForm.endDate} onChange={e => setEditForm(prev => ({ ...prev, endDate: e.target.value }))} /></div>
+                                <CardHeader className="py-3 px-4 bg-muted/40 border-b !pb-1"><CardTitle className="text-sm font-semibold flex items-center gap-2"><CreditCard className="h-4 w-4" /> Contract Terms</CardTitle></CardHeader>
+                                <CardContent className="p-4 sm:p-5 space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                        <div className="space-y-1">
+                                            <div className={fieldLabelClass}>Monthly Rent</div>
+                                            <Input type="number" disabled={!isEditMode} className={cn(underlineInput, !isEditMode && "opacity-60")} value={editForm.rentAmount} onChange={e => setEditForm(prev => ({ ...prev, rentAmount: Number(e.target.value) }))} />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <div className={fieldLabelClass}>End Date</div>
+                                            <Input type="date" disabled={!isEditMode} className={cn(underlineInput, !isEditMode && "opacity-60")} value={editForm.endDate} onChange={e => setEditForm(prev => ({ ...prev, endDate: e.target.value }))} />
+                                        </div>
                                     </div>
                                         <div className="text-xs space-y-2">
-                                            <div className="flex justify-between"><span>Start Date:</span> <span className="font-mono">{format(new Date(contract.startDate), 'dd MMM yyyy')}</span></div>
+                                            <div className="flex justify-between"><span className="text-muted-foreground">Start Date</span> <span className="font-mono font-medium">{format(new Date(contract.startDate), 'dd MMM yyyy')}</span></div>
 
                                             <div className="bg-muted/40 rounded border overflow-hidden">
-                                                <div className="flex justify-between items-center p-2">
-                                                    <span>Security Deposit:</span>
+                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-2">
+                                                    <span>Security Deposit</span>
                                                     <div className="flex items-center gap-2">
-                                                        <span className="font-mono font-bold">₹{contract.depositAmount}</span>
+                                                        <span className="font-mono font-bold text-sm">₹{contract.depositAmount}</span>
                                                         {isDepositSettled ? (
                                                             <Badge variant="outline" className="text-[10px] bg-chart-1/10 text-chart-1 border-chart-1/20 gap-1"><CheckCircle2 className="h-3 w-3" /> Collected</Badge>
                                                         ) : (
@@ -498,7 +542,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                         </div>
                                         <Separator />
                                         <div>
-                                            <div className="text-xs font-semibold mb-2">Allocated Units</div>
+                                            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Allocated Units</div>
                                             <div className="flex flex-wrap gap-2">
                                                 {contract.rooms.map(r => (<div key={r._id} className="border rounded px-3 py-1 text-xs bg-muted/40 flex items-center gap-2"><Building2 className="h-3 w-3 text-muted-foreground" /><span className="font-mono">{r.roomNumber}</span></div>))}
                                             </div>
@@ -512,18 +556,19 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
 
                     {/* --- RENTS SECTION --- */}
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <h3 className="text-lg font-semibold tracking-tight">Monthly Rent</h3>
                                 <p className="text-sm text-muted-foreground">Generate and track monthly rent invoices</p>
                             </div>
-                            <Button size="sm" className="h-8 text-xs" onClick={() => setIsRentGenOpen(true)} disabled={!isActive}>
+                            <Button size="sm" className="h-8 text-xs w-full sm:w-auto" onClick={() => setIsRentGenOpen(true)} disabled={!isActive}>
                                 <Plus className="mr-1 h-3 w-3" /> Generate Rent
                             </Button>
                         </div>
 
                         <div className="border rounded bg-background overflow-hidden shadow-sm">
-                            <Table>
+                            <div className="overflow-x-auto">
+                                <Table className="min-w-[720px]">
                                 <TableHeader className="bg-muted/40">
                                     <TableRow>
                                         <TableHead className="h-8 text-xs font-semibold uppercase tracking-wider">Month-Year</TableHead>
@@ -552,6 +597,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                                     )}
                                 </TableBody>
                             </Table>
+                            </div>
                         </div>
                     </div>
 
@@ -562,16 +608,26 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
 
             {/* Generate Rent */}
             <Dialog open={isRentGenOpen} onOpenChange={(open) => !isGeneratingRent && setIsRentGenOpen(open)}>
-                <DialogContent className="sm:max-w-[400px]">
+                <DialogContent className="sm:max-w-[420px]">
                     <DialogHeader><DialogTitle>Generate Rent Invoice</DialogTitle></DialogHeader>
                     <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div><div className="text-xs">Month</div><Select value={rentGenForm.month} onValueChange={v => setRentGenForm(p => ({ ...p, month: v }))}><SelectTrigger className="h-8 text-xs w-full"><SelectValue /></SelectTrigger><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select></div>
-                            <div><div className="text-xs">Year</div><Input className="h-8 text-xs" value={rentGenForm.year} onChange={e => setRentGenForm(p => ({ ...p, year: e.target.value }))} /></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                            <div className="space-y-1">
+                                <div className={fieldLabelClass}>Month</div>
+                                <Select value={rentGenForm.month} onValueChange={v => setRentGenForm(p => ({ ...p, month: v }))}><SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select>
+                            </div>
+                            <div className="space-y-1">
+                                <div className={fieldLabelClass}>Year</div>
+                                <Input className={underlineInput} value={rentGenForm.year} onChange={e => setRentGenForm(p => ({ ...p, year: e.target.value }))} />
+                            </div>
                         </div>
-                        <div><div className="text-xs">Rent Amount</div><Input type="number" className="h-8 text-xs font-bold" value={rentGenForm.amount} onChange={e => setRentGenForm(p => ({ ...p, amount: Number(e.target.value) }))} /></div>
-                        <DialogFooter>
-                            <Button type="button" size="sm" disabled={isGeneratingRent} onClick={handleGenerateRent}>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Rent Amount</div>
+                            <Input type="number" className={underlineInput} value={rentGenForm.amount} onChange={e => setRentGenForm(p => ({ ...p, amount: Number(e.target.value) }))} />
+                        </div>
+                        <DialogFooter className="gap-2 sm:justify-end">
+                            <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setIsRentGenOpen(false)} disabled={isGeneratingRent}>Cancel</Button>
+                            <Button type="button" size="sm" className="w-full sm:w-auto" disabled={isGeneratingRent} onClick={handleGenerateRent}>
                                 {isGeneratingRent && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {isGeneratingRent ? "Generating..." : "Generate"}
                             </Button>
@@ -582,7 +638,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
 
             {/* Collect Rent */}
             <Dialog open={isCollectRentOpen} onOpenChange={(open) => !isCollectingRent && setIsCollectRentOpen(open)}>
-                <DialogContent className="sm:max-w-[400px]">
+                <DialogContent className="sm:max-w-[420px]">
                     <DialogHeader>
                         <DialogTitle>Collect Rent Payment</DialogTitle>
                         {selectedRentId && rents.find(r => r._id === selectedRentId) && (
@@ -592,12 +648,25 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                         )}
                     </DialogHeader>
                     <div className="space-y-4">
-                        <div><div className="text-xs">Amount Received</div><Input type="number" className="h-8 text-xs font-bold" value={collectRentForm.amount} onChange={e => setCollectRentForm(p => ({ ...p, amount: Number(e.target.value) }))} /></div>
-                        <div><div className="text-xs">Deposit To Account</div><Select value={collectRentForm.accountId} onValueChange={v => setCollectRentForm(p => ({ ...p, accountId: v }))}><SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>))}</SelectContent></Select></div>
-                        <div><div className="text-xs">Date</div><Input type="date" className="h-8 text-xs" value={collectRentForm.date} onChange={e => setCollectRentForm(p => ({ ...p, date: e.target.value }))} /></div>
-                        <div><div className="text-xs">Notes</div><Input className="h-8 text-xs" value={collectRentForm.notes} onChange={e => setCollectRentForm(p => ({ ...p, notes: e.target.value }))} /></div>
-                        <DialogFooter>
-                            <Button type="button" size="sm" disabled={isCollectingRent || !collectRentForm.accountId} onClick={handleCollectRent}>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Amount Received</div>
+                            <Input type="number" className={underlineInput} value={collectRentForm.amount} onChange={e => setCollectRentForm(p => ({ ...p, amount: Number(e.target.value) }))} />
+                        </div>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Deposit To Account</div>
+                            <Select value={collectRentForm.accountId} onValueChange={v => setCollectRentForm(p => ({ ...p, accountId: v }))}><SelectTrigger className={selectTriggerClass}><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>))}</SelectContent></Select>
+                        </div>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Date</div>
+                            <Input type="date" className={underlineInput} value={collectRentForm.date} onChange={e => setCollectRentForm(p => ({ ...p, date: e.target.value }))} />
+                        </div>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Notes</div>
+                            <Input className={underlineInput} value={collectRentForm.notes} onChange={e => setCollectRentForm(p => ({ ...p, notes: e.target.value }))} />
+                        </div>
+                        <DialogFooter className="gap-2 sm:justify-end">
+                            <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setIsCollectRentOpen(false)} disabled={isCollectingRent}>Cancel</Button>
+                            <Button type="button" size="sm" className="w-full sm:w-auto" disabled={isCollectingRent || !collectRentForm.accountId} onClick={handleCollectRent}>
                                 {isCollectingRent && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {isCollectingRent ? "Recording..." : "Record Payment"}
                             </Button>
@@ -609,7 +678,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
 
             {/* Collect Deposit */}
             <Dialog open={isCollectDepositOpen} onOpenChange={(open) => !isCollectingDeposit && setIsCollectDepositOpen(open)}>
-                <DialogContent className="sm:max-w-[400px]">
+                <DialogContent className="sm:max-w-[420px]">
                     <DialogHeader>
                         <DialogTitle>Collect Security Deposit</DialogTitle>
                         {contract && (
@@ -622,12 +691,25 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                         )}
                     </DialogHeader>
                     <div className="space-y-4">
-                        <div><div className="text-xs">Amount Collected</div><Input type="number" className="h-8 text-xs font-bold" value={collectDepositForm.amount} onChange={e => setCollectDepositForm(p => ({ ...p, amount: Number(e.target.value) }))} /></div>
-                        <div><div className="text-xs">Deposit To Account</div><Select value={collectDepositForm.accountId} onValueChange={v => setCollectDepositForm(p => ({ ...p, accountId: v }))}><SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>))}</SelectContent></Select></div>
-                        <div><div className="text-xs">Date</div><Input type="date" className="h-8 text-xs" value={collectDepositForm.date} onChange={e => setCollectDepositForm(p => ({ ...p, date: e.target.value }))} /></div>
-                        <div><div className="text-xs">Notes</div><Input className="h-8 text-xs" value={collectDepositForm.notes} onChange={e => setCollectDepositForm(p => ({ ...p, notes: e.target.value }))} /></div>
-                        <DialogFooter>
-                            <Button type="button" size="sm" disabled={isCollectingDeposit || !collectDepositForm.accountId} onClick={handleCollectDeposit}>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Amount Collected</div>
+                            <Input type="number" className={underlineInput} value={collectDepositForm.amount} onChange={e => setCollectDepositForm(p => ({ ...p, amount: Number(e.target.value) }))} />
+                        </div>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Deposit To Account</div>
+                            <Select value={collectDepositForm.accountId} onValueChange={v => setCollectDepositForm(p => ({ ...p, accountId: v }))}><SelectTrigger className={selectTriggerClass}><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type})</SelectItem>))}</SelectContent></Select>
+                        </div>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Date</div>
+                            <Input type="date" className={underlineInput} value={collectDepositForm.date} onChange={e => setCollectDepositForm(p => ({ ...p, date: e.target.value }))} />
+                        </div>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Notes</div>
+                            <Input className={underlineInput} value={collectDepositForm.notes} onChange={e => setCollectDepositForm(p => ({ ...p, notes: e.target.value }))} />
+                        </div>
+                        <DialogFooter className="gap-2 sm:justify-end">
+                            <Button type="button" variant="outline" size="sm" className="w-full sm:w-auto" onClick={() => setIsCollectDepositOpen(false)} disabled={isCollectingDeposit}>Cancel</Button>
+                            <Button type="button" size="sm" className="w-full sm:w-auto" disabled={isCollectingDeposit || !collectDepositForm.accountId} onClick={handleCollectDeposit}>
                                 {isCollectingDeposit && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {isCollectingDeposit ? "Recording..." : "Record Deposit Collection"}
                             </Button>
@@ -661,10 +743,19 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                             </div>
                         )}
 
-                        <div><div className="text-xs">Refund Amount (Optional - Closing Balance)</div><div className="relative"><Input type="number" className="h-9 font-bold pl-6" value={terminateForm.returnAmount} onChange={e => setTerminateForm(p => ({ ...p, returnAmount: Number(e.target.value) }))} /><span className="absolute left-2.5 top-2.5 text-xs text-muted-foreground">₹</span></div></div>
+                        <div className="space-y-1">
+                            <div className={fieldLabelClass}>Refund Amount (Optional - Closing Balance)</div>
+                            <div className="relative">
+                                <Input type="number" className={cn(underlineInput, "pl-6")} value={terminateForm.returnAmount} onChange={e => setTerminateForm(p => ({ ...p, returnAmount: Number(e.target.value) }))} />
+                                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                            </div>
+                        </div>
 
                         {terminateForm.returnAmount > 0 && (
-                            <div><div className="text-xs">Refund From Account</div><Select value={terminateForm.accountId} onValueChange={v => setTerminateForm(p => ({ ...p, accountId: v }))}><SelectTrigger className="h-8 text-xs w-full"><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type}) - ₹{acc.balance?.toLocaleString()}</SelectItem>))}</SelectContent></Select></div>
+                            <div className="space-y-1">
+                                <div className={fieldLabelClass}>Refund From Account</div>
+                                <Select value={terminateForm.accountId} onValueChange={v => setTerminateForm(p => ({ ...p, accountId: v }))}><SelectTrigger className={selectTriggerClass}><SelectValue placeholder="Select Account" /></SelectTrigger><SelectContent>{accounts.map(acc => (<SelectItem key={acc._id} value={acc._id}>{acc.name} ({acc.type}) - ₹{acc.balance?.toLocaleString()}</SelectItem>))}</SelectContent></Select>
+                            </div>
                         )}
 
                         <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
@@ -672,9 +763,9 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
                             <div className="space-y-1 leading-none text-sm">I confirm all dues are cleared/refunded.</div>
                         </div>
 
-                        <DialogFooter>
-                            <Button type="button" variant="ghost" onClick={() => setIsTerminateOpen(false)} disabled={isTerminating}>Cancel</Button>
-                            <Button type="button" variant="destructive" disabled={!terminateForm.confirm || isTerminating} onClick={handleTerminate}>
+                        <DialogFooter className="gap-2 sm:justify-end">
+                            <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => setIsTerminateOpen(false)} disabled={isTerminating}>Cancel</Button>
+                            <Button type="button" variant="destructive" className="w-full sm:w-auto" disabled={!terminateForm.confirm || isTerminating} onClick={handleTerminate}>
                                 {isTerminating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                 {isTerminating ? "Terminating..." : "Terminate Contract"}
                             </Button>

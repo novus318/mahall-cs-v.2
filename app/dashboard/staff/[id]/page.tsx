@@ -22,6 +22,7 @@ import api from '@/lib/axios';
 
 // Login-page style underline input (Uber-like)
 const underlineInput = "h-auto rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 text-base shadow-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0 md:text-base";
+const selectTriggerClass = "w-full rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 h-auto shadow-none";
 
 // Schemas
 const advanceSchema = z.object({
@@ -591,7 +592,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                     <Form {...generateForm}>
                         <form onSubmit={generateForm.handleSubmit(handleGeneratePayslip)} className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FormField control={generateForm.control} name="month" render={({ field }) => (<FormItem><FormLabel>Month</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className='w-full'><SelectValue /></SelectTrigger></FormControl><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+                                <FormField control={generateForm.control} name="month" render={({ field }) => (<FormItem><FormLabel>Month</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger></FormControl><SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(m => <SelectItem key={m} value={String(m)}>{m}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
                                 <FormField control={generateForm.control} name="year" render={({ field }) => (<FormItem><FormLabel>Year</FormLabel><FormControl><Input {...field} className={underlineInput} /></FormControl><FormMessage /></FormItem>)} />
                             </div>
                             <DialogFooter className="sm:justify-end gap-2">
@@ -645,7 +646,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                             <div className="space-y-2">
                                 <FormLabel>Payment Account</FormLabel>
                                 <Select value={selectedAccount} onValueChange={setSelectedAccount}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className={selectTriggerClass}>
                                         <SelectValue placeholder="Select Account" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -756,7 +757,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <FormField control={editForm.control} name="religiousQualifications" render={({ field: { value, ...fieldProps } }) => (<FormItem><FormLabel>Religious Qualifications</FormLabel><FormControl><Input className={underlineInput} placeholder="e.g., Hafiz, Alim, Certificates..." {...fieldProps} value={String(value || '')} /></FormControl><FormMessage /></FormItem>)} />
-                                        <FormField control={editForm.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="ACTIVE">Active</SelectItem><SelectItem value="INACTIVE">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
+                                        <FormField control={editForm.control} name="status" render={({ field }) => (<FormItem><FormLabel>Status</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger></FormControl><SelectContent><SelectItem value="ACTIVE">Active</SelectItem><SelectItem value="INACTIVE">Inactive</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />
                                     </div>
                                 </TabsContent>
 
