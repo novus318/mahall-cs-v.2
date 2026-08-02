@@ -109,10 +109,10 @@ export default function NikahRegisterForm({ initialData }: { initialData?: any }
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
                 <Card className="border-border shadow-sm bg-card">
-                    <CardHeader className="border-b bg-muted/40 p-4">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
                         <CardTitle className="text-base font-semibold">Registration Info</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="py-3">
                         <FormField control={form.control} name="dateOfRegistration" render={({ field }) => (
                             <FormItem>
                                 <FormLabel className={formLabelClass}>Date of Registration</FormLabel>
@@ -126,10 +126,10 @@ export default function NikahRegisterForm({ initialData }: { initialData?: any }
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <Card className="border-border shadow-sm bg-card">
-                        <CardHeader>
+                        <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
                             <CardTitle className="text-lg">Groom Details</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="py-3 space-y-2">
                             <FormField control={form.control} name="groomName" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className={formLabelClass}>Groom Name</FormLabel>
@@ -162,10 +162,10 @@ export default function NikahRegisterForm({ initialData }: { initialData?: any }
                     </Card>
 
                     <Card className="border-border shadow-sm bg-card">
-                        <CardHeader>
+                        <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
                             <CardTitle className="text-lg">Bride Details</CardTitle>
                         </CardHeader>
-                        <CardContent className="space-y-4">
+                        <CardContent className="py-3 space-y-2">
                             <FormField control={form.control} name="brideName" render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className={formLabelClass}>Bride Name</FormLabel>
@@ -199,10 +199,10 @@ export default function NikahRegisterForm({ initialData }: { initialData?: any }
                 </div>
 
                 <Card className="border-border shadow-sm bg-card">
-                    <CardHeader className="border-b bg-muted/40 p-4">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
                         <CardTitle className="text-base font-semibold">Nikah Details</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-2 py-3">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField control={form.control} name="nikahDate" render={({ field }) => (
                                 <FormItem>
@@ -246,10 +246,10 @@ export default function NikahRegisterForm({ initialData }: { initialData?: any }
                 </Card>
 
                 <Card className="border-border shadow-sm bg-card">
-                    <CardHeader className="border-b bg-muted/40 p-4">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
                         <CardTitle className="text-base font-semibold">Witnesses & Officiator</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="py-3 space-y-2">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField control={form.control} name="witness1Name" render={({ field }) => (
                                 <FormItem>

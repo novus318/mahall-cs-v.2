@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { getDeathRegisterById, API_URL } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft, Edit, Printer } from 'lucide-react';
+import { ArrowLeft, Edit, Printer, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 
@@ -39,67 +39,102 @@ export default function DeathRegisterViewPage({ params }: { params: Promise<{ id
         window.open(`${API_URL}/death-registers/${resolvedId}/pdf`, '_blank');
     };
 
-    if (loading) return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
-    if (!record) return <div className="p-8 text-center text-destructive">Death record not found.</div>;
+    if (loading) return <div className="flex flex-1 items-center justify-center p-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+    if (!record) return <div className="flex flex-1 items-center justify-center p-10 text-center text-muted-foreground">Death record not found.</div>;
 
     return (
-        <div className="container mx-auto py-6 px-4 bg-muted/40 min-h-[calc(100vh-4rem)] flex-1">
-            <div className="mb-6 flex justify-between items-center no-print bg-card p-4 rounded-lg shadow-sm border border-border">
-                <div className="flex items-center gap-4">
-                    <Button variant="outline" size="icon" onClick={() => router.back()}>
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
+        <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="mt-1 sm:mt-0"><ArrowLeft className="h-5 w-5" /></Button>
                     <div>
-                        <h1 className="text-xl font-bold tracking-tight">Death Record</h1>
-                        <p className="text-sm text-muted-foreground">{record.name}</p>
+                        <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                            Register · Death Record
+                        </span>
+                        <h2 className="text-2xl sm:text-4xl font-bold tracking-tight mt-2">Death Record</h2>
+                        <p className="text-muted-foreground text-sm mt-1">{record.name}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="secondary" onClick={() => router.push(`/dashboard/death-registers/${resolvedId}/edit`)} className="gap-2">
-                        <Edit className="h-4 w-4" />
-                        Edit
+                    <Button variant="outline" className="flex-1 sm:flex-none" onClick={() => router.push(`/dashboard/death-registers/${resolvedId}/edit`)}>
+                        <Edit className="mr-2 h-4 w-4" /> Edit
                     </Button>
-                    <Button onClick={handlePrint} className="gap-2">
-                        <Printer className="h-4 w-4" />
-                        Print
+                    <Button className="flex-1 sm:flex-none" onClick={handlePrint}>
+                        <Printer className="mr-2 h-4 w-4" /> Print
                     </Button>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className='py-3'>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Deceased Details</CardTitle>
+                <Card className="border-border shadow-sm bg-card">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
+                        <CardTitle className="text-base font-semibold">Deceased Details</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div><span className="font-medium">Name:</span> {record.name}</div>
-                        <div><span className="font-medium">Gender:</span> {record.gender || '-'}</div>
-                        <div><span className="font-medium">Mahall ID:</span> {record.mahallId || '-'}</div>
-                        <div><span className="font-medium">Age:</span> {record.age ?? '-'}</div>
-                        <div><span className="font-medium">Address:</span> {record.address || '-'}</div>
+                    <CardContent className="p-0 divide-y divide-border">
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Name</span>
+                            <div className="font-medium text-foreground mt-1">{record.name}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Gender</span>
+                            <div className="font-medium text-foreground mt-1">{record.gender || '-'}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Mahall ID</span>
+                            <div className="font-medium text-foreground mt-1 font-mono">{record.mahallId || '-'}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Age</span>
+                            <div className="font-medium text-foreground mt-1">{record.age ?? '-'}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Address</span>
+                            <div className="font-medium text-foreground mt-1">{record.address || '-'}</div>
+                        </div>
                     </CardContent>
                 </Card>
 
-                <Card className='py-3'>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Death & Burial</CardTitle>
+                <Card className="border-border shadow-sm bg-card">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
+                        <CardTitle className="text-base font-semibold">Death & Burial</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div><span className="font-medium">Date of Death:</span> {format(new Date(record.dateOfDeath), 'MMM dd, yyyy')}</div>
-                        <div><span className="font-medium">Place of Death:</span> {record.placeOfDeath || '-'}</div>
-                        <div><span className="font-medium">Cause of Death:</span> {record.causeOfDeath || '-'}</div>
-                        <div><span className="font-medium">Date of Burial:</span> {record.dateOfBurial ? format(new Date(record.dateOfBurial), 'MMM dd, yyyy') : '-'}</div>
-                        <div><span className="font-medium">Zone/Section of Qabar:</span> {record.zone || '-'}</div>
+                    <CardContent className="p-0 divide-y divide-border">
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Date of Death</span>
+                            <div className="font-medium text-foreground mt-1">{format(new Date(record.dateOfDeath), 'MMM dd, yyyy')}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Place of Death</span>
+                            <div className="font-medium text-foreground mt-1">{record.placeOfDeath || '-'}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Cause of Death</span>
+                            <div className="font-medium text-foreground mt-1">{record.causeOfDeath || '-'}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Date of Burial</span>
+                            <div className="font-medium text-foreground mt-1">{record.dateOfBurial ? format(new Date(record.dateOfBurial), 'MMM dd, yyyy') : '-'}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Zone/Section of Qabar</span>
+                            <div className="font-medium text-foreground mt-1">{record.zone || '-'}</div>
+                        </div>
                     </CardContent>
                 </Card>
 
-                <Card className='py-3'>
-                    <CardHeader>
-                        <CardTitle className="text-lg">Informer Details</CardTitle>
+                <Card className="border-border shadow-sm bg-card md:col-span-2">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
+                        <CardTitle className="text-base font-semibold">Informer Details</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                        <div><span className="font-medium">Name:</span> {record.informerName}</div>
-                        <div><span className="font-medium">Phone:</span> {record.informerPhone || '-'}</div>
+                    <CardContent className="p-0 divide-y divide-border sm:grid sm:grid-cols-2 sm:divide-y-0">
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Name</span>
+                            <div className="font-medium text-foreground mt-1">{record.informerName}</div>
+                        </div>
+                        <div className="px-4 sm:px-6 py-3">
+                            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">Phone</span>
+                            <div className="font-medium text-foreground mt-1">{record.informerPhone || '-'}</div>
+                        </div>
                     </CardContent>
                 </Card>
             </div>

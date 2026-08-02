@@ -101,10 +101,10 @@ export default function DeathRegisterForm({ initialData }: { initialData?: any }
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
 
                 <Card className="border-border shadow-sm bg-card">
-                    <CardHeader className="border-b bg-muted/40 p-4">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
                         <CardTitle className="text-base font-semibold">Deceased Details</CardTitle>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 py-3">
                         <FormField control={form.control} name="name" render={({ field }) => (
                             <FormItem>
                                 <FormLabel className={formLabelClass}>Full Name</FormLabel>
@@ -142,7 +142,7 @@ export default function DeathRegisterForm({ initialData }: { initialData?: any }
                             </FormItem>
                         )} />
                     </CardContent>
-                    <CardContent className='mt-2'>
+                    <CardContent className='mt-2 pb-3'>
                         <FormField control={form.control} name="address" render={({ field }) => (
                             <FormItem>
                                 <FormLabel className={formLabelClass}>Address</FormLabel>
@@ -154,10 +154,10 @@ export default function DeathRegisterForm({ initialData }: { initialData?: any }
                 </Card>
 
                 <Card className="border-border shadow-sm bg-card">
-                    <CardHeader className="border-b bg-muted/40 p-4">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
                         <CardTitle className="text-base font-semibold">Death & Burial</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-2 py-3">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField control={form.control} name="dateOfDeath" render={({ field }) => (
                                 <FormItem>
@@ -203,10 +203,10 @@ export default function DeathRegisterForm({ initialData }: { initialData?: any }
                 </Card>
 
                 <Card className="border-border shadow-sm bg-card">
-                    <CardHeader className="border-b bg-muted/40 p-4">
+                    <CardHeader className="border-b bg-muted/40 p-4 !pb-1">
                         <CardTitle className="text-base font-semibold">Informer Details</CardTitle>
                     </CardHeader>
-                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 py-3">
                         <FormField control={form.control} name="informerName" render={({ field }) => (
                             <FormItem>
                                 <FormLabel className={formLabelClass}>Informer Name</FormLabel>
