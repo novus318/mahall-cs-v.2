@@ -380,7 +380,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                 </Button>
             </div>
 
-            <div className="grid lg:grid-cols-3 gap-3 lg:h-full lg:overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:h-full lg:overflow-hidden">
                 {/* Left Column: Info & Stats */}
                 <div className="space-y-4 lg:overflow-y-auto lg:pb-10">
                     <Card className="shadow-sm border-border py-3">
