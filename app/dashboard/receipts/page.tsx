@@ -188,7 +188,7 @@ export default function ReceiptsPage() {
                                                 <TableCell className="text-right font-bold tabular-nums text-chart-1">+₹{receipt.amount?.toLocaleString()}</TableCell>
                                                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                                     <div className="flex justify-end gap-1">
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-3/10 hover:text-chart-3" onClick={() => window.open(`http://localhost:5000/api/receipts/${receipt._id}/pdf`, '_blank')} title="View PDF">
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-3/10 hover:text-chart-3" onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${receipt._id}/pdf`, '_blank')} title="View PDF">
                                                             <ExternalLink className="h-3.5 w-3.5" />
                                                         </Button>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-4/10 hover:text-chart-4" onClick={() => handleThermalPrint(receipt)} title="Print via Bluetooth">

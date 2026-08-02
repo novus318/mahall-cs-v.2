@@ -201,7 +201,7 @@ export default function PaymentsPage() {
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <div className="flex justify-end gap-1">
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-3/10 hover:text-chart-3" onClick={(e) => { e.stopPropagation(); window.open(`http://localhost:5000/api/payments/${payment._id}/pdf`, '_blank'); }}>
+                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-3/10 hover:text-chart-3" onClick={(e) => { e.stopPropagation(); window.open(`https://api.tmj.org.in/api/payments/${payment._id}/pdf`, '_blank'); }}>
                                                             <Printer className="h-3.5 w-3.5" />
                                                         </Button>
                                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:bg-chart-2/10 hover:text-chart-2" onClick={(e) => { e.stopPropagation(); router.push(`/dashboard/payments/edit/${payment._id}`); }}>
