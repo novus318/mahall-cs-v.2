@@ -99,26 +99,26 @@ export default function About() {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <div ref={imageRef} className="relative">
-            <div className="relative rounded-2xl overflow-hidden shadow-soft-lg">
-              <img
-                src="/about-mosque.jpg"
-                alt="Community prayer"
-                className="w-full h-[400px] md:h-[500px] object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-            </div>
+<div ref={imageRef} className="relative max-w-lg mx-auto lg:mx-0">
+              <div className="relative rounded-2xl overflow-hidden shadow-soft-lg">
+                <img
+                  src="/about-mosque.jpg"
+                  alt="Community prayer"
+                  className="w-full h-[320px] sm:h-[400px] md:h-[500px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+              </div>
 
-            <div className="absolute -bottom-6 -right-6 bg-foreground text-primary-foreground p-6 rounded-xl shadow-soft-lg">
-              <p className="font-bold text-3xl">25+</p>
-              <p className="text-sm font-medium text-muted-foreground">Years of Service</p>
-            </div>
+              <div className="absolute -bottom-6 -right-2 sm:-right-6 bg-foreground text-primary-foreground p-5 sm:p-6 rounded-xl shadow-soft-lg">
+                <p className="font-bold text-2xl sm:text-3xl">25+</p>
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground">Years of Service</p>
+              </div>
 
-            <div className="absolute -top-4 -left-4 w-full h-full border-2 border-border rounded-2xl -z-10" />
-          </div>
+              <div className="absolute -top-4 -left-4 w-full h-full border-2 border-border rounded-2xl -z-10" />
+            </div>
 
           <div ref={contentRef} className="lg:pl-8">
-            <p className="text-muted-foreground text-lg tracking-wider mb-2">
+            <p className="text-primary font-semibold text-sm tracking-[0.25em] mb-3">
               ABOUT US
             </p>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6 leading-tight">
@@ -147,7 +147,7 @@ export default function About() {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 onClick={() => scrollToSection("#services")}
-                className="bg-foreground text-primary-foreground hover:bg-foreground/90 font-semibold px-6 py-5 transition-all duration-300 group"
+                className="bg-foreground text-primary-foreground hover:bg-foreground/90 font-semibold px-6 h-12 rounded-lg transition-all duration-300 group"
               >
                 Our Services
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -155,7 +155,7 @@ export default function About() {
               <Button
                 onClick={() => scrollToSection("#contact")}
                 variant="outline"
-                className="border-2 border-foreground text-foreground hover:bg-foreground hover:text-primary-foreground font-semibold px-6 py-5 transition-all duration-300"
+                className="border-2 border-foreground text-foreground hover:bg-foreground hover:text-primary-foreground font-semibold px-6 h-12 rounded-lg transition-all duration-300"
               >
                 Contact Us
               </Button>

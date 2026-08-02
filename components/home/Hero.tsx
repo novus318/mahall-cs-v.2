@@ -103,41 +103,39 @@ export default function Hero() {
                 <div className="max-w-4xl mx-auto text-center">
                     <p
                         ref={subtitleRef}
-                        className="text-white/60 text-lg md:text-xl mb-4 tracking-widest overflow-hidden whitespace-nowrap"
+                        className="text-white/60 text-base sm:text-lg md:text-xl mb-5 tracking-[0.3em] overflow-hidden whitespace-nowrap"
                     >
                         WELCOME TO
                     </p>
 
                     <h1
                         ref={titleRef}
-                        className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight perspective-1000"
+                        className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight perspective-1000"
                     >
                         <span className="block">{splitText("THAYINERI")}</span>
                         <span className="block text-white/75 mt-2">{splitText("MUSLIM JAMA-ATH")}</span>
-                        <span className="block text-2xl sm:text-3xl md:text-4xl mt-2 font-normal text-white/60">{splitText("COMMITTEE")}</span>
+                        <span className="block text-xl sm:text-2xl md:text-3xl lg:text-4xl mt-3 font-normal tracking-widest text-white/60">{splitText("COMMITTEE")}</span>
                     </h1>
 
 
-                    <div ref={buttonsRef} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <div ref={buttonsRef} className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto justify-center items-stretch sm:items-center">
                         <Button
                             onClick={() => scrollToSection("#about")}
-                            size="lg"
-                            className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground font-semibold px-8 py-6 text-base transition-all duration-300 group"
+                            className="h-12 sm:h-12 rounded-lg bg-transparent border-2 border-white text-white hover:bg-white hover:text-foreground font-semibold px-8 text-base transition-all duration-300 group"
                         >
                             Learn More
                             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                         </Button>
                         <Button
                             onClick={() => scrollToSection("#contact")}
-                            size="lg"
-                            className="bg-white text-foreground hover:bg-muted font-semibold px-8 py-6 text-base transition-all duration-300"
+                            className="h-12 sm:h-12 rounded-lg bg-white text-foreground hover:bg-muted font-semibold px-8 text-base transition-all duration-300"
                         >
                             <Phone className="w-5 h-5 mr-2" />
                             Contact Us
                         </Button>
                     </div>
 
-                    <div className="mt-12 inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-6 py-3 rounded-full border border-white/20">
+                    <div className="mt-10 inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-5 py-2.5 rounded-full border border-white/20">
                         <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
                         <span className="text-white/90 text-sm">Payyanur, Kannur, Kerala</span>
                     </div>

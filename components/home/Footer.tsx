@@ -4,13 +4,21 @@ import { Phone, Mail, MapPin } from "lucide-react";
 export default function Footer() {
   return (
     <footer className="bg-muted/50 border-t border-border">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid md:grid-cols-4 gap-8">
+      <div className="container mx-auto px-4 sm:px-6 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8">
           <div>
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <span className="font-bold text-lg text-foreground">THAYINERI MUSLIM JAMA-ATH COMMITTEE</span>
+            <Link href="/" className="flex items-center gap-3 mb-4">
+              <img
+                src="/logo.png"
+                alt="Thayineri Muslim Jama-ath Committee"
+                className="h-12 w-auto"
+              />
+              <div className="pt-1">
+                <p className="font-semibold leading-tight text-foreground">THAYINERI MUSLIM</p>
+                <p className="text-xs text-muted-foreground">JAMA-ATH COMMITTEE</p>
+              </div>
             </Link>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm leading-relaxed">
               Thayineri Muslim Jama-ath Committee - Serving the community with faith and unity
               in Payyanur, Kannur, Kerala since 1998.
             </p>

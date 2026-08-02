@@ -126,7 +126,7 @@ export default function Services() {
         <section id="services" ref={sectionRef} className="py-20 md:py-32 bg-background">
             <div className="container mx-auto px-4">
                 <div ref={titleRef} className="text-center max-w-3xl mx-auto mb-16">
-                    <p className="text-muted-foreground font-amiri text-lg tracking-wider mb-2">
+                    <p className="text-primary font-semibold text-sm tracking-[0.25em] mb-3">
                         WHAT WE OFFER
                     </p>
                     <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
@@ -157,7 +157,7 @@ export default function Services() {
 
                 <div ref={galleryRef}>
                     <div ref={galleryTitleRef} className="text-center max-w-3xl mx-auto mb-12">
-                        <p className="text-muted-foreground font-amiri text-lg tracking-wider mb-2">
+                        <p className="text-primary font-semibold text-sm tracking-[0.25em] mb-3">
                             OUR MADRASA
                         </p>
                         <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">

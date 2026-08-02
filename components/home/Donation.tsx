@@ -194,10 +194,10 @@ export default function Donation() {
             <div className="container mx-auto px-4 relative z-10">
                 <div className="max-w-4xl mx-auto">
                     <div className="text-center mb-12">
-                        <p className="donation-title text-muted-foreground font-amiri text-lg tracking-wider mb-2">
+                        <p className="donation-title text-primary font-semibold text-sm tracking-[0.25em] mb-3">
                             MAKE A DIFFERENCE
                         </p>
-                        <h2 className="donation-title text-3xl md:text-4xl lg:text-5xl font-amiri font-bold text-foreground mb-4">
+                        <h2 className="donation-title text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
                             Support Our <span className="text-muted-foreground">Cause</span>
                         </h2>
                         <p className="donation-content text-muted-foreground max-w-2xl mx-auto">
@@ -280,7 +280,7 @@ export default function Donation() {
                             <Button
                                 type="submit"
                                 disabled={finalAmount <= 0 || isSubmitting}
-                                className="w-full bg-primary text-primary-foreground font-bold py-6 text-lg hover:bg-primary/90 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full h-12 rounded-lg bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? (
                                     <span className="flex items-center gap-2">
