@@ -19,6 +19,8 @@ import { Switch } from '@/components/ui/switch';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
+const underlineInput = "h-auto rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 text-base shadow-none transition-colors placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-0 md:text-base";
+
 export default function CreatePaymentPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -148,40 +150,41 @@ export default function CreatePaymentPage() {
 
     return (
         <div className="flex flex-1 flex-col gap-6 p-4 pt-8 md:p-8 bg-muted/40 min-h-[calc(100vh-4rem)] max-w-5xl w-full">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="mt-1 sm:mt-0"><ArrowLeft className="h-5 w-5" /></Button>
                     <div>
-                        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-destructive">Expense Payment</h2>
-                        <p className="text-muted-foreground text-sm mt-1">Create a new expense entry.</p>
+                        <span className="inline-flex h-6 w-fit items-center rounded-full bg-accent px-3 text-xs font-semibold uppercase tracking-wider text-accent-foreground">
+                            Expense · New Payment
+                        </span>
+                        <h2 className="text-2xl sm:text-4xl font-bold tracking-tight mt-2">Record Payment</h2>
+                        <p className="text-muted-foreground text-sm mt-1">Capture a new expense or payment entry.</p>
                     </div>
                 </div>
                 {nextReceipt && (
-                    <div className="flex flex-col items-end px-4">
-                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest border-b border-dashed border-border mb-0.5">Voucher No</span>
-                        <span className="text-xl font-mono font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-sm border border-destructive/20">{nextReceipt}</span>
+                    <div className="flex flex-col items-start sm:items-end gap-1">
+                        <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Voucher No</span>
+                        <span className="text-xl font-mono font-bold bg-destructive/10 text-destructive px-3 py-1 rounded-md border border-destructive/20">{nextReceipt}</span>
                     </div>
                 )}
             </div>
 
-            <Card className="border-destructive/10 shadow-sm bg-destructive/5">
+            <Card className="border-border shadow-sm bg-card">
                 {/* Header Section: Voucher Details */}
-                <div className="bg-muted/30 p-6 border-b border-border">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="space-y-1.5">
+                <div className="bg-muted/30 p-4 sm:p-6 border-b border-border">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-5">
+                        <div className="space-y-1">
                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Voucher Date</Label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <Button
-                                        variant={"outline"}
+                                        variant={"ghost"}
                                         className={cn(
-                                            "w-full justify-start text-left font-normal bg-background border-input h-9",
+                                            "w-full justify-start text-left font-normal rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 h-auto shadow-none",
                                             !date && "text-muted-foreground"
                                         )}
                                     >
-                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                        <CalendarIcon className="mr-2 h-4 w-4 text-muted-foreground" />
                                         {date ? format(date, "PPP") : <span>Pick a date</span>}
                                     </Button>
                                 </PopoverTrigger>
@@ -196,10 +199,10 @@ export default function CreatePaymentPage() {
                             </Popover>
                         </div>
 
-                        <div className="space-y-1.5 md:col-span-2">
+                        <div className="space-y-1 md:col-span-2">
                             <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Paid From (Credit Account)</Label>
                             <Select value={accountId} onValueChange={setAccountId}>
-                                <SelectTrigger className="w-full bg-background border-input h-9">
+                                <SelectTrigger className="w-full rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 h-auto shadow-none">
                                     <SelectValue placeholder="Select Bank/Cash Account" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -215,7 +218,7 @@ export default function CreatePaymentPage() {
                             </Select>
                         </div>
 
-                        <div className="space-y-1.5">
+                        <div className="space-y-1">
                             <div className="flex items-center justify-between">
                                 <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category</Label>
                                 <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
@@ -224,23 +227,24 @@ export default function CreatePaymentPage() {
                                             <Plus className="h-3 w-3" />
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent>
+                                    <DialogContent className="sm:max-w-[420px]">
                                         <DialogHeader>
                                             <DialogTitle>Create New Category</DialogTitle>
                                             <DialogDescription>Add a new expense category to the list.</DialogDescription>
                                         </DialogHeader>
-                                        <div className="py-4">
-                                            <Label htmlFor="catName" className="mb-2 block">Category Name</Label>
+                                        <div className="py-4 space-y-1">
+                                            <Label htmlFor="catName" className="mb-1 block">Category Name</Label>
                                             <Input
                                                 id="catName"
+                                                className={underlineInput}
                                                 value={newCategoryName}
                                                 onChange={(e) => setNewCategoryName(e.target.value)}
                                                 placeholder="e.g. Office Supplies"
                                             />
                                         </div>
-                                        <DialogFooter>
+                                        <DialogFooter className="gap-2 sm:justify-end">
                                             <Button variant="outline" onClick={() => setIsCategoryDialogOpen(false)}>Cancel</Button>
-                                            <Button onClick={handleCreateCategory} disabled={creatingCategory}>
+                                            <Button onClick={handleCreateCategory} disabled={creatingCategory} className="w-full sm:w-auto">
                                                 {creatingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Create'}
                                             </Button>
                                         </DialogFooter>
@@ -248,7 +252,7 @@ export default function CreatePaymentPage() {
                                 </Dialog>
                             </div>
                             <Select value={categoryId} onValueChange={setCategoryId}>
-                                <SelectTrigger className="w-full bg-background border-input h-9">
+                                <SelectTrigger className="w-full rounded-none border-0 border-b-2 border-input bg-transparent px-0 py-3 h-auto shadow-none">
                                     <SelectValue placeholder="Expense Category" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -260,22 +264,22 @@ export default function CreatePaymentPage() {
                         </div>
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-border">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-1.5">
+                    <div className="mt-5 pt-4 border-t border-border">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                            <div className="space-y-1">
                                 <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payee (Paid To)</Label>
                                 <Input
                                     placeholder="Enter Name of Person or Entity..."
-                                    className="bg-background border-input h-9 font-medium"
+                                    className={underlineInput}
                                     value={payee}
                                     onChange={(e) => setPayee(e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contact Number (Optional)</Label>
                                 <Input
                                     placeholder="Enter Mobile Number..."
-                                    className="bg-background border-input h-9 font-medium"
+                                    className={underlineInput}
                                     value={payeeContact}
                                     onChange={(e) => setPayeeContact(e.target.value)}
                                 />
@@ -287,20 +291,20 @@ export default function CreatePaymentPage() {
                 {/* Ledger Table Section */}
                 <div className="p-0">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
+                        <table className="w-full text-sm text-left min-w-[560px]">
                             <thead className="text-xs text-muted-foreground uppercase bg-muted/50 border-b border-border">
                                 <tr>
-                                    <th className="px-6 py-3 w-12 text-center">#</th>
-                                    <th className="px-6 py-3">Particulars (Item Description)</th>
-                                    <th className="px-6 py-3 w-48 text-right">Amount (₹)</th>
-                                    <th className="px-6 py-3 w-16"></th>
+                                    <th className="px-4 sm:px-6 py-3 w-12 text-center">#</th>
+                                    <th className="px-4 sm:px-6 py-3">Particulars (Item Description)</th>
+                                    <th className="px-4 sm:px-6 py-3 w-48 text-right">Amount (₹)</th>
+                                    <th className="px-4 sm:px-6 py-3 w-16"></th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {items.map((item, index) => (
                                     <tr key={index} className="group hover:bg-muted/30 transition-colors">
-                                        <td className="px-6 py-2 text-center text-muted-foreground font-mono text-xs">{index + 1}</td>
-                                        <td className="px-6 py-2">
+                                        <td className="px-4 sm:px-6 py-2 text-center text-muted-foreground font-mono text-xs">{index + 1}</td>
+                                        <td className="px-4 sm:px-6 py-2">
                                             <Input
                                                 placeholder="Enter item description..."
                                                 className="border-0 bg-transparent shadow-none focus-visible:ring-0 focus-visible:bg-muted px-2 h-8 rounded-sm border-b border-transparent focus-visible:border-primary transition-all placeholder:text-muted-foreground/50"
@@ -308,7 +312,7 @@ export default function CreatePaymentPage() {
                                                 onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                                             />
                                         </td>
-                                        <td className="px-6 py-2">
+                                        <td className="px-4 sm:px-6 py-2">
                                             <Input
                                                 type="number"
                                                 placeholder="0.00"
@@ -317,7 +321,7 @@ export default function CreatePaymentPage() {
                                                 onChange={(e) => handleItemChange(index, 'amount', e.target.value)}
                                             />
                                         </td>
-                                        <td className="px-6 py-2 text-right">
+                                        <td className="px-4 sm:px-6 py-2 text-right">
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
@@ -333,7 +337,7 @@ export default function CreatePaymentPage() {
                             </tbody>
                             <tfoot className="bg-muted/20 border-t border-border">
                                 <tr>
-                                    <td colSpan={2} className="px-6 py-3">
+                                    <td colSpan={2} className="px-4 sm:px-6 py-3">
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -343,7 +347,7 @@ export default function CreatePaymentPage() {
                                             <Plus className="h-4 w-4 mr-1" /> Add Expected Line
                                         </Button>
                                     </td>
-                                    <td className="px-6 py-3 text-right">
+                                    <td className="px-4 sm:px-6 py-3 text-right">
                                         <div className="flex flex-col">
                                             <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Total Amount</span>
                                             <span className="text-lg font-bold text-foreground font-mono">
@@ -359,19 +363,19 @@ export default function CreatePaymentPage() {
                 </div>
 
                 {/* Footer Section: Narration & Actions */}
-                <div className="bg-muted/30 p-6 border-t border-border space-y-4">
-                    <div className="space-y-1.5">
+                <div className="bg-muted/30 p-4 sm:p-6 border-t border-border space-y-4">
+                    <div className="space-y-1">
                         <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Narration / Remarks</Label>
                         <Input
                             placeholder="Any additional notes or remarks for this voucher..."
-                            className="bg-background border-input"
+                            className={underlineInput}
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
                     </div>
 
                     {/* Payment Status Toggle */}
-                    <div className="flex items-center justify-between p-3 bg-background rounded-md border border-input">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-background rounded-md border border-border">
                         <div className="space-y-0.5">
                             <Label className="text-sm font-medium">Payment Status</Label>
                             <p className="text-xs text-muted-foreground">
@@ -389,8 +393,11 @@ export default function CreatePaymentPage() {
                         </div>
                     </div>
 
-                    <div className="flex justify-end pt-2">
-                        <Button size="lg" className="min-w-37.5 shadow-sm bg-primary hover:bg-primary/90" onClick={handleSubmit} disabled={loading}>
+                    <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2">
+                        <Button variant="outline" size="lg" className="w-full sm:w-auto" onClick={() => router.back()} disabled={loading}>
+                            Cancel
+                        </Button>
+                        <Button size="lg" className="w-full sm:w-auto shadow-sm bg-primary hover:bg-primary/90" onClick={handleSubmit} disabled={loading}>
                             {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             {isPaid ? 'Complete Payment' : 'Save as Pending'}
                         </Button>
