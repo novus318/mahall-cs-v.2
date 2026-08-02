@@ -544,7 +544,7 @@ export default function WhatsAppPage() {
                                                     isOutbound ? "justify-end" : "justify-start"
                                                 )}>
                                                     <div className={cn(
-                                                        "max-w-[85%] md:max-w-[70%] lg:max-w-[60%] shadow-sm relative group mb-0.5 text-sm md:text-base min-w-[8%]",
+                                                        "max-w-[85%] md:max-w-[70%] lg:max-w-[60%] shadow-sm relative group text-sm md:text-base min-w-[8%] !px-2 !py-1",
                                                         isOutbound
                                                             ? "bg-primary text-primary-foreground rounded-xl rounded-tr-sm"
                                                             : "bg-card text-card-foreground border border-border rounded-xl rounded-tl-sm",
@@ -680,7 +680,7 @@ export default function WhatsAppPage() {
                                                         )}
 
                                                         <div className={cn(
-                                                            "text-[8px] flex items-center justify-end gap-0.5 select-none opacity-90 mt-0.5",
+                                                            "text-[8px] flex items-center justify-end gap-0.5 select-none opacity-90",
                                                             (msg.type === 'image' || msg.type === 'video') ? "absolute bottom-1.5 right-1.5 text-white drop-shadow-md bg-black/20 px-1 rounded-full" : "",
                                                             isOutbound && !((msg.type === 'image' || msg.type === 'video')) ? "text-primary-foreground" : "text-muted-foreground"
                                                         )}>
