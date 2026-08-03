@@ -11,7 +11,9 @@ import {
   SquareTerminal,
   MessageCircle,
   Heart,
-  Settings2
+  Settings2,
+  Megaphone,
+  LayoutTemplate
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -43,9 +45,25 @@ const data = {
           icon: LayoutDashboard,
         },
         {
-          title: "WhatsApp Inbox",
+          title: "WhatsApp",
           url: "/dashboard/whatsapp",
           icon: MessageCircle,
+          items: [
+            {
+              title: "Inbox",
+              url: "/dashboard/whatsapp",
+            },
+            {
+              title: "Bulk Messaging",
+              url: "/dashboard/whatsapp/broadcast",
+              icon: Megaphone,
+            },
+            {
+              title: "Templates",
+              url: "/dashboard/whatsapp/templates",
+              icon: LayoutTemplate,
+            },
+          ],
         },
       ],
     },
