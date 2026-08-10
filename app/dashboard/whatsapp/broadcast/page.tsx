@@ -24,6 +24,7 @@ interface CloudTemplate {
     category: string;
     language: string;
     parameterFormat?: 'positional' | 'named';
+    header?: { format?: string; text?: string | null; sample?: string | null } | null;
     body?: { text?: string; params?: { name: string; format: 'positional' | 'named'; example?: string | null }[] } | null;
 }
 
@@ -60,11 +61,14 @@ export default function BroadcastPage() {
     // Template mode
     const [selectedTemplateId, setSelectedTemplateId] = useState('none');
     const [templateValues, setTemplateValues] = useState<Record<string, string>>({});
+    const [templateHeaderMedia, setTemplateHeaderMedia] = useState('');
     const [customContacts, setCustomContacts] = useState('');
 
     const selectedTemplate = templates.find(t => t.id === selectedTemplateId) || null;
     const paramFormat = selectedTemplate?.parameterFormat || 'positional';
     const params = selectedTemplate?.body?.params || [];
+    const headerFormat = String(selectedTemplate?.header?.format || '').toUpperCase();
+    const isMediaHeader = ['IMAGE', 'VIDEO', 'DOCUMENT'].includes(headerFormat);
 
     const [previewing, setPreviewing] = useState(false);
     const [exporting, setExporting] = useState(false);
@@ -95,6 +99,8 @@ export default function BroadcastPage() {
             const seed: Record<string, string> = {};
             (t.body?.params || []).forEach(p => { seed[p.name] = p.example || ''; });
             setTemplateValues(seed);
+            const hf = String(t.header?.format || '').toUpperCase();
+            setTemplateHeaderMedia(['IMAGE', 'VIDEO', 'DOCUMENT'].includes(hf) && t.header?.sample ? t.header.sample : '');
         }
     };
 
@@ -115,6 +121,8 @@ export default function BroadcastPage() {
                 templateLanguage: isTemplate ? selectedTemplate!.language : undefined,
                 templateParameterFormat: isTemplate ? paramFormat : undefined,
                 templateValues: isTemplate ? templateValues : undefined,
+                templateHeaderFormat: isTemplate && isMediaHeader ? headerFormat : undefined,
+                templateHeaderMedia: isTemplate && isMediaHeader ? (templateHeaderMedia || selectedTemplate?.header?.sample || '') : undefined,
             });
             if (data.rendered && typeof data.rendered === 'object') {
                 setPreview({ total: data.total, templateName: data.rendered.templateName, values: data.rendered.values || [], excluded: data.excluded });
@@ -195,11 +203,13 @@ export default function BroadcastPage() {
                 templateLanguage: isTemplate ? selectedTemplate!.language : undefined,
                 templateParameterFormat: isTemplate ? paramFormat : undefined,
                 templateValues: isTemplate ? templateValues : undefined,
+                templateHeaderFormat: isTemplate && isMediaHeader ? headerFormat : undefined,
+                templateHeaderMedia: isTemplate && isMediaHeader ? (templateHeaderMedia || selectedTemplate?.header?.sample || '') : undefined,
             });
             toast.success('Broadcast created. Running now...');
             await api.post(`/whatsapp/broadcasts/${data.data._id}/run`);
             toast.success('Broadcast finished');
-            setPreview(null); setName(''); setMessage(''); setSelectedTemplateId('none'); setTemplateValues({}); setCustomContacts('');
+            setPreview(null); setName(''); setMessage(''); setSelectedTemplateId('none'); setTemplateValues({}); setTemplateHeaderMedia(''); setCustomContacts('');
             loadAll();
         } catch (err: any) {
             toast.error(err.response?.data?.message || 'Failed to send broadcast');
@@ -310,6 +320,14 @@ export default function BroadcastPage() {
                                             <p className="text-muted-foreground">{selectedTemplate.language} · {selectedTemplate.category}</p>
                                             <pre className="whitespace-pre-wrap mt-1">{selectedTemplate.body?.text}</pre>
                                         </div>
+                                        {isMediaHeader && (
+                                            <div className="space-y-1">
+                                                <Label>Header {headerFormat.toLowerCase()} (link)</Label>
+                                                <Input value={templateHeaderMedia} onChange={e => setTemplateHeaderMedia(e.target.value)}
+                                                    placeholder={`Public URL of the ${headerFormat.toLowerCase()} for the template header`} />
+                                                <p className="text-xs text-muted-foreground">Required by Meta for media headers. Pre-filled with the template sample.</p>
+                                            </div>
+                                        )}
                                         <div className="space-y-2">
                                             <Label>Body parameters ({"{{name}}"}, {"{{phone}}"}, {"{{type}}"} auto-fill)</Label>
                                             {params.map(p => (
