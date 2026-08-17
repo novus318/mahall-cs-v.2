@@ -27,6 +27,11 @@ export default function CollectionsPage() {
                     <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Collections</h2>
                     <p className="mt-2 text-sm text-muted-foreground">Manage and monitor all collected dues.</p>
                 </div>
+                <Link href="/dashboard/whatsapp/reminders">
+                    <Button variant="outline" size="sm" className="gap-2">
+                        <Send className="h-4 w-4" /> Send Reminders
+                    </Button>
+                </Link>
             </div>
 
             <Tabs defaultValue="member" className="space-y-4">
@@ -338,15 +343,15 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                                                                 </Link>
                                                             ) : (
                                                                 <>
-                                                                    <Link href={`/dashboard/members/${due.entityId?._id}`} className="font-medium text-xs sm:text-sm hover:underline hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-none">
-                                                                        {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1 hidden xs:inline">({due.entityId?.customId || '-'})</span>
-                                                                    </Link>
-                                                                    {due.entityId?.houseId && (
-                                                                        <Link href={`/dashboard/houses/${due.entityId.houseId._id}`} className="text-[10px] text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 mt-0.5">
-                                                                            <Building2 className="h-3 w-3 shrink-0" />
-                                                                            <span className="truncate max-w-[80px] sm:max-w-none">{due.entityId.houseId.customId || 'View House'}</span>
-                                                                        </Link>
-                                                                    )}
+<Link href={`/dashboard/members/${due.entityId?._id}`} className="font-medium text-xs sm:text-sm hover:underline hover:text-primary transition-colors truncate max-w-[120px] sm:max-w-none">
+                                        {due.entityId?.name || 'Unknown'} <span className="text-muted-foreground ml-1 hidden xs:inline">({due.entityId?.customId || '-'})</span>
+                                    </Link>
+                                    {due.entityId?.house && (
+                                        <Link href={`/dashboard/houses/${due.entityId.house._id}`} className="text-[10px] text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 mt-0.5">
+                                            <Building2 className="h-3 w-3 shrink-0" />
+                                            <span className="truncate max-w-[120px] sm:max-w-none">{due.entityId.house.name} ({due.entityId.house.customId || '-'})</span>
+                                        </Link>
+                                    )}
                                                                 </>
                                                             )}
                                                         </div>
@@ -702,6 +707,12 @@ function ArrearsTable() {
                                             <div className="flex flex-col">
                                                 <span className="font-medium text-xs sm:text-sm">{item.entity?.name || 'Unknown'}</span>
                                                 <span className="text-[10px] text-muted-foreground font-mono">{item.entity?.customId || '-'}</span>
+                                                {item.entityType === 'Member' && item.entity?.house && (
+                                                    <Link href={`/dashboard/houses/${item.entity.house._id}`} className="text-[10px] text-muted-foreground hover:text-primary hover:underline flex items-center gap-1 mt-0.5">
+                                                        <Building2 className="h-3 w-3 shrink-0" />
+                                                        <span className="truncate max-w-[120px] sm:max-w-none">{item.entity.house.name} ({item.entity.house.customId || '-'})</span>
+                                                    </Link>
+                                                )}
                                             </div>
                                         </TableCell>
                                         <TableCell className="hidden sm:table-cell">

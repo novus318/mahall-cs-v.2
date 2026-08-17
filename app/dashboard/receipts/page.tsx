@@ -8,7 +8,8 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Loader2, Pencil, Printer, ExternalLink, Tag } from 'lucide-react';
+import { Plus, Search, Loader2, Pencil, Printer, ExternalLink, Tag, FileSpreadsheet } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
@@ -23,6 +24,9 @@ export default function ReceiptsPage() {
     const [receipts, setReceipts] = useState<any[]>([]);
     const [categories, setCategories] = useState<any[]>([]);
     const [search, setSearch] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('ALL');
+    const [fromDate, setFromDate] = useState('');
+    const [toDate, setToDate] = useState('');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -42,18 +46,43 @@ export default function ReceiptsPage() {
             fetchReceipts();
         }, 500);
         return () => clearTimeout(timer);
-    }, [search, page]);
+    }, [search, page, categoryFilter, fromDate, toDate]);
 
     const fetchReceipts = async () => {
         setLoading(true);
         try {
-            const { data } = await api.get(`/receipts?page=${page}&limit=20&search=${search}`);
+            const categoryParam = categoryFilter !== 'ALL' ? `&category=${categoryFilter}` : '';
+            const dateParam = (fromDate ? `&from=${fromDate}` : '') + (toDate ? `&to=${toDate}` : '');
+            const { data } = await api.get(`/receipts?page=${page}&limit=20&search=${search}${categoryParam}${dateParam}`);
             setReceipts(data.data);
             setTotalPages(data.totalPages);
         } catch (error) {
             toast.error("Failed to load receipts");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleExport = async () => {
+        try {
+            const { data } = await api.post('/receipts/export', {
+                search,
+                category: categoryFilter !== 'ALL' ? categoryFilter : undefined,
+                from: fromDate || undefined,
+                to: toDate || undefined,
+            }, { responseType: 'blob' });
+            const blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `receipts-${fromDate || 'all'}-${toDate || 'all'}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            toast.success('Receipts exported');
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || 'Export failed');
         }
     };
 
@@ -146,9 +175,32 @@ export default function ReceiptsPage() {
                 </TabsList>
 
                 <TabsContent value="history" className="space-y-4">
-                    <div className="relative max-w-sm">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input placeholder="Search receipt or payer..." className="h-9 bg-background pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+                            <div className="relative max-w-sm">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input placeholder="Search receipt or payer..." className="h-9 bg-background pl-9" value={search} onChange={(e) => setSearch(e.target.value)} />
+                            </div>
+                            <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(1); }}>
+                                <SelectTrigger className="h-9 w-full sm:w-[180px] bg-background">
+                                    <SelectValue placeholder="All Categories" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Categories</SelectItem>
+                                    {categories.map((c) => (
+                                        <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <div className="flex items-center gap-2">
+                                <Input type="date" className="h-9 w-[150px] bg-background" value={fromDate} onChange={(e) => { setFromDate(e.target.value); setPage(1); }} />
+                                <span className="text-xs text-muted-foreground">to</span>
+                                <Input type="date" className="h-9 w-[150px] bg-background" value={toDate} onChange={(e) => { setToDate(e.target.value); setPage(1); }} />
+                            </div>
+                        </div>
+                        <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+                            <FileSpreadsheet className="h-4 w-4" /> Export Excel
+                        </Button>
                     </div>
 
                     <Card className="bg-card shadow-sm">

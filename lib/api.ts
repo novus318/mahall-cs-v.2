@@ -174,6 +174,19 @@ export const getPublicEntityDues = async (type: string, id: string) =>
 export const getPublicEntityDetails = async (type: string, id: string) =>
     (await api.get(`/collections/public/${type}/${id}/details`)).data;
 
+// --- Due WhatsApp Reminders ---
+export const previewDueReminders = async (data: { entityType?: string, period: string, frequency?: string }) =>
+    (await api.post('/reminders/preview', data)).data;
+
+export const sendDueReminders = async (data: { name?: string, entityType?: string, period: string, frequency?: string }) =>
+    (await api.post('/reminders/dues', data)).data;
+
+export const getDueReminders = async () => (await api.get('/reminders')).data;
+
+export const getDueReminder = async (id: string) => (await api.get(`/reminders/${id}`)).data;
+
+export const deleteDueReminder = async (id: string) => (await api.delete(`/reminders/${id}`)).data;
+
 // --- Public Rent ---
 export const getPublicRentDetails = async (id: string) =>
     (await api.get(`/contracts/public/${id}/details`)).data;

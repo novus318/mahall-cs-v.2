@@ -13,7 +13,8 @@ import {
   Heart,
   Settings2,
   Megaphone,
-  LayoutTemplate
+  LayoutTemplate,
+  Bell
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -62,6 +63,11 @@ const data = {
               title: "Templates",
               url: "/dashboard/whatsapp/templates",
               icon: LayoutTemplate,
+            },
+            {
+              title: "Dues Reminders",
+              url: "/dashboard/whatsapp/reminders",
+              icon: Bell,
             },
           ],
         },
