@@ -57,7 +57,7 @@ api.interceptors.response.use(
         // to keep frontend code compatible.
         if (response.data && response.data.status === true && response.data.data !== undefined) {
             if (response.data.pagination) {
-                response.pagination = response.data.pagination;
+                (response as any).pagination = response.data.pagination;
             }
             response.data = response.data.data;
             return response;
