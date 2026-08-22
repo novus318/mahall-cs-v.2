@@ -89,6 +89,14 @@ export default function DueRemindersPage() {
 
     useEffect(() => { loadAll(); }, [loadAll]);
 
+    // Auto-refresh while any reminder is still processing
+    useEffect(() => {
+        const hasProcessing = reminders.some(r => r.status === 'DRAFT' || r.status === 'RUNNING');
+        if (!hasProcessing) return;
+        const interval = setInterval(loadAll, 3000);
+        return () => clearInterval(interval);
+    }, [reminders, loadAll]);
+
     const handlePreview = async () => {
         if (!period || period === 'ALL') { toast.error('Select a period'); return; }
         setPreviewing(true);
@@ -118,7 +126,8 @@ export default function DueRemindersPage() {
                 frequency,
             });
             const run = data?.data;
-            toast.success(`Reminder ${run.status === 'COMPLETED' ? 'completed' : `finished (${run.status})`}: ${run.stats.sent} sent, ${run.stats.failed} failed`);
+            const total = run.stats?.total ?? 0;
+            toast.success(data.message || `Reminder started. Sending to ${total} recipient(s) in the background.`);
             setPreview(null); setName(''); setPeriod('ALL');
             await loadAll();
         } catch (err: any) {
