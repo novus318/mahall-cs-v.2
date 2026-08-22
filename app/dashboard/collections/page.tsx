@@ -65,6 +65,12 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
     const [search, setSearch] = useState("")
     const [statusFilter, setStatusFilter] = useState("ALL")
     const [periodFilter, setPeriodFilter] = useState("ALL")
+    const [startDate, setStartDate] = useState("")
+    const [endDate, setEndDate] = useState("")
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [total, setTotal] = useState(0)
+    const limit = 20
 
     const [periods, setPeriods] = useState<string[]>([])
 
@@ -92,7 +98,12 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
 
     useEffect(() => {
         fetchDues()
-    }, [type, statusFilter, periodFilter])
+    }, [type, statusFilter, periodFilter, page])
+
+    // Reset to page 1 when filters change
+    useEffect(() => {
+        setPage(1)
+    }, [type, statusFilter, periodFilter, startDate, endDate])
 
     useEffect(() => {
         if (isPayOpen) {
@@ -112,12 +123,18 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
     const fetchDues = async () => {
         setLoading(true)
         try {
-            const query: any = { entityType: type }
+            const query: any = { entityType: type, page, limit }
             if (statusFilter !== "ALL") query.status = statusFilter
             if (periodFilter !== "ALL") query.period = periodFilter
+            if (startDate) query.startDate = startDate
+            if (endDate) query.endDate = endDate
 
-            const data = await getDues(query)
-            setDues(Array.isArray(data) ? data : [])
+            const result = await getDues(query)
+            setDues(Array.isArray(result.data) ? result.data : [])
+            if (result.pagination) {
+                setTotalPages(result.pagination.totalPages)
+                setTotal(result.pagination.total)
+            }
         } catch (error) {
             console.error(error)
             toast.error("Failed to fetch collections")
@@ -236,20 +253,32 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
     return (
         <>
             <Card className="bg-card shadow-sm">
-                <CardHeader className="flex flex-col justify-between gap-3 border-b bg-muted/40 p-4 sm:flex-row sm:items-center space-y-0">
-                    <div className="flex flex-col w-full gap-2 sm:flex-row sm:items-center sm:flex-initial sm:w-auto sm:flex-row items-stretch sm:items-center">
-                        <div className="relative flex-1 sm:flex-initial">
+                <CardHeader className="flex flex-col gap-3 border-b bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col w-full gap-2">
+                        <div className="relative w-full">
                             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             <Input
                                 placeholder={`Search ${type}...`}
-                                className="h-9 w-full bg-background pl-9 sm:w-[200px] lg:w-[300px]"
+                                className="h-9 w-full bg-background pl-9"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
+                            <Input
+                                type="date"
+                                className="h-9 bg-background w-full sm:w-[130px] text-xs flex-1 sm:flex-initial"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                            />
+                            <Input
+                                type="date"
+                                className="h-9 bg-background w-full sm:w-[130px] text-xs flex-1 sm:flex-initial"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                            />
                             <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                                <SelectTrigger className="h-9 flex-1 bg-background sm:w-[130px]">
+                                <SelectTrigger className="h-9 bg-background flex-1 sm:flex-initial sm:w-[130px]">
                                     <SelectValue placeholder="Period" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -259,9 +288,8 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                                     ))}
                                 </SelectContent>
                             </Select>
-
                             <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                <SelectTrigger className="h-9 flex-1 bg-background sm:w-[130px]">
+                                <SelectTrigger className="h-9 bg-background flex-1 sm:flex-initial sm:w-[130px]">
                                     <SelectValue placeholder="Status" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -272,12 +300,9 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                                     <SelectItem value="REJECTED">Rejected</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Button variant="outline" size="sm" onClick={fetchDues} className="gap-2 sm:hidden">
-                                <Filter className="h-4 w-4" />
-                            </Button>
                         </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={fetchDues} className="gap-2 hidden sm:flex">
+                    <Button variant="outline" size="sm" onClick={fetchDues} className="gap-2 w-full sm:w-auto">
                         <Filter className="h-4 w-4" /> Refresh
                     </Button>
                 </CardHeader>
@@ -488,6 +513,38 @@ function CollectionTable({ type }: { type: 'House' | 'Member' }) {
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex flex-col gap-2 items-center justify-between px-2 sm:flex-row">
+                    <div className="text-xs text-muted-foreground">
+                        Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1 || loading}
+                        >
+                            Previous
+                        </Button>
+                        <span className="text-xs text-muted-foreground">
+                            {page} / {totalPages}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                            disabled={page === totalPages || loading}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Payment Dialog */}
             <Dialog open={isPayOpen} onOpenChange={setIsPayOpen}>

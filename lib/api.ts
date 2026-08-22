@@ -56,6 +56,9 @@ api.interceptors.response.use(
         // Standardize: If response follows { status: true, data: ... }, return data directly
         // to keep frontend code compatible.
         if (response.data && response.data.status === true && response.data.data !== undefined) {
+            if (response.data.pagination) {
+                response.pagination = response.data.pagination;
+            }
             response.data = response.data.data;
             return response;
         }
@@ -148,7 +151,10 @@ export const importMembers = async (file: File) => {
 export const updateSubscription = async (type: 'house' | 'member', id: string, data: any) =>
     (await api.put(`/collections/${type}/${id}/subscription`, data)).data;
 
-export const getDues = async (params: any) => (await api.get('/collections/dues', { params })).data;
+export const getDues = async (params: any) => {
+    const res = await api.get('/collections/dues', { params });
+    return { data: res.data, pagination: (res as any).pagination };
+};
 
 export const getCollectionPeriods = async () => (await api.get('/collections/periods')).data;
 
@@ -195,7 +201,10 @@ export const getPublicRentDues = async (id: string) =>
     (await api.get(`/contracts/public/${id}/dues`)).data;
 
 // --- Rent Collections ---
-export const getRentDues = async (params: any) => (await api.get('/contracts/rent/dues', { params })).data;
+export const getRentDues = async (params: any) => {
+    const res = await api.get('/contracts/rent/dues', { params });
+    return { data: res.data, pagination: (res as any).pagination };
+};
 
 export const getRentPeriods = async () => (await api.get('/contracts/rent/periods')).data;
 

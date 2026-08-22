@@ -59,6 +59,10 @@ export default function AccountsPage() {
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [editingAccount, setEditingAccount] = useState<any>(null);
     const [search, setSearch] = useState('');
+    const [creating, setCreating] = useState(false);
+    const [updating, setUpdating] = useState(false);
+    const [transferring, setTransferring] = useState(false);
+    const [deleting, setDeleting] = useState(false);
     const router = useRouter();
 
     const form = useForm({
@@ -103,6 +107,7 @@ export default function AccountsPage() {
     };
 
     const handleCreate = async (values: z.infer<typeof accountSchema>) => {
+        setCreating(true);
         try {
             await api.post('/accounts', values);
             toast.success("Account created successfully");
@@ -119,6 +124,8 @@ export default function AccountsPage() {
             fetchAccounts();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to create account");
+        } finally {
+            setCreating(false);
         }
     };
 
@@ -137,6 +144,7 @@ export default function AccountsPage() {
     };
 
     const handleEdit = async (values: z.infer<typeof accountSchema>) => {
+        setUpdating(true);
         try {
             await api.put(`/accounts/${editingAccount._id}`, {
                 name: values.name,
@@ -151,10 +159,13 @@ export default function AccountsPage() {
             fetchAccounts();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to update account");
+        } finally {
+            setUpdating(false);
         }
     };
 
     const handleTransfer = async (values: z.infer<typeof transferSchema>) => {
+        setTransferring(true);
         try {
             await api.post('/accounts/transfer', values);
             toast.success("Transfer successful");
@@ -163,6 +174,8 @@ export default function AccountsPage() {
             fetchAccounts();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Transfer failed");
+        } finally {
+            setTransferring(false);
         }
     };
 
@@ -173,6 +186,7 @@ export default function AccountsPage() {
 
     const handleDelete = async () => {
         if (!deleteId) return;
+        setDeleting(true);
         try {
             await api.delete(`/accounts/${deleteId}`);
             toast.success("Account deleted successfully");
@@ -181,6 +195,8 @@ export default function AccountsPage() {
             fetchAccounts();
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to delete account");
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -346,8 +362,10 @@ export default function AccountsPage() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter className="flex-row gap-2">
-                        <Button variant="outline" onClick={() => setIsDeleteAlertOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+                        <Button variant="outline" onClick={() => setIsDeleteAlertOpen(false)} disabled={deleting}>Cancel</Button>
+                        <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+                            {deleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Delete
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -434,7 +452,9 @@ export default function AccountsPage() {
                             )} />
 
                             <DialogFooter>
-                                <Button type="submit">Create Account</Button>
+                                <Button type="submit" disabled={creating}>
+                                    {creating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Create Account
+                                </Button>
                             </DialogFooter>
                         </form>
                     </Form>
@@ -498,7 +518,9 @@ export default function AccountsPage() {
                             )} />
 
                             <DialogFooter>
-                                <Button type="submit">Save Changes</Button>
+                                <Button type="submit" disabled={updating}>
+                                    {updating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Save Changes
+                                </Button>
                             </DialogFooter>
                         </form>
                     </Form>
@@ -570,7 +592,9 @@ export default function AccountsPage() {
                             )} />
 
                             <DialogFooter>
-                                <Button type="submit">Transfer</Button>
+                                <Button type="submit" disabled={transferring}>
+                                    {transferring ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Transfer
+                                </Button>
                             </DialogFooter>
                         </form>
                     </Form>

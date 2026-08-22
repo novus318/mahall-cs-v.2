@@ -339,10 +339,8 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     };
 
     // Calculations
-    const totalDepositPaid = deposits.filter(p => p.type === 'DEPOSIT').reduce((acc, curr) => acc + curr.amount, 0);
-    const totalRefunds = deposits.filter(p => p.type === 'REFUND').reduce((acc, curr) => acc + curr.amount, 0);
-    const depositHeld = totalDepositPaid - totalRefunds;
-    const isDepositSettled = depositHeld >= (contract?.depositAmount || 0);
+    const depositHeld = (contract?.depositCollected || 0) - (contract?.depositReturned || 0);
+    const isDepositSettled = (contract?.depositCollected || 0) >= (contract?.depositAmount || 0);
 
     if (loading) return <div className="flex flex-1 items-center justify-center p-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
     if (!contract) return <div className="flex flex-1 items-center justify-center p-10 text-center text-muted-foreground">Contract not found</div>;

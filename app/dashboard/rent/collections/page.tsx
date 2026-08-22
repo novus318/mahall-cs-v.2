@@ -53,11 +53,18 @@ function RentDuesTable() {
     const [search, setSearch] = useState("")
     const [statusFilter, setStatusFilter] = useState("ALL")
     const [periodFilter, setPeriodFilter] = useState("ALL")
+    const [startDate, setStartDate] = useState("")
+    const [endDate, setEndDate] = useState("")
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [total, setTotal] = useState(0)
+    const limit = 20
     const [periods, setPeriods] = useState<string[]>([])
     const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
 
     useEffect(() => { fetchPeriods() }, [])
-    useEffect(() => { fetchDues() }, [statusFilter, periodFilter])
+    useEffect(() => { fetchDues() }, [statusFilter, periodFilter, page])
+    useEffect(() => { setPage(1) }, [statusFilter, periodFilter, startDate, endDate])
 
     const fetchPeriods = async () => {
         try {
@@ -69,11 +76,17 @@ function RentDuesTable() {
     const fetchDues = async () => {
         setLoading(true)
         try {
-            const query: any = {}
+            const query: any = { page, limit }
             if (statusFilter !== "ALL") query.status = statusFilter
             if (periodFilter !== "ALL") query.period = periodFilter
-            const data = await getRentDues(query)
-            setDues(Array.isArray(data) ? data : [])
+            if (startDate) query.startDate = startDate
+            if (endDate) query.endDate = endDate
+            const result = await getRentDues(query)
+            setDues(Array.isArray(result.data) ? result.data : [])
+            if (result.pagination) {
+                setTotalPages(result.pagination.totalPages)
+                setTotal(result.pagination.total)
+            }
         } catch (error) {
             toast.error("Failed to fetch rent dues")
         } finally {
@@ -92,42 +105,57 @@ function RentDuesTable() {
     })
 
     return (
+        <>
         <Card className="bg-card shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b bg-muted/40 p-4">
-                <div className="flex items-center gap-2">
-                    <div className="relative">
+            <CardHeader className="flex flex-col gap-3 border-b bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col w-full gap-2">
+                    <div className="relative w-full">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             placeholder="Search tenant..."
-                            className="h-9 w-full bg-background pl-9 sm:w-[200px] lg:w-[300px]"
+                            className="h-9 w-full bg-background pl-9"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
-                    <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                        <SelectTrigger className="h-9 bg-background w-[130px]">
-                            <SelectValue placeholder="Period" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">All Periods</SelectItem>
-                            {periods.map((p) => (
-                                <SelectItem key={p} value={p}>{p}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="h-9 bg-background w-[130px]">
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">All Status</SelectItem>
-                            <SelectItem value="PAID">Paid</SelectItem>
-                            <SelectItem value="PENDING">Pending</SelectItem>
-                            <SelectItem value="PARTIAL">Partial</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex flex-wrap gap-2">
+                        <Input
+                            type="date"
+                            className="h-9 bg-background w-full sm:w-[130px] text-xs flex-1 sm:flex-initial"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                        />
+                        <Input
+                            type="date"
+                            className="h-9 bg-background w-full sm:w-[130px] text-xs flex-1 sm:flex-initial"
+                            value={endDate}
+                            onChange={(e) => setEndDate(e.target.value)}
+                        />
+                        <Select value={periodFilter} onValueChange={setPeriodFilter}>
+                            <SelectTrigger className="h-9 bg-background flex-1 sm:flex-initial sm:w-[130px]">
+                                <SelectValue placeholder="Period" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">All Periods</SelectItem>
+                                {periods.map((p) => (
+                                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="h-9 bg-background flex-1 sm:flex-initial sm:w-[130px]">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="ALL">All Status</SelectItem>
+                                <SelectItem value="PAID">Paid</SelectItem>
+                                <SelectItem value="PENDING">Pending</SelectItem>
+                                <SelectItem value="PARTIAL">Partial</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={fetchDues} className="gap-2">
+                <Button variant="outline" size="sm" onClick={fetchDues} className="gap-2 w-full sm:w-auto">
                     <Filter className="h-4 w-4" /> Refresh
                 </Button>
             </CardHeader>
@@ -277,6 +305,38 @@ function RentDuesTable() {
                 </Table>
             </CardContent>
         </Card>
+
+        {totalPages > 1 && (
+            <div className="flex flex-col gap-2 items-center justify-between px-2 sm:flex-row">
+                <div className="text-xs text-muted-foreground">
+                    Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1 || loading}
+                    >
+                        Previous
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                        {page} / {totalPages}
+                    </span>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs"
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages || loading}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+        )}
+        </>
     )
 }
 
