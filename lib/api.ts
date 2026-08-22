@@ -208,6 +208,33 @@ export const getRentDues = async (params: any) => {
 
 export const getRentPeriods = async () => (await api.get('/contracts/rent/periods')).data;
 
+export const getIncomeExpenseReport = async (params: any) => (await api.get('/accounts/reports/income-expense', { params })).data;
+
+export const downloadIncomeExpenseReport = async (params: any) => {
+    return api.get('/accounts/reports/income-expense', {
+        params: { ...params, format: 'excel' },
+        responseType: 'blob'
+    });
+};
+
+export const getReceivablesReport = async (params: any) => (await api.get('/accounts/reports/receivables', { params })).data;
+
+export const downloadReceivablesReport = async (params: any) => {
+    return api.get('/accounts/reports/receivables', {
+        params: { ...params, format: 'excel' },
+        responseType: 'blob'
+    });
+};
+
+export const getPayablesReport = async (params: any) => (await api.get('/accounts/reports/payables', { params })).data;
+
+export const downloadPayablesReport = async (params: any) => {
+    return api.get('/accounts/reports/payables', {
+        params: { ...params, format: 'excel' },
+        responseType: 'blob'
+    });
+};
+
 export const getRentArrearsSummary = async () => (await api.get('/contracts/rent/arrears')).data;
 
 export const sendRentReminder = async (data: { contractId: string }) =>

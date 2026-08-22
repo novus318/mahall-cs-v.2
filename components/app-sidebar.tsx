@@ -108,6 +108,18 @@ const data = {
             {
               title: "Payables (Loans)",
               url: "/dashboard/payables",
+            },
+            {
+              title: "Income & Expense Report",
+              url: "/dashboard/reports/income-expense",
+            },
+            {
+              title: "Receivables Report",
+              url: "/dashboard/reports/receivables",
+            },
+            {
+              title: "Payables Report",
+              url: "/dashboard/reports/payables",
             }
           ]
         },
