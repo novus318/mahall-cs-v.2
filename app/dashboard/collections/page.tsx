@@ -676,17 +676,38 @@ function ArrearsTable() {
     const [arrears, setArrears] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [typeFilter, setTypeFilter] = useState("All")
+    const [search, setSearch] = useState("")
+    const [debouncedSearch, setDebouncedSearch] = useState("")
+    const [page, setPage] = useState(1)
+    const [totalPages, setTotalPages] = useState(1)
+    const [total, setTotal] = useState(0)
     const [remindingId, setRemindingId] = useState<string | null>(null)
+    const limit = 20
+
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedSearch(search), 300)
+        return () => clearTimeout(t)
+    }, [search])
+
+    useEffect(() => {
+        setPage(1)
+    }, [typeFilter, debouncedSearch])
 
     useEffect(() => {
         fetchArrears()
-    }, [typeFilter])
+    }, [typeFilter, debouncedSearch, page])
 
     const fetchArrears = async () => {
         setLoading(true)
         try {
-            const data = await getArrearsSummary({ entityType: typeFilter })
-            setArrears(Array.isArray(data) ? data : [])
+            const params: any = { entityType: typeFilter, page, limit }
+            if (debouncedSearch) params.search = debouncedSearch
+            const result = await getArrearsSummary(params)
+            setArrears(Array.isArray(result.data) ? result.data : [])
+            if (result.pagination) {
+                setTotalPages(result.pagination.totalPages)
+                setTotal(result.pagination.total)
+            }
         } catch (error) {
             console.error(error)
             toast.error("Failed to fetch arrears summary")
@@ -721,16 +742,27 @@ function ArrearsTable() {
                         Outstanding balances across all periods.
                     </CardDescription>
                 </div>
-                <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger className="h-9 w-full bg-background sm:w-[150px]">
-                        <SelectValue placeholder="All Entities" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="All">All Entities</SelectItem>
-                        <SelectItem value="House">Houses Only</SelectItem>
-                        <SelectItem value="Member">Members Only</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="flex flex-col w-full gap-2 sm:flex-row sm:items-center sm:w-auto">
+                    <div className="relative w-full sm:w-[200px]">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            placeholder="Search arrears..."
+                            className="h-9 w-full bg-background pl-9"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                    <Select value={typeFilter} onValueChange={setTypeFilter}>
+                        <SelectTrigger className="h-9 w-full bg-background sm:w-[150px]">
+                            <SelectValue placeholder="All Entities" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Entities</SelectItem>
+                            <SelectItem value="House">Houses Only</SelectItem>
+                            <SelectItem value="Member">Members Only</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </CardHeader>
             <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -741,7 +773,7 @@ function ArrearsTable() {
                                     <TableHead className="hidden font-semibold text-xs uppercase tracking-wider sm:table-cell">Type</TableHead>
                                     <TableHead className="text-center font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Pending</TableHead>
                                     <TableHead className="text-right font-semibold text-xs uppercase tracking-wider whitespace-nowrap">Outstanding</TableHead>
-                                    <TableHead className="w-[100px] sm:w-[150px]"></TableHead>
+                                    <TableHead className="w-[80px] sm:w-[150px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                         <TableBody>
@@ -754,7 +786,7 @@ function ArrearsTable() {
                             ) : arrears.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                                        No arrears found.
+                                        {debouncedSearch ? "No arrears match your search." : "No arrears found."}
                                     </TableCell>
                                 </TableRow>
                             ) : (
@@ -808,6 +840,37 @@ function ArrearsTable() {
                     </Table>
                 </div>
             </CardContent>
+
+            {totalPages > 1 && (
+                <div className="flex flex-col gap-2 items-center justify-between px-4 py-3 border-t sm:flex-row">
+                    <div className="text-xs text-muted-foreground">
+                        Showing {((page - 1) * limit) + 1}–{Math.min(page * limit, total)} of {total}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1 || loading}
+                        >
+                            Previous
+                        </Button>
+                        <span className="text-xs text-muted-foreground">
+                            {page} / {totalPages}
+                        </span>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                            disabled={page === totalPages || loading}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
         </Card>
     )
 }
