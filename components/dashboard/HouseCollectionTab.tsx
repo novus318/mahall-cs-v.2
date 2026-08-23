@@ -68,8 +68,8 @@ export function HouseCollectionTab({ type, entityId, entityName, currentSubscrip
     const fetchDues = async () => {
         setLoadingDues(true)
         try {
-            const data = await getDues({ entityId, entityType: type === 'house' ? 'House' : 'Member' })
-            setDues(Array.isArray(data) ? data : [])
+            const result = await getDues({ entityId, entityType: type === 'house' ? 'House' : 'Member' })
+            setDues(Array.isArray(result.data) ? result.data : Array.isArray(result) ? result : [])
         } catch (error) {
             console.error(error)
         } finally {
