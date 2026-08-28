@@ -192,6 +192,19 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
     }, [resolvedParams.id]);
 
     useEffect(() => {
+        if (!resolvedParams.id) return;
+        const interval = setInterval(() => {
+            api.get(`/contracts/${resolvedParams.id}/financials`)
+                .then(res => {
+                    setRents(res.data.rents);
+                    setDeposits(res.data.deposits);
+                })
+                .catch(() => {});
+        }, 30000);
+        return () => clearInterval(interval);
+    }, [resolvedParams.id]);
+
+    useEffect(() => {
         if (isRentGenOpen && contract) {
             setRentGenForm(prev => ({ ...prev, amount: contract.rentAmount }));
         }
@@ -204,8 +217,8 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
         }
     }, [isCollectDepositOpen, contract]);
 
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = async (showLoader = true) => {
+        if (showLoader) setLoading(true);
         try {
             const [contractRes, financialsRes] = await Promise.all([
                 api.get(`/contracts/${resolvedParams.id}`),
@@ -228,7 +241,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
             });
 
         } catch (error) { toast.error("Failed to load details"); }
-        finally { setLoading(false); }
+        finally { if (showLoader) setLoading(false); }
     };
 
     const handleUpdate = async () => {
@@ -292,7 +305,7 @@ export default function ContractDetailPage({ params }: { params: Promise<{ id: s
             await api.put(`/contracts/${resolvedParams.id}/rents/${selectedRentId}/pay`, collectRentForm);
             toast.success("Payment collected");
             setIsCollectRentOpen(false);
-            fetchData();
+            fetchData(false);
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Collection failed");
         } finally {

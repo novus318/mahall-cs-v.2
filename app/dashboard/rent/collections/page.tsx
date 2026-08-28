@@ -240,7 +240,7 @@ function RentDuesTable() {
                                                         className="h-8 w-8"
                                                         onClick={() => {
                                                             const lastTx = due.transactions[due.transactions.length - 1];
-                                                            if (lastTx.receipt) window.open(`/api/receipts/${lastTx.receipt}/pdf`, '_blank');
+                                                            if (lastTx.receipt) window.open(`https://api.tmj.org.in/api/receipts/${lastTx.receipt}/pdf`, '_blank');
                                                         }}
                                                         title="View Receipt"
                                                     >

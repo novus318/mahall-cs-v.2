@@ -209,7 +209,7 @@ export default function PayRentPage() {
                                                     </Badge>
                                                     {receiptId && (
                                                         <Button variant="ghost" size="icon" className="h-6 w-6 ml-1.5" title="View Receipt"
-                                                            onClick={() => window.open(`/api/receipts/${receiptId}/pdf`, "_blank")}>
+                                                            onClick={() => window.open(`https://api.tmj.org.in/api/receipts/${receiptId}/pdf`, "_blank")}>
                                                             <ExternalLink className="h-3 w-3 text-muted-foreground" />
                                                         </Button>
                                                     )}
