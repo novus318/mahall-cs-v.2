@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export const API_URL = 'https://api.tmj.org.in/api';
 
-// export const API_URL = 'http://localhost:5000/api';
+// export const API_URL = 'https://api.tmj.org.in/api';
 
 function getFromStorage(key: string): string | null {
     if (typeof window === 'undefined') return null;
@@ -301,5 +301,12 @@ export const getNikahRegisters = async () => (await api.get('/nikah-registers'))
 export const getNikahRegisterById = async (id: string) => (await api.get(`/nikah-registers/${id}`)).data;
 export const createNikahRegister = async (data: any) => (await api.post('/nikah-registers', data)).data;
 export const updateNikahRegister = async (id: string, data: any) => (await api.put(`/nikah-registers/${id}`, data)).data;
+
+// --- Staff Payslips (mirrors downloadPaymentPdf: GET /api/staff/:id/payslips/:payslipId/pdf) ---
+export const downloadPayslipPdf = async (staffId: string, payslipId: string) => {
+    return api.get(`/staff/${staffId}/payslips/${payslipId}/pdf`, {
+        responseType: 'blob'
+    });
+};
 
 export default api;
