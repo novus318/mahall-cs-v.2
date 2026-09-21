@@ -109,6 +109,7 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
     const [otp, setOtp] = useState("");
     const [sendingOtp, setSendingOtp] = useState(false);
     const [verifyingOtp, setVerifyingOtp] = useState(false);
+    const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
     const advanceForm = useForm({
         resolver: zodResolver(advanceSchema),
@@ -280,6 +281,30 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
             toast.error(error.response?.data?.message || "Invalid OTP");
         } finally {
             setVerifyingOtp(false);
+        }
+    };
+
+    // Payslip PDF — same pattern as downloadPaymentPdf: GET /api/staff/:id/payslips/:payslipId/pdf
+    const handleDownloadPayslip = async (slip: any) => {
+        if (downloadingId) return;
+        setDownloadingId(slip._id);
+        try {
+            const res = await api.get(`/staff/${resolvedParams.id}/payslips/${slip._id}/pdf`, {
+                responseType: 'blob',
+            });
+            const blob = new Blob([res.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Payslip-${slip.monthYear}-${staff?.employeeId || 'staff'}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to download payslip");
+        } finally {
+            setDownloadingId(null);
         }
     };
 
@@ -520,11 +545,25 @@ export default function StaffDetailPage({ params }: { params: Promise<{ id: stri
                                                     }>{slip.status}</Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    {slip.status === 'PENDING' ? (
-                                                        <Button size="sm" onClick={() => openPaymentDialog(slip)}>Pay Now</Button>
-                                                    ) : (
-                                                        <span className="text-[10px] text-muted-foreground font-medium">Pd: {slip.paymentDate ? format(new Date(slip.paymentDate), 'dd MMM') : '-'}</span>
-                                                    )}
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        {slip.status === 'PENDING' ? (
+                                                            <Button size="sm" onClick={() => openPaymentDialog(slip)}>Pay Now</Button>
+                                                        ) : (
+                                                            <span className="text-[10px] text-muted-foreground font-medium mr-1">Pd: {slip.paymentDate ? format(new Date(slip.paymentDate), 'dd MMM') : '-'}</span>
+                                                        )}
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-muted-foreground hover:bg-chart-3/10 hover:text-chart-3"
+                                                            onClick={() => handleDownloadPayslip(slip)}
+                                                            disabled={downloadingId === slip._id}
+                                                            title="Download Payslip PDF"
+                                                        >
+                                                            {downloadingId === slip._id
+                                                                ? <Loader2 className="h-4 w-4 animate-spin" />
+                                                                : <Download className="h-4 w-4" />}
+                                                        </Button>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
